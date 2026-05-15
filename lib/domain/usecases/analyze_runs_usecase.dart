@@ -2,11 +2,15 @@ import '../entities/run_activity.dart';
 import '../entities/running_stats.dart';
 
 class AnalyzeRunsUseCase {
-  RunningStats compute(List<RunActivity> activities) {
+  RunningStats compute(List<RunActivity> activities,
+      {int? maxHr, int? restingHr}) {
     if (activities.isEmpty) return RunningStats.empty();
 
     final sortedByDate = [...activities]
       ..sort((a, b) => a.date.compareTo(b.date));
+
+    final actualMaxHr = maxHr ?? _resolveMaxHr(activities) ?? 190;
+    final actualRestingHr = restingHr ?? _resolveRestingHr(activities) ?? 60;
 
     return RunningStats(
       totalRuns: activities.length,
@@ -14,44 +18,57 @@ class AnalyzeRunsUseCase {
       weeklyVolume: _weeklyVolume(activities),
       averagePace: _averagePace(activities),
       paceProgression: _paceProgression(sortedByDate),
-      heartRateZones: _hrZoneDistribution(activities),
-      trainingLoadHistory: _trainingLoadHistory(sortedByDate),
+      heartRateZones: _hrZoneDistribution(activities,
+          maxHr: actualMaxHr, restingHr: actualRestingHr),
+      trainingLoadHistory: _trainingLoadHistory(sortedByDate,
+          maxHr: actualMaxHr, restingHr: actualRestingHr),
       vo2MaxEstimate: _estimateVo2Max(activities),
-      fitnessScore: _fitnessScore(activities),
-      fatigueScore: _fatigueScore(activities),
-      formScore: _formScore(activities),
+      fitnessScore: _fitnessScore(activities,
+          maxHr: actualMaxHr, restingHr: actualRestingHr),
+      fatigueScore: _fatigueScore(activities,
+          maxHr: actualMaxHr, restingHr: actualRestingHr),
+      formScore: _formScore(activities,
+          maxHr: actualMaxHr, restingHr: actualRestingHr),
     );
   }
 
-  double _fitnessScore(List<RunActivity> activities) {
-    return _exponentialMovingAverage(activities, decayDays: 42);
+  double _fitnessScore(List<RunActivity> activities,
+      {int maxHr = 190, int restingHr = 60}) {
+    return _exponentialMovingAverage(activities,
+        decayDays: 42, maxHr: maxHr, restingHr: restingHr);
   }
 
-  double _fatigueScore(List<RunActivity> activities) {
-    return _exponentialMovingAverage(activities, decayDays: 7);
+  double _fatigueScore(List<RunActivity> activities,
+      {int maxHr = 190, int restingHr = 60}) {
+    return _exponentialMovingAverage(activities,
+        decayDays: 7, maxHr: maxHr, restingHr: restingHr);
   }
 
-  double _formScore(List<RunActivity> activities) {
-    return _fitnessScore(activities) - _fatigueScore(activities);
+  double _formScore(List<RunActivity> activities,
+      {int maxHr = 190, int restingHr = 60}) {
+    return _fitnessScore(activities, maxHr: maxHr, restingHr: restingHr) -
+        _fatigueScore(activities, maxHr: maxHr, restingHr: restingHr);
   }
 
   double _exponentialMovingAverage(List<RunActivity> activities,
-      {required int decayDays}) {
+      {required int decayDays, int maxHr = 190, int restingHr = 60}) {
     if (activities.isEmpty) return 0;
     final decay = 2 / (decayDays + 1);
     double ema = 0;
     for (final activity in activities) {
-      final tss = _trainingStressScore(activity);
+      final tss = _trainingStressScore(activity,
+          maxHr: maxHr, restingHr: restingHr);
       ema = tss * decay + ema * (1 - decay);
     }
     return ema;
   }
 
-  double _trainingStressScore(RunActivity activity) {
+  double _trainingStressScore(RunActivity activity,
+      {int maxHr = 190, int restingHr = 60}) {
     if (activity.avgHeartRate == null) {
       return activity.movingTime.inMinutes * 0.5;
     }
-    final hrReserve = (activity.avgHeartRate! - 60) / (190 - 60);
+    final hrReserve = (activity.avgHeartRate! - restingHr) / (maxHr - restingHr);
     final durationHours = activity.movingTime.inMinutes / 60.0;
     return hrReserve * hrReserve * durationHours * 100;
   }
@@ -67,15 +84,20 @@ class AnalyzeRunsUseCase {
         .toList();
   }
 
-  Map<int, double> _hrZoneDistribution(List<RunActivity> activities) {
+  Map<int, double> _hrZoneDistribution(List<RunActivity> activities,
+      {int maxHr = 190, int restingHr = 60}) {
     final withHr = activities.where((a) => a.avgHeartRate != null);
     if (withHr.isEmpty) return {};
+
+    final actualMax = _resolveMaxHr(activities) ?? maxHr;
+    final actualResting = _resolveRestingHr(activities) ?? restingHr;
 
     final zoneTotals = <int, double>{1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
     double totalMinutes = 0;
 
     for (final activity in withHr) {
-      final zone = _hrToZone(activity.avgHeartRate!, maxHr: 190);
+      final zone = _hrToZone(activity.avgHeartRate!,
+          maxHr: actualMax, restingHr: actualResting);
       final minutes = activity.movingTime.inMinutes.toDouble();
       zoneTotals[zone] = (zoneTotals[zone] ?? 0) + minutes;
       totalMinutes += minutes;
@@ -84,8 +106,26 @@ class AnalyzeRunsUseCase {
     return zoneTotals.map((k, v) => MapEntry(k, v / totalMinutes));
   }
 
-  int _hrToZone(double hr, {required int maxHr}) {
-    final pct = hr / maxHr;
+  int? _resolveMaxHr(List<RunActivity> activities) {
+    final values = activities
+        .where((a) => a.maxHeartRate != null)
+        .map((a) => a.maxHeartRate!);
+    if (values.isEmpty) return null;
+    return values.reduce((a, b) => a > b ? a : b).round();
+  }
+
+  int? _resolveRestingHr(List<RunActivity> activities) {
+    final values = activities
+        .where((a) => a.avgHeartRate != null)
+        .map((a) => a.avgHeartRate!);
+    if (values.isEmpty) return null;
+    return values.reduce((a, b) => a < b ? a : b).round();
+  }
+
+  int _hrToZone(double hr, {required int maxHr, int restingHr = 60}) {
+    final hrr = maxHr - restingHr;
+    final hrAboveResting = hr - restingHr;
+    final pct = hrr > 0 ? hrAboveResting / hrr : 0;
     if (pct < 0.60) return 1;
     if (pct < 0.70) return 2;
     if (pct < 0.80) return 3;
@@ -128,10 +168,12 @@ class AnalyzeRunsUseCase {
     return Duration(seconds: totalSeconds ~/ activities.length);
   }
 
-  List<TrainingLoadPoint> _trainingLoadHistory(List<RunActivity> sorted) {
+  List<TrainingLoadPoint> _trainingLoadHistory(List<RunActivity> sorted,
+      {int maxHr = 190, int restingHr = 60}) {
     double fitness = 0, fatigue = 0;
     return sorted.map((activity) {
-      final tss = _trainingStressScore(activity);
+      final tss = _trainingStressScore(activity,
+          maxHr: maxHr, restingHr: restingHr);
       fitness = tss * (2 / 43) + fitness * (41 / 43);
       fatigue = tss * (2 / 8) + fatigue * (6 / 8);
       return TrainingLoadPoint(

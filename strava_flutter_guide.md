@@ -487,6 +487,7 @@ class TrainingDay {
   final DateTime date;
   final WorkoutType type;
   final double? targetDistanceKm;
+  final double? warmUpCoolDownKm;  // walk/jog portion (warm-up + cool-down)
   final PaceZone? paceTarget;
   final HrZone? heartRateTarget;
   final String description;
@@ -497,22 +498,29 @@ class TrainingDay {
     required this.type,
     required this.description,
     this.targetDistanceKm,
+    this.warmUpCoolDownKm,
     this.paceTarget,
     this.heartRateTarget,
     this.estimatedDuration,
   });
+
+  /// Running portion of the day (total minus warm-up/cool-down)
+  double? get workDistanceKm {
+    if (targetDistanceKm == null || warmUpCoolDownKm == null) return null;
+    return targetDistanceKm! - warmUpCoolDownKm!;
+  }
 }
 
 enum WorkoutType { easy, tempo, intervals, longRun, rest, crossTraining }
 
 class PaceZone {
-  final Duration minPace; // slower bound (per km)
-  final Duration maxPace; // faster bound (per km)
-  final String label;     // e.g., "Easy", "Tempo", "5K pace"
+  final Duration slowestPace; // slower bound (per km), e.g. 5:36
+  final Duration fastestPace; // faster bound (per km), e.g. 5:12
+  final String label;         // e.g., "Easy", "Tempo", "5K pace"
 
   const PaceZone({
-    required this.minPace,
-    required this.maxPace,
+    required this.slowestPace,
+    required this.fastestPace,
     required this.label,
   });
 }
@@ -622,11 +630,15 @@ final trainingPlanProvider = FutureProvider<TrainingPlan>((ref) async {
 ```dart
 // lib/domain/usecases/analyze_runs_usecase.dart
 class AnalyzeRunsUseCase {
-  RunningStats compute(List<RunActivity> activities) {
+  RunningStats compute(List<RunActivity> activities,
+      {int? maxHr, int? restingHr}) {
     if (activities.isEmpty) return RunningStats.empty();
 
     final sortedByDate = [...activities]
       ..sort((a, b) => a.date.compareTo(b.date));
+
+    final actualMaxHr = maxHr ?? _resolveMaxHr(activities) ?? 190;
+    final actualRestingHr = restingHr ?? _resolveRestingHr(activities) ?? 60;
 
     return RunningStats(
       totalRuns: activities.length,
@@ -634,50 +646,63 @@ class AnalyzeRunsUseCase {
       weeklyVolume: _weeklyVolume(activities),
       averagePace: _averagePace(activities),
       paceProgression: _paceProgression(sortedByDate),
-      heartRateZones: _hrZoneDistribution(activities),
-      trainingLoadHistory: _trainingLoadHistory(sortedByDate),
+      heartRateZones: _hrZoneDistribution(activities,
+          maxHr: actualMaxHr, restingHr: actualRestingHr),
+      trainingLoadHistory: _trainingLoadHistory(sortedByDate,
+          maxHr: actualMaxHr, restingHr: actualRestingHr),
       vo2MaxEstimate: _estimateVo2Max(activities),
-      fitnessScore: _fitnessScore(activities),
-      fatigueSCore: _fatigueScore(activities),
-      formScore: _formScore(activities),
+      fitnessScore: _fitnessScore(activities,
+          maxHr: actualMaxHr, restingHr: actualRestingHr),
+      fatigueScore: _fatigueScore(activities,
+          maxHr: actualMaxHr, restingHr: actualRestingHr),
+      formScore: _formScore(activities,
+          maxHr: actualMaxHr, restingHr: actualRestingHr),
     );
   }
 
   /// Chronic Training Load (CTL) — 42-day rolling average of TSS
-  double _fitnessScore(List<RunActivity> activities) {
-    return _exponentialMovingAverage(activities, decayDays: 42);
+  double _fitnessScore(List<RunActivity> activities,
+      {int maxHr = 190, int restingHr = 60}) {
+    return _exponentialMovingAverage(activities,
+        decayDays: 42, maxHr: maxHr, restingHr: restingHr);
   }
 
   /// Acute Training Load (ATL) — 7-day rolling average of TSS
-  double _fatigueScore(List<RunActivity> activities) {
-    return _exponentialMovingAverage(activities, decayDays: 7);
+  double _fatigueScore(List<RunActivity> activities,
+      {int maxHr = 190, int restingHr = 60}) {
+    return _exponentialMovingAverage(activities,
+        decayDays: 7, maxHr: maxHr, restingHr: restingHr);
   }
 
   /// Form = CTL - ATL. Positive = fresh, negative = fatigued
-  double _formScore(List<RunActivity> activities) {
-    return _fitnessScore(activities) - _fatigueScore(activities);
+  double _formScore(List<RunActivity> activities,
+      {int maxHr = 190, int restingHr = 60}) {
+    return _fitnessScore(activities, maxHr: maxHr, restingHr: restingHr) -
+        _fatigueScore(activities, maxHr: maxHr, restingHr: restingHr);
   }
 
   double _exponentialMovingAverage(List<RunActivity> activities,
-      {required int decayDays}) {
+      {required int decayDays, int maxHr = 190, int restingHr = 60}) {
     if (activities.isEmpty) return 0;
     final decay = 2 / (decayDays + 1);
     double ema = 0;
     for (final activity in activities) {
-      final tss = _trainingStressScore(activity);
+      final tss = _trainingStressScore(activity,
+          maxHr: maxHr, restingHr: restingHr);
       ema = tss * decay + ema * (1 - decay);
     }
     return ema;
   }
 
   /// Training Stress Score based on HR and duration
-  double _trainingStressScore(RunActivity activity) {
+  double _trainingStressScore(RunActivity activity,
+      {int maxHr = 190, int restingHr = 60}) {
     if (activity.avgHeartRate == null) {
       // Estimate from pace if no HR
       return activity.movingTime.inMinutes * 0.5;
     }
-    // Simplified TSS using HR reserve (assumes max HR 190, resting 60)
-    final hrReserve = (activity.avgHeartRate! - 60) / (190 - 60);
+    // TSS using heart rate reserve (Karvonen formula)
+    final hrReserve = (activity.avgHeartRate! - restingHr) / (maxHr - restingHr);
     final durationHours = activity.movingTime.inMinutes / 60.0;
     return hrReserve * hrReserve * durationHours * 100;
   }
@@ -694,17 +719,21 @@ class AnalyzeRunsUseCase {
         .toList();
   }
 
-  /// Heart rate zone distribution (Zones 1–5)
-  /// Requires athlete max HR. Default 190 if unknown.
-  Map<int, double> _hrZoneDistribution(List<RunActivity> activities) {
+  /// Heart rate zone distribution (Zones 1–5) using HR reserve method
+  Map<int, double> _hrZoneDistribution(List<RunActivity> activities,
+      {int maxHr = 190, int restingHr = 60}) {
     final withHr = activities.where((a) => a.avgHeartRate != null);
     if (withHr.isEmpty) return {};
+
+    final actualMax = _resolveMaxHr(activities) ?? maxHr;
+    final actualResting = _resolveRestingHr(activities) ?? restingHr;
 
     final zoneTotals = <int, double>{1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
     double totalMinutes = 0;
 
     for (final activity in withHr) {
-      final zone = _hrToZone(activity.avgHeartRate!, maxHr: 190);
+      final zone = _hrToZone(activity.avgHeartRate!,
+          maxHr: actualMax, restingHr: actualResting);
       final minutes = activity.movingTime.inMinutes.toDouble();
       zoneTotals[zone] = (zoneTotals[zone] ?? 0) + minutes;
       totalMinutes += minutes;
@@ -713,8 +742,27 @@ class AnalyzeRunsUseCase {
     return zoneTotals.map((k, v) => MapEntry(k, v / totalMinutes));
   }
 
-  int _hrToZone(double hr, {required int maxHr}) {
-    final pct = hr / maxHr;
+  int? _resolveMaxHr(List<RunActivity> activities) {
+    final values = activities
+        .where((a) => a.maxHeartRate != null)
+        .map((a) => a.maxHeartRate!);
+    if (values.isEmpty) return null;
+    return values.reduce((a, b) => a > b ? a : b).round();
+  }
+
+  int? _resolveRestingHr(List<RunActivity> activities) {
+    final values = activities
+        .where((a) => a.avgHeartRate != null)
+        .map((a) => a.avgHeartRate!);
+    if (values.isEmpty) return null;
+    return values.reduce((a, b) => a < b ? a : b).round();
+  }
+
+  /// HR to zone using Karvonen (HR reserve) formula
+  int _hrToZone(double hr, {required int maxHr, int restingHr = 60}) {
+    final hrr = maxHr - restingHr;
+    final hrAboveResting = hr - restingHr;
+    final pct = hrr > 0 ? hrAboveResting / hrr : 0;
     if (pct < 0.60) return 1;
     if (pct < 0.70) return 2;
     if (pct < 0.80) return 3;
@@ -760,10 +808,12 @@ class AnalyzeRunsUseCase {
     return Duration(seconds: totalSeconds ~/ activities.length);
   }
 
-  List<TrainingLoadPoint> _trainingLoadHistory(List<RunActivity> sorted) {
+  List<TrainingLoadPoint> _trainingLoadHistory(List<RunActivity> sorted,
+      {int maxHr = 190, int restingHr = 60}) {
     double fitness = 0, fatigue = 0;
     return sorted.map((activity) {
-      final tss = _trainingStressScore(activity);
+      final tss = _trainingStressScore(activity,
+          maxHr: maxHr, restingHr: restingHr);
       fitness = tss * (2 / 43) + fitness * (41 / 43);
       fatigue = tss * (2 / 8) + fatigue * (6 / 8);
       return TrainingLoadPoint(
@@ -788,28 +838,28 @@ class PaceZoneCalculator {
     return [
       PaceZone(
         label: 'Zone 1 – Recovery',
-        minPace: Duration(seconds: (thresholdSecondsPerKm * 1.40).round()),
-        maxPace: Duration(seconds: (thresholdSecondsPerKm * 1.30).round()),
+        slowestPace: Duration(seconds: (thresholdSecondsPerKm * 1.40).round()),
+        fastestPace: Duration(seconds: (thresholdSecondsPerKm * 1.30).round()),
       ),
       PaceZone(
         label: 'Zone 2 – Easy Aerobic',
-        minPace: Duration(seconds: (thresholdSecondsPerKm * 1.30).round()),
-        maxPace: Duration(seconds: (thresholdSecondsPerKm * 1.15).round()),
+        slowestPace: Duration(seconds: (thresholdSecondsPerKm * 1.30).round()),
+        fastestPace: Duration(seconds: (thresholdSecondsPerKm * 1.15).round()),
       ),
       PaceZone(
         label: 'Zone 3 – Moderate',
-        minPace: Duration(seconds: (thresholdSecondsPerKm * 1.15).round()),
-        maxPace: Duration(seconds: (thresholdSecondsPerKm * 1.05).round()),
+        slowestPace: Duration(seconds: (thresholdSecondsPerKm * 1.15).round()),
+        fastestPace: Duration(seconds: (thresholdSecondsPerKm * 1.05).round()),
       ),
       PaceZone(
         label: 'Zone 4 – Threshold',
-        minPace: Duration(seconds: (thresholdSecondsPerKm * 1.05).round()),
-        maxPace: Duration(seconds: (thresholdSecondsPerKm * 0.98).round()),
+        slowestPace: Duration(seconds: (thresholdSecondsPerKm * 1.05).round()),
+        fastestPace: Duration(seconds: (thresholdSecondsPerKm * 0.98).round()),
       ),
       PaceZone(
         label: 'Zone 5 – VO2max',
-        minPace: Duration(seconds: (thresholdSecondsPerKm * 0.98).round()),
-        maxPace: Duration(seconds: (thresholdSecondsPerKm * 0.88).round()),
+        slowestPace: Duration(seconds: (thresholdSecondsPerKm * 0.98).round()),
+        fastestPace: Duration(seconds: (thresholdSecondsPerKm * 0.88).round()),
       ),
     ];
   }
@@ -844,15 +894,20 @@ class PaceZoneCalculator {
 ```dart
 // lib/domain/usecases/generate_plan_usecase.dart
 class GeneratePlanUseCase {
+  final AnalyzeRunsUseCase _analyzeRuns;
+
+  GeneratePlanUseCase({AnalyzeRunsUseCase? analyzeRuns})
+      : _analyzeRuns = analyzeRuns ?? AnalyzeRunsUseCase();
+
   TrainingPlan generate(List<RunActivity> activities) {
     if (activities.isEmpty) return TrainingPlan.empty();
 
-    final stats = AnalyzeRunsUseCase().compute(activities);
+    final stats = _analyzeRuns.compute(activities);
     final thresholdPace = PaceZoneCalculator.estimateThresholdPace(activities);
     final paceZones = PaceZoneCalculator.fromThresholdPace(thresholdPace);
     final hrZones = _calculateHrZones(activities);
     final weeklyKm = _targetWeeklyVolume(stats);
-    final startDate = _nextMonday();
+    final startDate = _startDate(activities);
 
     return TrainingPlan(
       startDate: startDate,
@@ -882,7 +937,6 @@ class GeneratePlanUseCase {
     final longRunKm = weeklyKm * 0.30;
     final easyKm = weeklyKm * 0.20;
     final tempoKm = weeklyKm * 0.15;
-    final intervalKm = weeklyKm * 0.12;
 
     return [
       TrainingDay(
@@ -891,17 +945,19 @@ class GeneratePlanUseCase {
         targetDistanceKm: easyKm,
         paceTarget: paceZones[1], // Zone 2
         heartRateTarget: hrZones[1], // Zone 2
+        estimatedDuration: _estimateDuration(easyKm, paceZones[1]),
         description: 'Easy recovery run. Conversational pace throughout. '
             'Focus on form, not speed.',
       ),
       TrainingDay(
         date: startDate.add(const Duration(days: 1)),
         type: WorkoutType.intervals,
-        targetDistanceKm: intervalKm + 2, // +warm-up/cool-down
+        targetDistanceKm: _intervalDistance(stats),
+        warmUpCoolDownKm: 4.0,  // 2km warm-up + 2km cool-down
         paceTarget: paceZones[4], // Zone 5 during intervals
         heartRateTarget: hrZones[4],
-        description: '2km warm-up @ Zone 2, then 6×400m @ Zone 5 '
-            'with 90s recovery jogs, 2km cool-down.',
+        estimatedDuration: _estimateDuration(_intervalDistance(stats), paceZones[4]),
+        description: _intervalDescription(stats),
       ),
       TrainingDay(
         date: startDate.add(const Duration(days: 2)),
@@ -915,6 +971,7 @@ class GeneratePlanUseCase {
         targetDistanceKm: easyKm,
         paceTarget: paceZones[1],
         heartRateTarget: hrZones[1],
+        estimatedDuration: _estimateDuration(easyKm, paceZones[1]),
         description: 'Easy aerobic run. Stay in Zone 2 the entire run. '
             'Great day for strides at the end (4×100m).',
       ),
@@ -922,8 +979,10 @@ class GeneratePlanUseCase {
         date: startDate.add(const Duration(days: 4)),
         type: WorkoutType.tempo,
         targetDistanceKm: tempoKm + 2,
+        warmUpCoolDownKm: 2.0,  // 1km warm-up + 1km cool-down
         paceTarget: paceZones[3], // Zone 4 during tempo
         heartRateTarget: hrZones[3],
+        estimatedDuration: _estimateDuration(tempoKm + 2, paceZones[3]),
         description: '1km warm-up, ${tempoKm.toStringAsFixed(1)}km @ '
             'threshold pace (Zone 4), 1km cool-down. '
             'Comfortably hard — you can speak in short sentences.',
@@ -939,6 +998,7 @@ class GeneratePlanUseCase {
         targetDistanceKm: longRunKm,
         paceTarget: paceZones[1], // Easy Zone 2
         heartRateTarget: hrZones[1],
+        estimatedDuration: _estimateDuration(longRunKm, paceZones[1]),
         description: 'Long easy run — the most important run of the week. '
             'Stay strictly in Zone 2. Walk breaks are fine. '
             'Hydrate every 20–30 min.',
@@ -946,10 +1006,45 @@ class GeneratePlanUseCase {
     ];
   }
 
+  Duration _estimateDuration(double distanceKm, PaceZone zone) {
+    final avgPaceSeconds = (zone.slowestPace.inSeconds + zone.fastestPace.inSeconds) ~/ 2;
+    return Duration(seconds: (distanceKm * avgPaceSeconds).round());
+  }
+
   double _targetWeeklyVolume(RunningStats stats) {
-    // Progress by at most 10% from current volume (10% rule)
     final recentVolume = stats.recentWeeklyAvgKm;
-    return recentVolume * 1.10;
+    if (recentVolume <= 0) return 15;
+    // Reduce volume when fatigued, increase when fresh
+    if (stats.formScore < -10) return (recentVolume * 0.80).clamp(10, 200);
+    if (stats.formScore < -5) return (recentVolume * 0.95).clamp(10, 200);
+    return (recentVolume * 1.10).clamp(10, 300);
+  }
+
+  double _intervalDistance(RunningStats stats) {
+    final totalRuns = stats.totalRuns;
+    final weeklyKm = stats.recentWeeklyAvgKm;
+    if (totalRuns < 15 || weeklyKm < 20) {
+      // 2km warm-up + 4×400m (1.6km) + 3 recovery jogs (0.75km) + 2km cool-down
+      return 6.4;
+    }
+    if (totalRuns > 50 || weeklyKm > 50) {
+      // 2km warm-up + 8×400m (3.2km) + 7 recovery jogs (1.75km) + 2km cool-down
+      return 9.0;
+    }
+    // 2km warm-up + 6×400m (2.4km) + 5 recovery jogs (1.25km) + 2km cool-down
+    return 7.7;
+  }
+
+  String _intervalDescription(RunningStats stats) {
+    final totalRuns = stats.totalRuns;
+    final weeklyKm = stats.recentWeeklyAvgKm;
+    if (totalRuns < 15 || weeklyKm < 20) {
+      return '2km warm-up @ Zone 2, then 4×400m @ Zone 5 with 90s recovery jogs, 2km cool-down.';
+    }
+    if (totalRuns > 50 || weeklyKm > 50) {
+      return '2km warm-up @ Zone 2, then 8×400m @ Zone 5 with 90s recovery jogs, 2km cool-down.';
+    }
+    return '2km warm-up @ Zone 2, then 6×400m @ Zone 5 with 90s recovery jogs, 2km cool-down.';
   }
 
   String _determineGoal(RunningStats stats) {
@@ -959,30 +1054,48 @@ class GeneratePlanUseCase {
     return 'Improve threshold pace & race readiness';
   }
 
-  List<HrZone> _calculateHrZones(List<RunActivity> activities,
-      {int maxHr = 190, int restingHr = 60}) {
-    final hrr = maxHr - restingHr;
+  List<HrZone> _calculateHrZones(List<RunActivity> activities) {
+    final maxHr = activities
+            .where((a) => a.maxHeartRate != null)
+            .map((a) => a.maxHeartRate!)
+            .fold<double?>(null, (max, hr) => max == null ? hr : (hr > max ? hr : max))
+            ?.round() ??
+        190;
+    final restingHr = activities
+            .where((a) => a.avgHeartRate != null)
+            .map((a) => a.avgHeartRate!)
+            .fold<double?>(null, (min, hr) => min == null ? hr : (hr < min ? hr : min))
+            ?.round() ??
+        60;
+    final actualMax = maxHr.clamp(100, 230);
+    final actualResting = restingHr.clamp(35, actualMax - 20);
+    final hrr = actualMax - actualResting;
+
     return [
       HrZone(zoneNumber: 1, label: 'Zone 1 – Recovery',
-          minBpm: restingHr, maxBpm: (restingHr + hrr * 0.60).round()),
+          minBpm: actualResting, maxBpm: (actualResting + hrr * 0.60).round()),
       HrZone(zoneNumber: 2, label: 'Zone 2 – Aerobic Base',
-          minBpm: (restingHr + hrr * 0.60).round(),
-          maxBpm: (restingHr + hrr * 0.70).round()),
+          minBpm: (actualResting + hrr * 0.60).round(),
+          maxBpm: (actualResting + hrr * 0.70).round()),
       HrZone(zoneNumber: 3, label: 'Zone 3 – Tempo',
-          minBpm: (restingHr + hrr * 0.70).round(),
-          maxBpm: (restingHr + hrr * 0.80).round()),
+          minBpm: (actualResting + hrr * 0.70).round(),
+          maxBpm: (actualResting + hrr * 0.80).round()),
       HrZone(zoneNumber: 4, label: 'Zone 4 – Threshold',
-          minBpm: (restingHr + hrr * 0.80).round(),
-          maxBpm: (restingHr + hrr * 0.90).round()),
+          minBpm: (actualResting + hrr * 0.80).round(),
+          maxBpm: (actualResting + hrr * 0.90).round()),
       HrZone(zoneNumber: 5, label: 'Zone 5 – VO2max',
-          minBpm: (restingHr + hrr * 0.90).round(), maxBpm: maxHr),
+          minBpm: (actualResting + hrr * 0.90).round(), maxBpm: actualMax),
     ];
   }
 
-  DateTime _nextMonday() {
+  DateTime _startDate(List<RunActivity> activities) {
     final today = DateTime.now();
-    final daysUntilMonday = (8 - today.weekday) % 7;
-    return today.add(Duration(days: daysUntilMonday == 0 ? 7 : daysUntilMonday));
+    final hasRunToday = activities.any((a) =>
+        a.date.year == today.year &&
+        a.date.month == today.month &&
+        a.date.day == today.day);
+    if (!hasRunToday) return today;
+    return today.add(const Duration(days: 1));
   }
 
   String _planDescription(RunningStats stats) {
@@ -1124,7 +1237,20 @@ class PlanScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Training Plan')),
       body: plan.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => ErrorView(message: e.toString()),
+        error: (_, _) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64, color: Colors.red),
+              const SizedBox(height: 16),
+              const Text(
+                'Could not generate your training plan.\n'
+                'Make sure you\'re connected to Strava and have completed some runs.',
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
         data: (plan) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1156,8 +1282,8 @@ class _PlanDayCard extends StatelessWidget {
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: CircleAvatar(
-          backgroundColor: _typeColor(day.type).withOpacity(0.15),
-          child: Icon(_typeIcon(day.type), color: _typeColor(day.type)),
+          backgroundColor: typeColor(day.type).withOpacity(0.15),
+          child: Icon(typeIcon(day.type), color: typeColor(day.type)),
         ),
         title: Row(
           children: [
@@ -1172,11 +1298,15 @@ class _PlanDayCard extends StatelessWidget {
           children: [
             const SizedBox(height: 4),
             if (!isRest && day.targetDistanceKm != null)
-              Text('${day.targetDistanceKm!.toStringAsFixed(1)} km'),
+              day.warmUpCoolDownKm != null
+                  ? Text(
+                      'Walk ${day.warmUpCoolDownKm!.toStringAsFixed(1)} km + '
+                      'Run ${(day.targetDistanceKm! - day.warmUpCoolDownKm!).toStringAsFixed(1)} km')
+                  : Text('${day.targetDistanceKm!.toStringAsFixed(1)} km'),
             if (day.paceTarget != null)
               Text(
-                '${_paceStr(day.paceTarget!.maxPace)} – '
-                '${_paceStr(day.paceTarget!.minPace)} /km',
+                '${_paceStr(day.paceTarget!.fastestPace)} – '
+                '${_paceStr(day.paceTarget!.slowestPace)} /km',
                 style: const TextStyle(fontWeight: FontWeight.w500),
               ),
             if (day.heartRateTarget != null)
@@ -1206,28 +1336,40 @@ class _PlanDayCard extends StatelessWidget {
     final s = pace.inSeconds % 60;
     return '$m:${s.toString().padLeft(2, '0')}';
   }
+}
 
-  Color _typeColor(WorkoutType type) {
-    return switch (type) {
-      WorkoutType.easy => Colors.green,
-      WorkoutType.tempo => Colors.orange,
-      WorkoutType.intervals => Colors.red,
-      WorkoutType.longRun => Colors.blue,
-      WorkoutType.rest => Colors.grey,
-      WorkoutType.crossTraining => Colors.purple,
-    };
-  }
+// Top-level helpers shared across plan widgets (no duplication)
+Color typeColor(WorkoutType type) {
+  return switch (type) {
+    WorkoutType.easy => Colors.green,
+    WorkoutType.tempo => Colors.orange,
+    WorkoutType.intervals => Colors.red,
+    WorkoutType.longRun => Colors.blue,
+    WorkoutType.rest => Colors.grey,
+    WorkoutType.crossTraining => Colors.purple,
+  };
+}
 
-  IconData _typeIcon(WorkoutType type) {
-    return switch (type) {
-      WorkoutType.easy => Icons.directions_walk,
-      WorkoutType.tempo => Icons.speed,
-      WorkoutType.intervals => Icons.timer,
-      WorkoutType.longRun => Icons.map,
-      WorkoutType.rest => Icons.hotel,
-      WorkoutType.crossTraining => Icons.fitness_center,
-    };
-  }
+IconData typeIcon(WorkoutType type) {
+  return switch (type) {
+    WorkoutType.easy => Icons.directions_walk,
+    WorkoutType.tempo => Icons.speed,
+    WorkoutType.intervals => Icons.timer,
+    WorkoutType.longRun => Icons.map,
+    WorkoutType.rest => Icons.hotel,
+    WorkoutType.crossTraining => Icons.fitness_center,
+  };
+}
+
+String typeLabel(WorkoutType type) {
+  return switch (type) {
+    WorkoutType.easy => 'Easy',
+    WorkoutType.tempo => 'Tempo',
+    WorkoutType.intervals => 'Intervals',
+    WorkoutType.longRun => 'Long Run',
+    WorkoutType.rest => 'Rest',
+    WorkoutType.crossTraining => 'Cross Train',
+  };
 }
 ```
 

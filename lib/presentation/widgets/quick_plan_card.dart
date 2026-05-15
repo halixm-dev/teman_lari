@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../domain/entities/training_plan.dart';
 import '../providers/activities_provider.dart';
 
 class QuickPlanCard extends ConsumerWidget {
@@ -41,7 +42,7 @@ class QuickPlanCard extends ConsumerWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${plan.days.where((d) => d.type.name != 'rest').length} workouts this week',
+                    '${plan.days.where((d) => d.type != WorkoutType.rest).length} workouts this week',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],

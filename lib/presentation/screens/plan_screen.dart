@@ -16,13 +16,17 @@ class PlanScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Training Plan')),
       body: plan.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
+        error: (_, _) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(Icons.error_outline, size: 64, color: Colors.red),
               const SizedBox(height: 16),
-              Text('Error: $e'),
+              const Text(
+                'Could not generate your training plan.\n'
+                'Make sure you\'re connected to Strava and have completed some runs.',
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
         ),
@@ -84,8 +88,8 @@ class _PlanDayCard extends StatelessWidget {
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: CircleAvatar(
-          backgroundColor: _typeColor(day.type).withValues(alpha: 0.15),
-          child: Icon(_typeIcon(day.type), color: _typeColor(day.type)),
+          backgroundColor: typeColor(day.type).withValues(alpha: 0.15),
+          child: Icon(typeIcon(day.type), color: typeColor(day.type)),
         ),
         title: Row(
           children: [
@@ -100,11 +104,15 @@ class _PlanDayCard extends StatelessWidget {
           children: [
             const SizedBox(height: 4),
             if (!isRest && day.targetDistanceKm != null)
-              Text('${day.targetDistanceKm!.toStringAsFixed(1)} km'),
+              day.warmUpCoolDownKm != null
+                  ? Text(
+                      'Walk ${day.warmUpCoolDownKm!.toStringAsFixed(1)} km + '
+                      'Run ${(day.targetDistanceKm! - day.warmUpCoolDownKm!).toStringAsFixed(1)} km')
+                  : Text('${day.targetDistanceKm!.toStringAsFixed(1)} km'),
             if (day.paceTarget != null)
               Text(
-                '${_paceStr(day.paceTarget!.maxPace)} - '
-                '${_paceStr(day.paceTarget!.minPace)} /km',
+                '${_paceStr(day.paceTarget!.fastestPace)} - '
+                '${_paceStr(day.paceTarget!.slowestPace)} /km',
                 style: const TextStyle(fontWeight: FontWeight.w500),
               ),
             if (day.heartRateTarget != null)
@@ -133,28 +141,6 @@ class _PlanDayCard extends StatelessWidget {
     final s = pace.inSeconds % 60;
     return '$m:${s.toString().padLeft(2, '0')}';
   }
-
-  Color _typeColor(WorkoutType type) {
-    return switch (type) {
-      WorkoutType.easy => Colors.green,
-      WorkoutType.tempo => Colors.orange,
-      WorkoutType.intervals => Colors.red,
-      WorkoutType.longRun => Colors.blue,
-      WorkoutType.rest => AppColors.gray500,
-      WorkoutType.crossTraining => Colors.purple,
-    };
-  }
-
-  IconData _typeIcon(WorkoutType type) {
-    return switch (type) {
-      WorkoutType.easy => Icons.directions_walk,
-      WorkoutType.tempo => Icons.speed,
-      WorkoutType.intervals => Icons.timer,
-      WorkoutType.longRun => Icons.map,
-      WorkoutType.rest => Icons.hotel,
-      WorkoutType.crossTraining => Icons.fitness_center,
-    };
-  }
 }
 
 class _WorkoutTypeBadge extends StatelessWidget {
@@ -167,39 +153,50 @@ class _WorkoutTypeBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: _typeColor(type).withValues(alpha: 0.15),
+        color: typeColor(type).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
-        _typeLabel(type),
+        typeLabel(type),
         style: TextStyle(
-          color: _typeColor(type),
+          color: typeColor(type),
           fontSize: 12,
           fontWeight: FontWeight.w600,
         ),
       ),
     );
   }
+}
 
-  String _typeLabel(WorkoutType type) {
-    return switch (type) {
-      WorkoutType.easy => 'Easy',
-      WorkoutType.tempo => 'Tempo',
-      WorkoutType.intervals => 'Intervals',
-      WorkoutType.longRun => 'Long Run',
-      WorkoutType.rest => 'Rest',
-      WorkoutType.crossTraining => 'Cross Train',
-    };
-  }
+Color typeColor(WorkoutType type) {
+  return switch (type) {
+    WorkoutType.easy => Colors.green,
+    WorkoutType.tempo => Colors.orange,
+    WorkoutType.intervals => Colors.red,
+    WorkoutType.longRun => Colors.blue,
+    WorkoutType.rest => AppColors.gray500,
+    WorkoutType.crossTraining => Colors.purple,
+  };
+}
 
-  Color _typeColor(WorkoutType type) {
-    return switch (type) {
-      WorkoutType.easy => Colors.green,
-      WorkoutType.tempo => Colors.orange,
-      WorkoutType.intervals => Colors.red,
-      WorkoutType.longRun => Colors.blue,
-      WorkoutType.rest => AppColors.gray500,
-      WorkoutType.crossTraining => Colors.purple,
-    };
-  }
+IconData typeIcon(WorkoutType type) {
+  return switch (type) {
+    WorkoutType.easy => Icons.directions_walk,
+    WorkoutType.tempo => Icons.speed,
+    WorkoutType.intervals => Icons.timer,
+    WorkoutType.longRun => Icons.map,
+    WorkoutType.rest => Icons.hotel,
+    WorkoutType.crossTraining => Icons.fitness_center,
+  };
+}
+
+String typeLabel(WorkoutType type) {
+  return switch (type) {
+    WorkoutType.easy => 'Easy',
+    WorkoutType.tempo => 'Tempo',
+    WorkoutType.intervals => 'Intervals',
+    WorkoutType.longRun => 'Long Run',
+    WorkoutType.rest => 'Rest',
+    WorkoutType.crossTraining => 'Cross Train',
+  };
 }

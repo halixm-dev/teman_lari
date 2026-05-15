@@ -6,28 +6,28 @@ class PaceZoneCalculator {
     return [
       PaceZone(
         label: 'Zone 1 – Recovery',
-        minPace: Duration(seconds: (thresholdSecondsPerKm * 1.40).round()),
-        maxPace: Duration(seconds: (thresholdSecondsPerKm * 1.30).round()),
+        slowestPace: Duration(seconds: (thresholdSecondsPerKm * 1.40).round()),
+        fastestPace: Duration(seconds: (thresholdSecondsPerKm * 1.30).round()),
       ),
       PaceZone(
         label: 'Zone 2 – Easy Aerobic',
-        minPace: Duration(seconds: (thresholdSecondsPerKm * 1.30).round()),
-        maxPace: Duration(seconds: (thresholdSecondsPerKm * 1.15).round()),
+        slowestPace: Duration(seconds: (thresholdSecondsPerKm * 1.30).round()),
+        fastestPace: Duration(seconds: (thresholdSecondsPerKm * 1.15).round()),
       ),
       PaceZone(
         label: 'Zone 3 – Moderate',
-        minPace: Duration(seconds: (thresholdSecondsPerKm * 1.15).round()),
-        maxPace: Duration(seconds: (thresholdSecondsPerKm * 1.05).round()),
+        slowestPace: Duration(seconds: (thresholdSecondsPerKm * 1.15).round()),
+        fastestPace: Duration(seconds: (thresholdSecondsPerKm * 1.05).round()),
       ),
       PaceZone(
         label: 'Zone 4 – Threshold',
-        minPace: Duration(seconds: (thresholdSecondsPerKm * 1.05).round()),
-        maxPace: Duration(seconds: (thresholdSecondsPerKm * 0.98).round()),
+        slowestPace: Duration(seconds: (thresholdSecondsPerKm * 1.05).round()),
+        fastestPace: Duration(seconds: (thresholdSecondsPerKm * 0.98).round()),
       ),
       PaceZone(
         label: 'Zone 5 – VO2max',
-        minPace: Duration(seconds: (thresholdSecondsPerKm * 0.98).round()),
-        maxPace: Duration(seconds: (thresholdSecondsPerKm * 0.88).round()),
+        slowestPace: Duration(seconds: (thresholdSecondsPerKm * 0.98).round()),
+        fastestPace: Duration(seconds: (thresholdSecondsPerKm * 0.88).round()),
       ),
     ];
   }

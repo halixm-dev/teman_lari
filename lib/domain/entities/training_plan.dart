@@ -1,13 +1,13 @@
 enum WorkoutType { easy, tempo, intervals, longRun, rest, crossTraining }
 
 class PaceZone {
-  final Duration minPace;
-  final Duration maxPace;
+  final Duration slowestPace;
+  final Duration fastestPace;
   final String label;
 
   const PaceZone({
-    required this.minPace,
-    required this.maxPace,
+    required this.slowestPace,
+    required this.fastestPace,
     required this.label,
   });
 }
@@ -30,6 +30,7 @@ class TrainingDay {
   final DateTime date;
   final WorkoutType type;
   final double? targetDistanceKm;
+  final double? warmUpCoolDownKm;
   final PaceZone? paceTarget;
   final HrZone? heartRateTarget;
   final String description;
@@ -40,10 +41,16 @@ class TrainingDay {
     required this.type,
     required this.description,
     this.targetDistanceKm,
+    this.warmUpCoolDownKm,
     this.paceTarget,
     this.heartRateTarget,
     this.estimatedDuration,
   });
+
+  double? get workDistanceKm {
+    if (targetDistanceKm == null || warmUpCoolDownKm == null) return null;
+    return targetDistanceKm! - warmUpCoolDownKm!;
+  }
 }
 
 class TrainingPlan {

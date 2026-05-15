@@ -46,7 +46,7 @@ final analyzeRunsUseCaseProvider = Provider<AnalyzeRunsUseCase>((ref) {
 });
 
 final generatePlanUseCaseProvider = Provider<GeneratePlanUseCase>((ref) {
-  return GeneratePlanUseCase();
+  return GeneratePlanUseCase(analyzeRuns: ref.read(analyzeRunsUseCaseProvider));
 });
 
 final activitiesProvider =
