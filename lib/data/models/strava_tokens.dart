@@ -4,7 +4,7 @@ part 'strava_tokens.freezed.dart';
 part 'strava_tokens.g.dart';
 
 @freezed
-class StravaTokens with _$StravaTokens {
+abstract class StravaTokens with _$StravaTokens {
   const StravaTokens._();
 
   const factory StravaTokens({

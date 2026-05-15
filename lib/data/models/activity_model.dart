@@ -4,7 +4,7 @@ part 'activity_model.freezed.dart';
 part 'activity_model.g.dart';
 
 @freezed
-class ActivityModel with _$ActivityModel {
+abstract class ActivityModel with _$ActivityModel {
   const ActivityModel._();
 
   const factory ActivityModel({

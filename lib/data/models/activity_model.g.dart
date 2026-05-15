@@ -6,8 +6,8 @@ part of 'activity_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$ActivityModelImpl _$$ActivityModelImplFromJson(Map<String, dynamic> json) =>
-    _$ActivityModelImpl(
+_ActivityModel _$ActivityModelFromJson(Map<String, dynamic> json) =>
+    _ActivityModel(
       id: (json['id'] as num).toInt(),
       name: json['name'] as String,
       type: json['type'] as String,
@@ -27,7 +27,7 @@ _$ActivityModelImpl _$$ActivityModelImplFromJson(Map<String, dynamic> json) =>
       perceivedExertion: (json['perceived_exertion'] as num?)?.toDouble(),
     );
 
-Map<String, dynamic> _$$ActivityModelImplToJson(_$ActivityModelImpl instance) =>
+Map<String, dynamic> _$ActivityModelToJson(_ActivityModel instance) =>
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,

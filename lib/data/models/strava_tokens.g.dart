@@ -6,14 +6,14 @@ part of 'strava_tokens.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$StravaTokensImpl _$$StravaTokensImplFromJson(Map<String, dynamic> json) =>
-    _$StravaTokensImpl(
+_StravaTokens _$StravaTokensFromJson(Map<String, dynamic> json) =>
+    _StravaTokens(
       accessToken: json['access_token'] as String,
       refreshToken: json['refresh_token'] as String,
       expiresAt: (json['expires_at'] as num).toInt(),
     );
 
-Map<String, dynamic> _$$StravaTokensImplToJson(_$StravaTokensImpl instance) =>
+Map<String, dynamic> _$StravaTokensToJson(_StravaTokens instance) =>
     <String, dynamic>{
       'access_token': instance.accessToken,
       'refresh_token': instance.refreshToken,

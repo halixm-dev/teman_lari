@@ -15,9 +15,7 @@ class StravaAuthUseCase {
   Future<bool> checkAuthStatus() async {
     var tokens = await tokenStorage.getTokens();
 
-    if (tokens == null) {
-      tokens = await _seedPreconfiguredTokens();
-    }
+    tokens ??= await _seedPreconfiguredTokens();
 
     if (tokens == null) return false;
 

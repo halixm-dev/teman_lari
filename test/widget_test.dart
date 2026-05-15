@@ -8,7 +8,7 @@ void main() {
   testWidgets('App loads successfully', (WidgetTester tester) async {
     await tester.pumpWidget(
       const ProviderScope(
-        child: temanLariApp(),
+        child: TemanLariApp(),
       ),
     );
 

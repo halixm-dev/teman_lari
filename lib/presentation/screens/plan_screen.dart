@@ -83,7 +83,7 @@ class _PlanDayCard extends StatelessWidget {
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: CircleAvatar(
-          backgroundColor: _typeColor(day.type).withOpacity(0.15),
+          backgroundColor: _typeColor(day.type).withValues(alpha: 0.15),
           child: Icon(_typeIcon(day.type), color: _typeColor(day.type)),
         ),
         title: Row(
@@ -166,7 +166,7 @@ class _WorkoutTypeBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: _typeColor(type).withOpacity(0.15),
+        color: _typeColor(type).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(

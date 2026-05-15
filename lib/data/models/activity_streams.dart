@@ -4,7 +4,7 @@ part 'activity_streams.freezed.dart';
 part 'activity_streams.g.dart';
 
 @freezed
-class ActivityStreams with _$ActivityStreams {
+abstract class ActivityStreams with _$ActivityStreams {
   const ActivityStreams._();
 
   const factory ActivityStreams({
@@ -20,7 +20,9 @@ class ActivityStreams with _$ActivityStreams {
 }
 
 @freezed
-class StreamData with _$StreamData {
+abstract class StreamData with _$StreamData {
+  const StreamData._();
+
   const factory StreamData({
     required String type,
     required List<double> data,

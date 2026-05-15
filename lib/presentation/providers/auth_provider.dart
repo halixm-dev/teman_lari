@@ -20,26 +20,26 @@ final stravaAuthUseCaseProvider = Provider<StravaAuthUseCase>((ref) {
   );
 });
 
-final authStateProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  return AuthNotifier(ref.read(stravaAuthUseCaseProvider));
-});
+final authStateProvider = NotifierProvider<AuthNotifier, AuthState>(
+  AuthNotifier.new,
+);
 
-class AuthNotifier extends StateNotifier<AuthState> {
-  final StravaAuthUseCase _authUseCase;
-
-  AuthNotifier(this._authUseCase) : super(const AuthState.unknown()) {
+class AuthNotifier extends Notifier<AuthState> {
+  @override
+  AuthState build() {
     _checkAuthStatus();
+    return const AuthState.unknown();
   }
 
   Future<void> _checkAuthStatus() async {
-    final result = await _authUseCase.checkAuthStatus();
+    final result = await ref.read(stravaAuthUseCaseProvider).checkAuthStatus();
     state = result ? const AuthState.authenticated() : const AuthState.unauthenticated();
   }
 
   Future<void> login() async {
     state = const AuthState.loading();
     try {
-      await _authUseCase.authenticate();
+      await ref.read(stravaAuthUseCaseProvider).authenticate();
       state = const AuthState.authenticated();
     } catch (e) {
       state = AuthState.error(e.toString());
@@ -47,7 +47,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> logout() async {
-    await _authUseCase.logout();
+    await ref.read(stravaAuthUseCaseProvider).logout();
     state = const AuthState.unauthenticated();
   }
 }

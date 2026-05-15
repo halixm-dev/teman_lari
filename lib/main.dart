@@ -42,13 +42,13 @@ final _router = GoRouter(
 void main() {
   runApp(
     const ProviderScope(
-      child: temanLariApp(),
+      child: TemanLariApp(),
     ),
   );
 }
 
-class temanLariApp extends StatelessWidget {
-  const temanLariApp({super.key});
+class TemanLariApp extends StatelessWidget {
+  const TemanLariApp({super.key});
 
   @override
   Widget build(BuildContext context) {

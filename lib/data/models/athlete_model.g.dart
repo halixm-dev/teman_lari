@@ -6,8 +6,8 @@ part of 'athlete_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$AthleteModelImpl _$$AthleteModelImplFromJson(Map<String, dynamic> json) =>
-    _$AthleteModelImpl(
+_AthleteModel _$AthleteModelFromJson(Map<String, dynamic> json) =>
+    _AthleteModel(
       id: (json['id'] as num).toInt(),
       firstName: json['first_name'] as String?,
       lastName: json['last_name'] as String?,
@@ -23,7 +23,7 @@ _$AthleteModelImpl _$$AthleteModelImplFromJson(Map<String, dynamic> json) =>
       weight: (json['weight'] as num?)?.toDouble(),
     );
 
-Map<String, dynamic> _$$AthleteModelImplToJson(_$AthleteModelImpl instance) =>
+Map<String, dynamic> _$AthleteModelToJson(_AthleteModel instance) =>
     <String, dynamic>{
       'id': instance.id,
       'first_name': instance.firstName,

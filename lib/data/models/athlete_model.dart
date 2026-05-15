@@ -4,7 +4,7 @@ part 'athlete_model.freezed.dart';
 part 'athlete_model.g.dart';
 
 @freezed
-class AthleteModel with _$AthleteModel {
+abstract class AthleteModel with _$AthleteModel {
   const AthleteModel._();
 
   const factory AthleteModel({

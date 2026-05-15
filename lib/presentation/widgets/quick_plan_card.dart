@@ -30,7 +30,7 @@ class QuickPlanCard extends ConsumerWidget {
             const SizedBox(height: 8),
             planAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, __) => const Text('Error generating plan'),
+              error: (_, _) => const Text('Error generating plan'),
               data: (plan) => Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

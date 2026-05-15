@@ -22,7 +22,7 @@ class RecentRunsList extends ConsumerWidget {
             const SizedBox(height: 8),
             activities.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, __) => const Text('Error loading runs'),
+              error: (_, _) => const Text('Error loading runs'),
               data: (runs) {
                 final recent = runs
                     .where((a) => a.distanceKm > 0)
@@ -38,7 +38,7 @@ class RecentRunsList extends ConsumerWidget {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: displayed.length,
-                  separatorBuilder: (_, __) => const Divider(),
+                  separatorBuilder: (_, _) => const Divider(),
                   itemBuilder: (context, i) {
                     final run = displayed[i];
                     return _RunTile(run: run);
