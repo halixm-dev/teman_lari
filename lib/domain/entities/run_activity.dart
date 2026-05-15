@@ -13,6 +13,7 @@ class RunActivity {
   final double? avgCadence;
   final int? sufferScore;
   final TrainingLoad trainingLoad;
+  final List<double>? heartRateData;
 
   const RunActivity({
     required this.id,
@@ -27,6 +28,7 @@ class RunActivity {
     this.maxHeartRate,
     this.avgCadence,
     this.sufferScore,
+    this.heartRateData,
   });
 
   String get paceString {

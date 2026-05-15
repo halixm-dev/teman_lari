@@ -72,11 +72,38 @@ class ActivitiesNotifier extends AsyncNotifier<List<RunActivity>> {
   }
 }
 
-final runningStatsProvider = Provider<RunningStats?>((ref) {
-  final activities = ref.watch(activitiesProvider);
-  return activities.whenOrNull(
-    data: (data) => ref.read(analyzeRunsUseCaseProvider).compute(data),
-  );
+final runningStatsProvider = FutureProvider<RunningStats?>((ref) async {
+  final activities = await ref.watch(activitiesProvider.future);
+  final repo = ref.read(activityRepositoryProvider);
+  final withHrIds = activities
+      .where((a) => a.avgHeartRate != null)
+      .map((a) => a.id)
+      .toList();
+  if (withHrIds.isNotEmpty) {
+    final streams = await repo.getHeartRateStreams(withHrIds);
+    final enriched = activities.map((a) {
+      if (a.avgHeartRate == null) return a;
+      final hrData = streams[a.id];
+      if (hrData == null) return a;
+      return RunActivity(
+        id: a.id,
+        name: a.name,
+        date: a.date,
+        distanceKm: a.distanceKm,
+        movingTime: a.movingTime,
+        pace: a.pace,
+        elevationGainM: a.elevationGainM,
+        trainingLoad: a.trainingLoad,
+        avgHeartRate: a.avgHeartRate,
+        maxHeartRate: a.maxHeartRate,
+        avgCadence: a.avgCadence,
+        sufferScore: a.sufferScore,
+        heartRateData: hrData,
+      );
+    }).toList();
+    return ref.read(analyzeRunsUseCaseProvider).compute(enriched);
+  }
+  return ref.read(analyzeRunsUseCaseProvider).compute(activities);
 });
 
 final trainingPlanProvider = FutureProvider<TrainingPlan>((ref) async {

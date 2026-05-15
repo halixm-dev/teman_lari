@@ -17,7 +17,7 @@ class LocalActivityDataSource {
     final path = join(dbPath, 'strava_activities.db');
     return openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE activities (
@@ -26,6 +26,24 @@ class LocalActivityDataSource {
             synced_at INTEGER NOT NULL
           )
         ''');
+        await db.execute('''
+          CREATE TABLE hr_streams (
+            activity_id INTEGER PRIMARY KEY,
+            data TEXT NOT NULL,
+            synced_at INTEGER NOT NULL
+          )
+        ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute('''
+            CREATE TABLE IF NOT EXISTS hr_streams (
+              activity_id INTEGER PRIMARY KEY,
+              data TEXT NOT NULL,
+              synced_at INTEGER NOT NULL
+            )
+          ''');
+        }
       },
     );
   }
@@ -57,8 +75,36 @@ class LocalActivityDataSource {
         .toList();
   }
 
+  Future<void> saveHeartRateStream(int activityId, List<double> data) async {
+    final db = await database;
+    await db.insert('hr_streams', {
+      'activity_id': activityId,
+      'data': jsonEncode(data),
+      'synced_at': DateTime.now().millisecondsSinceEpoch,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<Map<int, List<double>>> getCachedHeartRateStreams() async {
+    final db = await database;
+    final rows = await db.query('hr_streams');
+    if (rows.isEmpty) return {};
+
+    final result = <int, List<double>>{};
+    final now = DateTime.now().millisecondsSinceEpoch;
+    for (final row in rows) {
+      final age = now - (row['synced_at'] as int);
+      if (age > 3600 * 1000) continue;
+
+      final id = row['activity_id'] as int;
+      final raw = row['data'] as String;
+      result[id] = (jsonDecode(raw) as List<dynamic>).cast<double>();
+    }
+    return result;
+  }
+
   Future<void> clearCache() async {
     final db = await database;
     await db.delete('activities');
+    await db.delete('hr_streams');
   }
 }

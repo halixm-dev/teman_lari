@@ -10,87 +10,92 @@ class AnalysisScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final stats = ref.watch(runningStatsProvider);
+    final statsAsync = ref.watch(runningStatsProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Analysis')),
-      body: stats == null
-          ? const Center(child: Text('No data available'))
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Pace Progression',
-                            style: Theme.of(context).textTheme.headlineSmall,
-                          ),
-                          const SizedBox(height: 16),
-                          PaceProgressionChart(
-                            dataPoints: stats.paceProgression,
-                          ),
-                        ],
-                      ),
+      body: statsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, _) => Center(child: Text('Error: $err')),
+        data: (stats) {
+          if (stats == null) {
+            return const Center(child: Text('No data available'));
+          }
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Pace Progression',
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                        const SizedBox(height: 16),
+                        PaceProgressionChart(dataPoints: stats.paceProgression),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Heart Rate Zones',
-                            style: Theme.of(context).textTheme.headlineSmall,
-                          ),
-                          const SizedBox(height: 16),
-                          HrZoneDistributionChart(
-                            zoneDistribution: stats.heartRateZones,
-                          ),
-                        ],
-                      ),
+                ),
+                const SizedBox(height: 16),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Heart Rate Zones',
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                        const SizedBox(height: 16),
+                        HrZoneDistributionChart(
+                          zoneDistribution: stats.heartRateZones,
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Summary',
-                            style: Theme.of(context).textTheme.headlineSmall,
-                          ),
-                          const SizedBox(height: 8),
-                          _statRow('Total Runs', '${stats.totalRuns}'),
+                ),
+                const SizedBox(height: 16),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Summary',
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                        const SizedBox(height: 8),
+                        _statRow('Total Runs', '${stats.totalRuns}'),
+                        _statRow(
+                          'Total Distance',
+                          '${stats.totalDistanceKm.toStringAsFixed(1)} km',
+                        ),
+                        _statRow(
+                          'Average Pace',
+                          '${stats.averagePace.inMinutes}:${(stats.averagePace.inSeconds % 60).toString().padLeft(2, '0')} /km',
+                        ),
+                        if (stats.vo2MaxEstimate != null)
                           _statRow(
-                            'Total Distance',
-                            '${stats.totalDistanceKm.toStringAsFixed(1)} km',
+                            'VO2 Max Estimate',
+                            stats.vo2MaxEstimate!.toStringAsFixed(1),
                           ),
-                          _statRow(
-                            'Average Pace',
-                            '${stats.averagePace.inMinutes}:${(stats.averagePace.inSeconds % 60).toString().padLeft(2, '0')} /km',
-                          ),
-                          if (stats.vo2MaxEstimate != null)
-                            _statRow(
-                              'VO2 Max Estimate',
-                              stats.vo2MaxEstimate!.toStringAsFixed(1),
-                            ),
-                        ],
-                      ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
+          );
+        },
+      ),
     );
   }
 

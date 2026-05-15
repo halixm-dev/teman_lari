@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../../core/errors/exceptions.dart';
 import '../../core/errors/failures.dart';
 import '../../domain/entities/run_activity.dart';
@@ -43,6 +45,48 @@ class ActivityRepositoryImpl implements ActivityRepository {
       monthsBack: monthsBack,
     );
     await localDataSource.saveActivities(remoteActivities);
+  }
+
+  @override
+  Future<Map<int, List<double>>> getHeartRateStreams(
+    List<int> activityIds,
+  ) async {
+    if (activityIds.isEmpty) return {};
+
+    final cached = await localDataSource.getCachedHeartRateStreams();
+    final result = Map<int, List<double>>.from(cached);
+    final uncached = activityIds
+        .where((id) => !result.containsKey(id))
+        .toList();
+
+    if (uncached.isEmpty) return result;
+
+    const batchSize = 10;
+    for (var i = 0; i < uncached.length; i += batchSize) {
+      final batch = uncached.sublist(
+        i,
+        (i + batchSize > uncached.length) ? uncached.length : i + batchSize,
+      );
+      final futures = batch.map((id) async {
+        try {
+          final streams = await remoteDataSource.getActivityStreams(id);
+          final data = streams.heartrate?.data;
+          if (data != null && data.isNotEmpty) {
+            await localDataSource.saveHeartRateStream(id, data);
+            return MapEntry(id, data);
+          }
+        } catch (_) {}
+        return null;
+      });
+      final entries = await Future.wait(futures);
+      for (final entry in entries) {
+        if (entry != null) {
+          result[entry.key] = entry.value;
+        }
+      }
+    }
+
+    return result;
   }
 
   List<RunActivity> _mapModelsToEntities(List<ActivityModel> models) {

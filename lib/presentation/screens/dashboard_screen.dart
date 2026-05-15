@@ -12,7 +12,7 @@ class DashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final stats = ref.watch(runningStatsProvider);
+    final statsAsync = ref.watch(runningStatsProvider);
     final activities = ref.watch(activitiesProvider);
 
     return Scaffold(
@@ -43,28 +43,32 @@ class DashboardScreen extends ConsumerWidget {
             ],
           ),
         ),
-        data: (_) => stats == null
-            ? const Center(child: Text('No running activities found'))
-            : RefreshIndicator(
-                onRefresh: () =>
-                    ref.read(activitiesProvider.notifier).refresh(),
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      FitnessFormCard(stats: stats),
-                      const SizedBox(height: 16),
-                      StatsGrid(stats: stats),
-                      const SizedBox(height: 16),
-                      const RecentRunsList(),
-                      const SizedBox(height: 16),
-                      const QuickPlanCard(),
-                    ],
+        data: (_) => statsAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (err, _) => Center(child: Text('Error: $err')),
+          data: (stats) => stats == null
+              ? const Center(child: Text('No running activities found'))
+              : RefreshIndicator(
+                  onRefresh: () =>
+                      ref.read(activitiesProvider.notifier).refresh(),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        FitnessFormCard(stats: stats),
+                        const SizedBox(height: 16),
+                        StatsGrid(stats: stats),
+                        const SizedBox(height: 16),
+                        const RecentRunsList(),
+                        const SizedBox(height: 16),
+                        const QuickPlanCard(),
+                      ],
+                    ),
                   ),
                 ),
-              ),
+        ),
       ),
     );
   }

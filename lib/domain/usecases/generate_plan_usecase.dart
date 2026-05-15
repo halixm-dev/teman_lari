@@ -232,10 +232,12 @@ class GeneratePlanUseCase {
 
   String _planDescription(RunningStats stats) {
     final form = stats.formScore;
-    if (form < -10)
+    if (form < -10) {
       return 'You\'re currently fatigued. This week focuses on recovery with reduced volume and easy effort.';
-    if (form > 10)
+    }
+    if (form > 10) {
       return 'You\'re fresh and ready. This week includes a quality session to build fitness.';
+    }
     return 'Balanced week combining easy aerobic base, quality work, and a long run.';
   }
 }

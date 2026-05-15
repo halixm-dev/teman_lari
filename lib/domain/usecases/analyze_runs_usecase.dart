@@ -144,21 +144,36 @@ class AnalyzeRunsUseCase {
     final actualMax = _resolveMaxHr(activities) ?? maxHr;
     final actualResting = _resolveRestingHr(activities) ?? restingHr;
 
-    final zoneTotals = <int, double>{1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
-    double totalMinutes = 0;
+    final zoneSeconds = <int, double>{1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
+    double totalSeconds = 0;
 
     for (final activity in withHr) {
-      final zone = _hrToZone(
-        activity.avgHeartRate!,
-        maxHr: actualMax,
-        restingHr: actualResting,
-      );
-      final minutes = activity.movingTime.inMinutes.toDouble();
-      zoneTotals[zone] = (zoneTotals[zone] ?? 0) + minutes;
-      totalMinutes += minutes;
+      final stream = activity.heartRateData;
+      if (stream != null && stream.isNotEmpty) {
+        final secondsPerPoint = activity.movingTime.inSeconds / stream.length;
+        for (final hr in stream) {
+          final zone = _hrToZone(
+            hr,
+            maxHr: actualMax,
+            restingHr: actualResting,
+          );
+          zoneSeconds[zone] = (zoneSeconds[zone] ?? 0) + secondsPerPoint;
+        }
+        totalSeconds += activity.movingTime.inSeconds.toDouble();
+      } else {
+        final zone = _hrToZone(
+          activity.avgHeartRate!,
+          maxHr: actualMax,
+          restingHr: actualResting,
+        );
+        final seconds = activity.movingTime.inSeconds.toDouble();
+        zoneSeconds[zone] = (zoneSeconds[zone] ?? 0) + seconds;
+        totalSeconds += seconds;
+      }
     }
 
-    return zoneTotals.map((k, v) => MapEntry(k, v / totalMinutes));
+    if (totalSeconds <= 0) return {};
+    return zoneSeconds.map((k, v) => MapEntry(k, v / totalSeconds));
   }
 
   int? _resolveMaxHr(List<RunActivity> activities) {
