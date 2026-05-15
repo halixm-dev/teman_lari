@@ -1,10 +1,20 @@
 class ApiConstants {
   static const String stravaClientId =
-      String.fromEnvironment('STRAVA_CLIENT_ID');
+      String.fromEnvironment('STRAVA_CLIENT_ID', defaultValue: '245641');
   static const String stravaClientSecret =
-      String.fromEnvironment('STRAVA_CLIENT_SECRET');
+      String.fromEnvironment('STRAVA_CLIENT_SECRET',
+          defaultValue: 'ee210eb8a43b7c429b498c7dbda65f97ea250060');
   static const String stravaRedirectUri =
-      String.fromEnvironment('STRAVA_REDIRECT_URI');
+      String.fromEnvironment('STRAVA_REDIRECT_URI',
+          defaultValue: 'com.stravaanalyzer.stravarunanalyzer://callback');
+
+  static const String stravaAccessToken =
+      String.fromEnvironment('STRAVA_ACCESS_TOKEN',
+          defaultValue: '2bf136b6dd8b0651a4be33a94d2e865bf531370c');
+  static const String stravaRefreshToken =
+      String.fromEnvironment('STRAVA_REFRESH_TOKEN',
+          defaultValue: '102f93d85c6c398c6f3f8ac9ec85eb40cc834e49');
+
   static const String stravaBaseUrl = 'https://www.strava.com/api/v3';
   static const String stravaAuthUrl = 'https://www.strava.com/oauth/authorize';
   static const String stravaTokenUrl = 'https://www.strava.com/oauth/token';

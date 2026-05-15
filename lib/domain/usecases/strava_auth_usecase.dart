@@ -1,5 +1,7 @@
+import '../../core/constants/api_constants.dart';
 import '../../data/datasources/strava_auth_datasource.dart';
 import '../../data/datasources/token_storage.dart';
+import '../../data/models/strava_tokens.dart';
 
 class StravaAuthUseCase {
   final StravaAuthDataSource authDataSource;
@@ -11,11 +13,33 @@ class StravaAuthUseCase {
   });
 
   Future<bool> checkAuthStatus() async {
-    final tokens = await tokenStorage.getTokens();
+    var tokens = await tokenStorage.getTokens();
+
+    if (tokens == null) {
+      tokens = await _seedPreconfiguredTokens();
+    }
+
     if (tokens == null) return false;
 
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     return tokens.expiresAt > now;
+  }
+
+  Future<StravaTokens?> _seedPreconfiguredTokens() async {
+    final accessToken = ApiConstants.stravaAccessToken;
+    final refreshToken = ApiConstants.stravaRefreshToken;
+
+    if (accessToken.isEmpty || refreshToken.isEmpty) return null;
+
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final tokens = StravaTokens(
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      expiresAt: now + (6 * 3600),
+    );
+
+    await tokenStorage.saveTokens(tokens);
+    return tokens;
   }
 
   Future<void> authenticate() async {
