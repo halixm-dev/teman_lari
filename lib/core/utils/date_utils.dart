@@ -19,7 +19,9 @@ class AppDateUtils {
   static DateTime nextMonday() {
     final today = DateTime.now();
     final daysUntilMonday = (8 - today.weekday) % 7;
-    return today.add(Duration(days: daysUntilMonday == 0 ? 7 : daysUntilMonday));
+    return today.add(
+      Duration(days: daysUntilMonday == 0 ? 7 : daysUntilMonday),
+    );
   }
 
   static String isoWeekKey(DateTime date) {

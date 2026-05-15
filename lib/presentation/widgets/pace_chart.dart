@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
 
 import '../../domain/entities/running_stats.dart';
 import '../theme/app_colors.dart';
@@ -19,11 +20,11 @@ class PaceProgressionChart extends StatelessWidget {
 
     final rawMinY = spots.map((s) => s.y).reduce((a, b) => a < b ? a : b);
     final rawMaxY = spots.map((s) => s.y).reduce((a, b) => a > b ? a : b);
-    final minY = rawMinY - 30;
-    final maxY = rawMaxY + 30;
 
     final paceRange = (-rawMinY) - (-rawMaxY);
     final interval = paceRange > 60 ? 30.0 : 15.0;
+    final minY = (rawMinY / interval).floor() * interval;
+    final maxY = (rawMaxY / interval).ceil() * interval;
 
     return SizedBox(
       height: 200,
@@ -31,6 +32,77 @@ class PaceProgressionChart extends StatelessWidget {
         LineChartData(
           minY: minY,
           maxY: maxY,
+          lineTouchData: LineTouchData(
+            enabled: true,
+            touchTooltipData: LineTouchTooltipData(
+              tooltipPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 8,
+              ),
+              tooltipMargin: 8,
+              tooltipBorderRadius: BorderRadius.circular(8),
+              getTooltipColor: (spot) => AppColors.gray900,
+              getTooltipItems: (touchedSpots) {
+                return touchedSpots.map((spot) {
+                  final idx = spot.spotIndex;
+                  final point = dataPoints[idx];
+                  final mins = point.paceSecondsPerKm ~/ 60;
+                  final secs = point.paceSecondsPerKm % 60;
+                  return LineTooltipItem(
+                    '',
+                    const TextStyle(fontSize: 0, height: 0),
+                    children: [
+                      TextSpan(
+                        text: DateFormat.MMMd().format(point.date),
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      TextSpan(
+                        text: '\n$mins:${secs.toString().padLeft(2, '0')} /km',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      TextSpan(
+                        text: '\n${point.distanceKm.toStringAsFixed(2)} km',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  );
+                }).toList();
+              },
+            ),
+            getTouchedSpotIndicator: (barData, spotIndexes) {
+              return spotIndexes.map((i) {
+                return TouchedSpotIndicatorData(
+                  FlLine(
+                    color: Theme.of(context).colorScheme.primary,
+                    strokeWidth: 1,
+                  ),
+                  FlDotData(
+                    show: true,
+                    getDotPainter: (spot, percent, barData, index) {
+                      return FlDotCirclePainter(
+                        radius: 4,
+                        color: Theme.of(context).colorScheme.primary,
+                        strokeWidth: 2,
+                        strokeColor: Colors.white,
+                      );
+                    },
+                  ),
+                );
+              }).toList();
+            },
+          ),
           lineBarsData: [
             LineChartBarData(
               spots: spots,
@@ -51,10 +123,14 @@ class PaceProgressionChart extends StatelessWidget {
               sideTitles: SideTitles(
                 showTitles: true,
                 reservedSize: 50,
-                interval: 1,
+                interval: interval,
                 getTitlesWidget: (value, meta) {
-                  final mins = value.toInt() ~/ 60;
-                  final secs = value.toInt() % 60;
+                  final pace = value.abs().toInt();
+                  if (pace % interval.toInt() != 0) {
+                    return const SizedBox.shrink();
+                  }
+                  final mins = pace ~/ 60;
+                  final secs = pace % 60;
                   return Text(
                     '$mins:${secs.toString().padLeft(2, '0')}',
                     style: const TextStyle(fontSize: 10),
@@ -62,8 +138,27 @@ class PaceProgressionChart extends StatelessWidget {
                 },
               ),
             ),
-            bottomTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 28,
+                interval: (dataPoints.length > 8)
+                    ? (dataPoints.length / 6).ceilToDouble()
+                    : 1,
+                getTitlesWidget: (value, meta) {
+                  final idx = value.toInt();
+                  if (idx < 0 || idx >= dataPoints.length) {
+                    return const SizedBox.shrink();
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      DateFormat.Md().format(dataPoints[idx].date),
+                      style: const TextStyle(fontSize: 9),
+                    ),
+                  );
+                },
+              ),
             ),
             topTitles: const AxisTitles(
               sideTitles: SideTitles(showTitles: false),

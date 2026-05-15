@@ -33,7 +33,9 @@ class AuthNotifier extends Notifier<AuthState> {
 
   Future<void> _checkAuthStatus() async {
     final result = await ref.read(stravaAuthUseCaseProvider).checkAuthStatus();
-    state = result ? const AuthState.authenticated() : const AuthState.unauthenticated();
+    state = result
+        ? const AuthState.authenticated()
+        : const AuthState.unauthenticated();
   }
 
   Future<void> login() async {
@@ -64,27 +66,27 @@ class AuthState {
   });
 
   const AuthState.unknown()
-      : isAuthenticated = false,
-        isLoading = true,
-        error = null;
+    : isAuthenticated = false,
+      isLoading = true,
+      error = null;
 
   const AuthState.unauthenticated()
-      : isAuthenticated = false,
-        isLoading = false,
-        error = null;
+    : isAuthenticated = false,
+      isLoading = false,
+      error = null;
 
   const AuthState.loading()
-      : isAuthenticated = false,
-        isLoading = true,
-        error = null;
+    : isAuthenticated = false,
+      isLoading = true,
+      error = null;
 
   const AuthState.authenticated()
-      : isAuthenticated = true,
-        isLoading = false,
-        error = null;
+    : isAuthenticated = true,
+      isLoading = false,
+      error = null;
 
   const AuthState.error(String message)
-      : isAuthenticated = false,
-        isLoading = false,
-        error = message;
+    : isAuthenticated = false,
+      isLoading = false,
+      error = message;
 }

@@ -36,7 +36,8 @@ class DashboardScreen extends ConsumerWidget {
               Text('Error: $e'),
               const SizedBox(height: 16),
               FilledButton(
-                onPressed: () => ref.read(activitiesProvider.notifier).refresh(),
+                onPressed: () =>
+                    ref.read(activitiesProvider.notifier).refresh(),
                 child: const Text('Retry'),
               ),
             ],

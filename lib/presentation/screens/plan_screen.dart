@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../domain/entities/training_plan.dart';
-import '../theme/app_colors.dart';
 import '../providers/activities_provider.dart';
+import '../theme/app_colors.dart';
 
 class PlanScreen extends ConsumerWidget {
   const PlanScreen({super.key});
@@ -65,8 +66,10 @@ class _PlanHeader extends StatelessWidget {
             Text('Goal', style: Theme.of(context).textTheme.titleSmall),
             Text(plan.goal, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
-            Text(plan.description,
-                style: Theme.of(context).textTheme.bodyMedium),
+            Text(
+              plan.description,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
           ],
         ),
       ),
@@ -85,16 +88,17 @@ class _PlanDayCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: CircleAvatar(
           backgroundColor: typeColor(day.type).withValues(alpha: 0.15),
           child: Icon(typeIcon(day.type), color: typeColor(day.type)),
         ),
         title: Row(
           children: [
-            Text(_dayLabel(day.date),
-                style: const TextStyle(fontWeight: FontWeight.w600)),
+            Text(
+              _dayLabel(day.date),
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
             const SizedBox(width: 8),
             _WorkoutTypeBadge(type: day.type),
           ],
@@ -108,7 +112,8 @@ class _PlanDayCard extends StatelessWidget {
                   ? Text(
                       'Warmup ${day.warmUpMinutes} min + '
                       'Run ${day.workMinutes} min + '
-                      'Cooldown ${day.coolDownMinutes} min')
+                      'Cooldown ${day.coolDownMinutes} min',
+                    )
                   : Text('${day.targetMinutes} min'),
             if (day.paceTarget != null)
               Text(
@@ -117,17 +122,15 @@ class _PlanDayCard extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.w500),
               ),
             if (day.heartRateTarget != null)
-                Text(
-                    '♡ ${day.heartRateTarget!.minBpm}-${day.heartRateTarget!.maxBpm} bpm'),
+              Text(
+                '♡ ${day.heartRateTarget!.minBpm}-${day.heartRateTarget!.maxBpm} bpm',
+              ),
             const SizedBox(height: 4),
-            Text(day.description,
-                style: Theme.of(context).textTheme.bodySmall),
+            Text(day.description, style: Theme.of(context).textTheme.bodySmall),
           ],
         ),
         trailing: isRest ? null : const Icon(Icons.chevron_right),
-        onTap: isRest
-            ? null
-            : () {},
+        onTap: isRest ? null : () => context.push('/run-session', extra: day),
       ),
     );
   }

@@ -34,15 +34,11 @@ class LocalActivityDataSource {
     final db = await database;
     final batch = db.batch();
     for (final activity in activities) {
-      batch.insert(
-        'activities',
-        {
-          'id': activity.id,
-          'data': jsonEncode(activity.toJson()),
-          'synced_at': DateTime.now().millisecondsSinceEpoch,
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
+      batch.insert('activities', {
+        'id': activity.id,
+        'data': jsonEncode(activity.toJson()),
+        'synced_at': DateTime.now().millisecondsSinceEpoch,
+      }, conflictAlgorithm: ConflictAlgorithm.replace);
     }
     await batch.commit(noResult: true);
   }

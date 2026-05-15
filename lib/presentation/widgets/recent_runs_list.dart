@@ -18,16 +18,13 @@ class RecentRunsList extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Recent Runs',
-                style: Theme.of(context).textTheme.titleMedium),
+            Text('Recent Runs', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             activities.when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (_, _) => const Text('Error loading runs'),
               data: (runs) {
-                final recent = runs
-                    .where((a) => a.distanceKm > 0)
-                    .toList()
+                final recent = runs.where((a) => a.distanceKm > 0).toList()
                   ..sort((a, b) => b.date.compareTo(a.date));
                 final displayed = recent.take(5).toList();
 
@@ -86,8 +83,10 @@ class _RunTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text('${run.distanceKm.toStringAsFixed(2)} km'),
-              Text(run.paceString,
-                  style: Theme.of(context).textTheme.bodySmall),
+              Text(
+                run.paceString,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
             ],
           ),
         ],

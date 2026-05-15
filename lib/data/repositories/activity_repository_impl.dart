@@ -16,18 +16,20 @@ class ActivityRepositoryImpl implements ActivityRepository {
   });
 
   @override
-  Future<List<RunActivity>> getAllRunningActivities({int monthsBack = 12}) async {
+  Future<List<RunActivity>> getAllRunningActivities({
+    int monthsBack = 12,
+  }) async {
     try {
       final cached = await localDataSource.getCachedActivities();
       if (cached != null) {
         return _mapModelsToEntities(cached);
       }
-    } catch (_) {
-    }
+    } catch (_) {}
 
     try {
-      final remoteActivities =
-          await remoteDataSource.getAllRunningActivities(monthsBack: monthsBack);
+      final remoteActivities = await remoteDataSource.getAllRunningActivities(
+        monthsBack: monthsBack,
+      );
       await localDataSource.saveActivities(remoteActivities);
       return _mapModelsToEntities(remoteActivities);
     } on StravaApiException catch (e) {
@@ -37,51 +39,50 @@ class ActivityRepositoryImpl implements ActivityRepository {
 
   @override
   Future<void> refreshActivities({int monthsBack = 12}) async {
-    final remoteActivities =
-        await remoteDataSource.getAllRunningActivities(monthsBack: monthsBack);
+    final remoteActivities = await remoteDataSource.getAllRunningActivities(
+      monthsBack: monthsBack,
+    );
     await localDataSource.saveActivities(remoteActivities);
   }
 
   List<RunActivity> _mapModelsToEntities(List<ActivityModel> models) {
-    return models
-        .map((model) {
-          final date = DateTime.parse(model.startDate);
-          final distanceKm = model.distance / 1000.0;
-          final movingTimeSeconds = model.movingTime;
-          final paceSecondsPerKm =
-              movingTimeSeconds / (distanceKm > 0 ? distanceKm : 1);
+    return models.map((model) {
+      final date = DateTime.parse(model.startDate);
+      final distanceKm = model.distance / 1000.0;
+      final movingTimeSeconds = model.movingTime;
+      final paceSecondsPerKm =
+          movingTimeSeconds / (distanceKm > 0 ? distanceKm : 1);
 
-          TrainingLoad load;
-          if (model.averageHeartrate != null) {
-            final hrPercent = model.averageHeartrate! / 190;
-            if (hrPercent < 0.70) {
-              load = TrainingLoad.easy;
-            } else if (hrPercent < 0.80) {
-              load = TrainingLoad.moderate;
-            } else if (hrPercent < 0.90) {
-              load = TrainingLoad.hard;
-            } else {
-              load = TrainingLoad.veryHard;
-            }
-          } else {
-            load = TrainingLoad.moderate;
-          }
+      TrainingLoad load;
+      if (model.averageHeartrate != null) {
+        final hrPercent = model.averageHeartrate! / 190;
+        if (hrPercent < 0.70) {
+          load = TrainingLoad.easy;
+        } else if (hrPercent < 0.80) {
+          load = TrainingLoad.moderate;
+        } else if (hrPercent < 0.90) {
+          load = TrainingLoad.hard;
+        } else {
+          load = TrainingLoad.veryHard;
+        }
+      } else {
+        load = TrainingLoad.moderate;
+      }
 
-          return RunActivity(
-            id: model.id,
-            name: model.name,
-            date: date,
-            distanceKm: distanceKm,
-            movingTime: Duration(seconds: movingTimeSeconds),
-            pace: Duration(seconds: paceSecondsPerKm.round()),
-            elevationGainM: model.totalElevationGain,
-            trainingLoad: load,
-            avgHeartRate: model.averageHeartrate,
-            maxHeartRate: model.maxHeartrate,
-            avgCadence: model.averageCadence,
-            sufferScore: model.sufferScore,
-          );
-        })
-        .toList();
+      return RunActivity(
+        id: model.id,
+        name: model.name,
+        date: date,
+        distanceKm: distanceKm,
+        movingTime: Duration(seconds: movingTimeSeconds),
+        pace: Duration(seconds: paceSecondsPerKm.round()),
+        elevationGainM: model.totalElevationGain,
+        trainingLoad: load,
+        avgHeartRate: model.averageHeartrate,
+        maxHeartRate: model.maxHeartrate,
+        avgCadence: model.averageCadence,
+        sufferScore: model.sufferScore,
+      );
+    }).toList();
   }
 }

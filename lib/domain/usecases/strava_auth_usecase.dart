@@ -7,10 +7,7 @@ class StravaAuthUseCase {
   final StravaAuthDataSource authDataSource;
   final TokenStorage tokenStorage;
 
-  StravaAuthUseCase({
-    required this.authDataSource,
-    required this.tokenStorage,
-  });
+  StravaAuthUseCase({required this.authDataSource, required this.tokenStorage});
 
   Future<bool> checkAuthStatus() async {
     var tokens = await tokenStorage.getTokens();

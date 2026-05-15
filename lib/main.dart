@@ -2,24 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'domain/entities/training_plan.dart';
 import 'presentation/providers/auth_provider.dart';
-import 'presentation/screens/login_screen.dart';
-import 'presentation/screens/dashboard_screen.dart';
 import 'presentation/screens/analysis_screen.dart';
+import 'presentation/screens/dashboard_screen.dart';
+import 'presentation/screens/login_screen.dart';
 import 'presentation/screens/plan_screen.dart';
+import 'presentation/screens/run_session_screen.dart';
 import 'presentation/screens/settings_screen.dart';
 import 'presentation/theme/app_theme.dart';
 
 final _router = GoRouter(
   routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const SplashScreen(),
-    ),
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginScreen(),
-    ),
+    GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
+    GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
     GoRoute(
       path: '/dashboard',
       builder: (context, state) => const MainNavigationScreen(),
@@ -28,9 +24,11 @@ final _router = GoRouter(
       path: '/analysis',
       builder: (context, state) => const AnalysisScreen(),
     ),
+    GoRoute(path: '/plan', builder: (context, state) => const PlanScreen()),
     GoRoute(
-      path: '/plan',
-      builder: (context, state) => const PlanScreen(),
+      path: '/run-session',
+      builder: (context, state) =>
+          RunSessionScreen(day: state.extra as TrainingDay),
     ),
     GoRoute(
       path: '/settings',
@@ -40,11 +38,7 @@ final _router = GoRouter(
 );
 
 void main() {
-  runApp(
-    const ProviderScope(
-      child: TemanLariApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: TemanLariApp()));
 }
 
 class TemanLariApp extends StatelessWidget {
@@ -71,9 +65,7 @@ class SplashScreen extends ConsumerWidget {
     final authState = ref.watch(authStateProvider);
 
     if (authState.isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (authState.isAuthenticated) {
@@ -86,9 +78,7 @@ class SplashScreen extends ConsumerWidget {
       });
     }
 
-    return const Scaffold(
-      body: Center(child: CircularProgressIndicator()),
-    );
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }
 
@@ -125,18 +115,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             icon: Icon(Icons.dashboard),
             label: 'Dashboard',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.analytics),
-            label: 'Analysis',
-          ),
+          NavigationDestination(icon: Icon(Icons.analytics), label: 'Analysis'),
           NavigationDestination(
             icon: Icon(Icons.calendar_today),
             label: 'Plan',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
+          NavigationDestination(icon: Icon(Icons.settings), label: 'Settings'),
         ],
       ),
     );

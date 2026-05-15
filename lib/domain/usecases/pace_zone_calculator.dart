@@ -33,18 +33,21 @@ class PaceZoneCalculator {
   }
 
   static int estimateThresholdPace(List<RunActivity> activities) {
-    final candidates = activities
-        .where((a) =>
-            a.movingTime.inMinutes >= 20 && a.movingTime.inMinutes <= 35)
-        .toList()
-      ..sort((a, b) => a.pace.inSeconds.compareTo(b.pace.inSeconds));
+    final candidates =
+        activities
+            .where(
+              (a) =>
+                  a.movingTime.inMinutes >= 20 && a.movingTime.inMinutes <= 35,
+            )
+            .toList()
+          ..sort((a, b) => a.pace.inSeconds.compareTo(b.pace.inSeconds));
 
     if (candidates.isNotEmpty) {
       return (candidates.first.pace.inSeconds * 1.05).round();
     }
 
-    final avgPace = activities
-        .fold<int>(0, (sum, a) => sum + a.pace.inSeconds) ~/
+    final avgPace =
+        activities.fold<int>(0, (sum, a) => sum + a.pace.inSeconds) ~/
         activities.length;
     return (avgPace * 0.90).round();
   }

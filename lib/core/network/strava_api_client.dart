@@ -12,43 +12,52 @@ class StravaApiClient {
 
   StravaApiClient(this._tokenStorage, this._authDataSource, this._httpClient);
 
-  Future<Map<String, dynamic>> get(String endpoint,
-      {Map<String, String>? params}) async {
+  Future<Map<String, dynamic>> get(
+    String endpoint, {
+    Map<String, String>? params,
+  }) async {
     final response = await _requestWithRetry(() async {
       final token = await _getValidToken();
       final uri = Uri.https('www.strava.com', '/api/v3/$endpoint', params);
 
-      final response = await _httpClient.get(uri, headers: {
-        'Authorization': 'Bearer $token',
-      });
+      final response = await _httpClient.get(
+        uri,
+        headers: {'Authorization': 'Bearer $token'},
+      );
 
       return response;
     });
-    
+
     return jsonDecode(response.body);
   }
 
-  Future<List<dynamic>> getList(String endpoint,
-      {Map<String, String>? params}) async {
+  Future<List<dynamic>> getList(
+    String endpoint, {
+    Map<String, String>? params,
+  }) async {
     final response = await _requestWithRetry(() async {
       final token = await _getValidToken();
       final uri = Uri.https('www.strava.com', '/api/v3/$endpoint', params);
 
-      return await _httpClient.get(uri, headers: {
-        'Authorization': 'Bearer $token',
-      });
+      return await _httpClient.get(
+        uri,
+        headers: {'Authorization': 'Bearer $token'},
+      );
     });
 
     return jsonDecode(response.body) as List;
   }
 
   Future<http.Response> _requestWithRetry(
-      Future<http.Response> Function() request) async {
+    Future<http.Response> Function() request,
+  ) async {
     var response = await request();
 
     if (response.statusCode == 429) {
       throw StravaApiException(
-          429, 'Rate limit reached, try again in 15 minutes');
+        429,
+        'Rate limit reached, try again in 15 minutes',
+      );
     }
 
     if (response.statusCode == 401) {
@@ -62,7 +71,7 @@ class StravaApiClient {
     }
 
     if (response.statusCode == 401 || response.statusCode == 403) {
-      if (response.body.contains('Authorization Error') || 
+      if (response.body.contains('Authorization Error') ||
           response.body.contains('read_permission')) {
         await _tokenStorage.clearTokens();
         throw UnauthenticatedException();
@@ -75,7 +84,7 @@ class StravaApiClient {
   Future<void> _forceRefreshToken() async {
     var tokens = await _tokenStorage.getTokens();
     if (tokens == null) throw UnauthenticatedException();
-    
+
     try {
       tokens = await _authDataSource.refreshToken(tokens.refreshToken);
       await _tokenStorage.saveTokens(tokens);

@@ -51,7 +51,9 @@ class LoginScreen extends ConsumerWidget {
                     children: [
                       Text(
                         authState.error!,
-                        style: TextStyle(color: Theme.of(context).colorScheme.error),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 16),

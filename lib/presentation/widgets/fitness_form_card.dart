@@ -12,8 +12,8 @@ class FitnessFormCard extends StatelessWidget {
     final formColor = stats.formScore > 5
         ? Colors.green
         : stats.formScore < -5
-            ? Colors.red
-            : Colors.orange;
+        ? Colors.red
+        : Colors.orange;
 
     return Card(
       child: Padding(
@@ -21,24 +21,29 @@ class FitnessFormCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Training Status',
-                style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              'Training Status',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _MetricChip(
-                    label: 'Fitness',
-                    value: stats.fitnessScore.toStringAsFixed(0),
-                    color: Colors.blue),
+                  label: 'Fitness',
+                  value: stats.fitnessScore.toStringAsFixed(0),
+                  color: Colors.blue,
+                ),
                 _MetricChip(
-                    label: 'Fatigue',
-                    value: stats.fatigueScore.toStringAsFixed(0),
-                    color: Colors.red),
+                  label: 'Fatigue',
+                  value: stats.fatigueScore.toStringAsFixed(0),
+                  color: Colors.red,
+                ),
                 _MetricChip(
-                    label: 'Form',
-                    value: stats.formScore.toStringAsFixed(0),
-                    color: formColor),
+                  label: 'Form',
+                  value: stats.formScore.toStringAsFixed(0),
+                  color: formColor,
+                ),
               ],
             ),
           ],

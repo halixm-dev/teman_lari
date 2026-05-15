@@ -56,7 +56,9 @@ class SettingsScreen extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Disconnect Strava'),
-        content: const Text('Are you sure you want to disconnect your Strava account?'),
+        content: const Text(
+          'Are you sure you want to disconnect your Strava account?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

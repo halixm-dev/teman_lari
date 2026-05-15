@@ -27,7 +27,10 @@ class HrZoneDistributionChart extends StatelessWidget {
         color: zoneColors[zoneIndex.clamp(0, zoneColors.length - 1)],
         title: 'Z${e.key}\n${(e.value * 100).toStringAsFixed(0)}%',
         titleStyle: const TextStyle(
-            color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+          color: Colors.white,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+        ),
         radius: 60,
       );
     }).toList();

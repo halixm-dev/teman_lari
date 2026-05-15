@@ -27,11 +27,14 @@ class AnalysisScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Pace Progression',
-                              style: Theme.of(context).textTheme.headlineSmall),
+                          Text(
+                            'Pace Progression',
+                            style: Theme.of(context).textTheme.headlineSmall,
+                          ),
                           const SizedBox(height: 16),
                           PaceProgressionChart(
-                              dataPoints: stats.paceProgression),
+                            dataPoints: stats.paceProgression,
+                          ),
                         ],
                       ),
                     ),
@@ -43,11 +46,14 @@ class AnalysisScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Heart Rate Zones',
-                              style: Theme.of(context).textTheme.headlineSmall),
+                          Text(
+                            'Heart Rate Zones',
+                            style: Theme.of(context).textTheme.headlineSmall,
+                          ),
                           const SizedBox(height: 16),
                           HrZoneDistributionChart(
-                              zoneDistribution: stats.heartRateZones),
+                            zoneDistribution: stats.heartRateZones,
+                          ),
                         ],
                       ),
                     ),
@@ -59,17 +65,25 @@ class AnalysisScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Summary',
-                              style: Theme.of(context).textTheme.headlineSmall),
+                          Text(
+                            'Summary',
+                            style: Theme.of(context).textTheme.headlineSmall,
+                          ),
                           const SizedBox(height: 8),
                           _statRow('Total Runs', '${stats.totalRuns}'),
-                          _statRow('Total Distance',
-                              '${stats.totalDistanceKm.toStringAsFixed(1)} km'),
-                          _statRow('Average Pace',
-                              '${stats.averagePace.inMinutes}:${(stats.averagePace.inSeconds % 60).toString().padLeft(2, '0')} /km'),
+                          _statRow(
+                            'Total Distance',
+                            '${stats.totalDistanceKm.toStringAsFixed(1)} km',
+                          ),
+                          _statRow(
+                            'Average Pace',
+                            '${stats.averagePace.inMinutes}:${(stats.averagePace.inSeconds % 60).toString().padLeft(2, '0')} /km',
+                          ),
                           if (stats.vo2MaxEstimate != null)
-                            _statRow('VO2 Max Estimate',
-                                stats.vo2MaxEstimate!.toStringAsFixed(1)),
+                            _statRow(
+                              'VO2 Max Estimate',
+                              stats.vo2MaxEstimate!.toStringAsFixed(1),
+                            ),
                         ],
                       ),
                     ),

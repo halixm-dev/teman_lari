@@ -21,8 +21,10 @@ class QuickPlanCard extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Training Plan',
-                    style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Training Plan',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 TextButton(
                   onPressed: () => context.go('/plan'),
                   child: const Text('View Full'),

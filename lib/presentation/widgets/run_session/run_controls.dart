@@ -1,0 +1,171 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+
+class RunControls extends StatefulWidget {
+  final bool isRunning;
+  final bool isLocked;
+  final bool isAudioCoachOn;
+  final bool isFinished;
+  final VoidCallback onToggleRunning;
+  final VoidCallback onToggleLock;
+  final VoidCallback onToggleAudioCoach;
+
+  const RunControls({
+    super.key,
+    required this.isRunning,
+    required this.isLocked,
+    required this.isAudioCoachOn,
+    required this.isFinished,
+    required this.onToggleRunning,
+    required this.onToggleLock,
+    required this.onToggleAudioCoach,
+  });
+
+  @override
+  State<RunControls> createState() => _RunControlsState();
+}
+
+class _RunControlsState extends State<RunControls> {
+  final _holdProgress = ValueNotifier<double>(0.0);
+  Timer? _holdTimer;
+
+  @override
+  void dispose() {
+    _holdTimer?.cancel();
+    _holdProgress.dispose();
+    super.dispose();
+  }
+
+  void _onLongPressStart() {
+    if (!widget.isRunning) return;
+    _holdProgress.value = 0.0;
+    _holdTimer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
+      _holdProgress.value = (timer.tick * 16) / 500;
+      if (_holdProgress.value >= 1.0) {
+        timer.cancel();
+        _holdTimer = null;
+        widget.onToggleRunning();
+      }
+    });
+  }
+
+  void _onLongPressEnd() {
+    _holdTimer?.cancel();
+    _holdTimer = null;
+    _holdProgress.value = 0.0;
+  }
+
+  void _onLongPressCancel() {
+    _holdTimer?.cancel();
+    _holdTimer = null;
+    _holdProgress.value = 0.0;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _IconButton(
+            icon: widget.isLocked ? Icons.lock : Icons.lock_open,
+            onPressed: widget.isFinished ? null : widget.onToggleLock,
+            isActive: widget.isLocked,
+          ),
+          _IconButton(
+            icon: widget.isAudioCoachOn ? Icons.volume_up : Icons.volume_off,
+            onPressed: widget.isFinished ? null : widget.onToggleAudioCoach,
+            isActive: widget.isAudioCoachOn,
+          ),
+          // Play / Pause FAB
+          if (!widget.isFinished)
+            GestureDetector(
+              onTap: widget.isRunning ? null : widget.onToggleRunning,
+              onLongPressStart: (_) => _onLongPressStart(),
+              onLongPressEnd: (_) => _onLongPressEnd(),
+              onLongPressCancel: _onLongPressCancel,
+              onLongPress: widget.isRunning ? null : null,
+              child: ValueListenableBuilder<double>(
+                valueListenable: _holdProgress,
+                builder: (context, progress, _) {
+                  return Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFC4C02),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFC4C02).withValues(alpha: 0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        if (progress > 0)
+                          SizedBox(
+                            width: 80,
+                            height: 80,
+                            child: CircularProgressIndicator(
+                              value: progress,
+                              color: Colors.white.withValues(alpha: 0.4),
+                              strokeWidth: 3,
+                              backgroundColor: Colors.transparent,
+                            ),
+                          ),
+                        Icon(
+                          widget.isRunning ? Icons.pause : Icons.play_arrow,
+                          color: Colors.white,
+                          size: 36,
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _IconButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback? onPressed;
+  final bool isActive;
+
+  const _IconButton({
+    required this.icon,
+    required this.onPressed,
+    required this.isActive,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 56,
+      height: 56,
+      child: Material(
+        color: isActive
+            ? const Color(0xFFFC4C02).withValues(alpha: 0.15)
+            : const Color(0xFF3A3A3C),
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: onPressed,
+          customBorder: const CircleBorder(),
+          child: Icon(
+            icon,
+            color: isActive ? const Color(0xFFFC4C02) : const Color(0xFFAEAEB2),
+            size: 24,
+          ),
+        ),
+      ),
+    );
+  }
+}

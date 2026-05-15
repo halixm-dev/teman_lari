@@ -8,8 +8,7 @@ class TokenStorage {
   Future<void> saveTokens(StravaTokens tokens) async {
     await _storage.write(key: 'access_token', value: tokens.accessToken);
     await _storage.write(key: 'refresh_token', value: tokens.refreshToken);
-    await _storage.write(
-        key: 'expires_at', value: tokens.expiresAt.toString());
+    await _storage.write(key: 'expires_at', value: tokens.expiresAt.toString());
   }
 
   Future<StravaTokens?> getTokens() async {

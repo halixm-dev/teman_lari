@@ -32,7 +32,8 @@ class StatsGrid extends StatelessWidget {
         _StatCard(
           icon: Icons.speed,
           label: 'Avg Pace',
-          value: '${stats.averagePace.inMinutes}:${(stats.averagePace.inSeconds % 60).toString().padLeft(2, '0')}',
+          value:
+              '${stats.averagePace.inMinutes}:${(stats.averagePace.inSeconds % 60).toString().padLeft(2, '0')}',
           color: Colors.orange,
         ),
         _StatCard(

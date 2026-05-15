@@ -8,7 +8,7 @@ class GeneratePlanUseCase {
   final AnalyzeRunsUseCase _analyzeRuns;
 
   GeneratePlanUseCase({AnalyzeRunsUseCase? analyzeRuns})
-      : _analyzeRuns = analyzeRuns ?? AnalyzeRunsUseCase();
+    : _analyzeRuns = analyzeRuns ?? AnalyzeRunsUseCase();
 
   TrainingPlan generate(List<RunActivity> activities) {
     if (activities.isEmpty) return TrainingPlan.empty();
@@ -53,7 +53,8 @@ class GeneratePlanUseCase {
         paceTarget: paceZones[1],
         heartRateTarget: hrZones[1],
         estimatedDuration: Duration(minutes: easyMin),
-        description: 'Easy recovery run. Conversational pace throughout. '
+        description:
+            'Easy recovery run. Conversational pace throughout. '
             'Focus on form, not speed.',
       ),
       TrainingDay(
@@ -70,7 +71,8 @@ class GeneratePlanUseCase {
       TrainingDay(
         date: startDate.add(const Duration(days: 2)),
         type: WorkoutType.rest,
-        description: 'Rest or 20-30 min easy walk. Let your body absorb '
+        description:
+            'Rest or 20-30 min easy walk. Let your body absorb '
             'yesterday\'s interval session.',
       ),
       TrainingDay(
@@ -80,7 +82,8 @@ class GeneratePlanUseCase {
         paceTarget: paceZones[1],
         heartRateTarget: hrZones[1],
         estimatedDuration: Duration(minutes: easyMin),
-        description: 'Easy aerobic run. Stay in Zone 2 the entire run. '
+        description:
+            'Easy aerobic run. Stay in Zone 2 the entire run. '
             'Great day for strides at the end (4x100m).',
       ),
       TrainingDay(
@@ -92,7 +95,8 @@ class GeneratePlanUseCase {
         paceTarget: paceZones[3],
         heartRateTarget: hrZones[3],
         estimatedDuration: Duration(minutes: tempoWorkMin + 20),
-        description: '10 min warm-up, $tempoWorkMin min @ '
+        description:
+            '10 min warm-up, $tempoWorkMin min @ '
             'threshold pace (Zone 4), 10 min cool-down. '
             'Comfortably hard - you can speak in short sentences.',
       ),
@@ -108,7 +112,8 @@ class GeneratePlanUseCase {
         paceTarget: paceZones[1],
         heartRateTarget: hrZones[1],
         estimatedDuration: Duration(minutes: longRunMin),
-        description: 'Long easy run - the most important run of the week. '
+        description:
+            'Long easy run - the most important run of the week. '
             'Stay strictly in Zone 2. Walk breaks are fine. '
             'Hydrate every 20-30 min.',
       ),
@@ -155,16 +160,24 @@ class GeneratePlanUseCase {
   }
 
   List<HrZone> _calculateHrZones(List<RunActivity> activities) {
-    final maxHr = activities
+    final maxHr =
+        activities
             .where((a) => a.maxHeartRate != null)
             .map((a) => a.maxHeartRate!)
-            .fold<double?>(null, (max, hr) => max == null ? hr : (hr > max ? hr : max))
+            .fold<double?>(
+              null,
+              (max, hr) => max == null ? hr : (hr > max ? hr : max),
+            )
             ?.round() ??
         190;
-    final restingHr = activities
+    final restingHr =
+        activities
             .where((a) => a.avgHeartRate != null)
             .map((a) => a.avgHeartRate!)
-            .fold<double?>(null, (min, hr) => min == null ? hr : (hr < min ? hr : min))
+            .fold<double?>(
+              null,
+              (min, hr) => min == null ? hr : (hr < min ? hr : min),
+            )
             ?.round() ??
         60;
     final actualMax = maxHr.clamp(100, 230);
@@ -172,36 +185,57 @@ class GeneratePlanUseCase {
     final hrr = actualMax - actualResting;
 
     return [
-      HrZone(zoneNumber: 1, label: 'Zone 1 - Recovery',
-          minBpm: actualResting, maxBpm: (actualResting + hrr * 0.60).round()),
-      HrZone(zoneNumber: 2, label: 'Zone 2 - Aerobic Base',
-          minBpm: (actualResting + hrr * 0.60).round(),
-          maxBpm: (actualResting + hrr * 0.70).round()),
-      HrZone(zoneNumber: 3, label: 'Zone 3 - Tempo',
-          minBpm: (actualResting + hrr * 0.70).round(),
-          maxBpm: (actualResting + hrr * 0.80).round()),
-      HrZone(zoneNumber: 4, label: 'Zone 4 - Threshold',
-          minBpm: (actualResting + hrr * 0.80).round(),
-          maxBpm: (actualResting + hrr * 0.90).round()),
-      HrZone(zoneNumber: 5, label: 'Zone 5 - VO2max',
-          minBpm: (actualResting + hrr * 0.90).round(), maxBpm: actualMax),
+      HrZone(
+        zoneNumber: 1,
+        label: 'Zone 1 - Recovery',
+        minBpm: actualResting,
+        maxBpm: (actualResting + hrr * 0.60).round(),
+      ),
+      HrZone(
+        zoneNumber: 2,
+        label: 'Zone 2 - Aerobic Base',
+        minBpm: (actualResting + hrr * 0.60).round(),
+        maxBpm: (actualResting + hrr * 0.70).round(),
+      ),
+      HrZone(
+        zoneNumber: 3,
+        label: 'Zone 3 - Tempo',
+        minBpm: (actualResting + hrr * 0.70).round(),
+        maxBpm: (actualResting + hrr * 0.80).round(),
+      ),
+      HrZone(
+        zoneNumber: 4,
+        label: 'Zone 4 - Threshold',
+        minBpm: (actualResting + hrr * 0.80).round(),
+        maxBpm: (actualResting + hrr * 0.90).round(),
+      ),
+      HrZone(
+        zoneNumber: 5,
+        label: 'Zone 5 - VO2max',
+        minBpm: (actualResting + hrr * 0.90).round(),
+        maxBpm: actualMax,
+      ),
     ];
   }
 
   DateTime _startDate(List<RunActivity> activities) {
     final today = DateTime.now();
-    final hasRunToday = activities.any((a) =>
-        a.date.year == today.year &&
-        a.date.month == today.month &&
-        a.date.day == today.day);
+    final hasRunToday = activities.any(
+      (a) =>
+          a.date.year == today.year &&
+          a.date.month == today.month &&
+          a.date.day == today.day,
+    );
     if (!hasRunToday) return today;
     return today.add(const Duration(days: 1));
   }
 
   String _planDescription(RunningStats stats) {
     final form = stats.formScore;
-    if (form < -10) return 'You\'re currently fatigued. This week focuses on recovery with reduced volume and easy effort.';
-    if (form > 10) return 'You\'re fresh and ready. This week includes a quality session to build fitness.';
+    if (form < -10)
+      return 'You\'re currently fatigued. This week focuses on recovery with reduced volume and easy effort.';
+    if (form > 10)
+      return 'You\'re fresh and ready. This week includes a quality session to build fitness.';
     return 'Balanced week combining easy aerobic base, quality work, and a long run.';
   }
 }

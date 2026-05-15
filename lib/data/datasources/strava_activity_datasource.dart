@@ -12,9 +12,10 @@ class StravaActivityDataSource {
     int monthsBack = 12,
   }) async {
     final allActivities = <ActivityModel>[];
-    final after = DateTime.now()
-        .subtract(Duration(days: 30 * monthsBack))
-        .millisecondsSinceEpoch ~/
+    final after =
+        DateTime.now()
+            .subtract(Duration(days: 30 * monthsBack))
+            .millisecondsSinceEpoch ~/
         1000;
 
     int page = 1;

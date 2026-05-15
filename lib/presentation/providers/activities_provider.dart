@@ -22,11 +22,15 @@ final stravaApiClientProvider = Provider<StravaApiClient>((ref) {
   );
 });
 
-final stravaActivityDataSourceProvider = Provider<StravaActivityDataSource>((ref) {
+final stravaActivityDataSourceProvider = Provider<StravaActivityDataSource>((
+  ref,
+) {
   return StravaActivityDataSource(ref.read(stravaApiClientProvider));
 });
 
-final localActivityDataSourceProvider = Provider<LocalActivityDataSource>((ref) {
+final localActivityDataSourceProvider = Provider<LocalActivityDataSource>((
+  ref,
+) {
   return LocalActivityDataSource();
 });
 
@@ -51,7 +55,8 @@ final generatePlanUseCaseProvider = Provider<GeneratePlanUseCase>((ref) {
 
 final activitiesProvider =
     AsyncNotifierProvider<ActivitiesNotifier, List<RunActivity>>(
-        () => ActivitiesNotifier());
+      () => ActivitiesNotifier(),
+    );
 
 class ActivitiesNotifier extends AsyncNotifier<List<RunActivity>> {
   @override
@@ -61,8 +66,9 @@ class ActivitiesNotifier extends AsyncNotifier<List<RunActivity>> {
 
   Future<void> refresh() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() =>
-        ref.read(getActivitiesUseCaseProvider).execute(monthsBack: 12));
+    state = await AsyncValue.guard(
+      () => ref.read(getActivitiesUseCaseProvider).execute(monthsBack: 12),
+    );
   }
 }
 
