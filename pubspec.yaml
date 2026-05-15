@@ -1,4 +1,4 @@
-name: strava_run_analyzer
+name: teman_lari
 description: "A Strava running analyzer app with training plan generation."
 publish_to: 'none'
 

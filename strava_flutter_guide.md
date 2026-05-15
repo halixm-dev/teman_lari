@@ -97,14 +97,14 @@ Strava API → RemoteDataSource → Repository → UseCase → Provider → UI
 Requires Flutter 3.13+ and Dart 3.1+.
 
 ```bash
-flutter create strava_run_analyzer --org com.yourname
-cd strava_run_analyzer
+flutter create teman_lari --org com.yourname
+cd teman_lari
 ```
 
 ### 3.2 Strava Developer Account
 
 1. Go to [https://developers.strava.com](https://developers.strava.com) and create an app.
-2. Set **Authorization Callback Domain** to your app's scheme (e.g., `com.yourname.stravarunanalyzer`).
+2. Set **Authorization Callback Domain** to your app's scheme (e.g., `com.yourname.temanLari`).
 3. Note your **Client ID** and **Client Secret**.
 
 ### 3.3 Environment Config
@@ -131,7 +131,7 @@ Run with:
 flutter run \
   --dart-define=STRAVA_CLIENT_ID=your_id \
   --dart-define=STRAVA_CLIENT_SECRET=your_secret \
-  --dart-define=STRAVA_REDIRECT_URI=com.yourname.stravarunanalyzer://callback
+  --dart-define=STRAVA_REDIRECT_URI=com.yourname.temanLari://callback
 ```
 
 ### 3.4 Android Setup
@@ -142,7 +142,7 @@ flutter run \
   <action android:name="android.intent.action.VIEW"/>
   <category android:name="android.intent.category.DEFAULT"/>
   <category android:name="android.intent.category.BROWSABLE"/>
-  <data android:scheme="com.yourname.stravarunanalyzer" android:host="callback"/>
+  <data android:scheme="com.yourname.temanLari" android:host="callback"/>
 </intent-filter>
 ```
 
@@ -155,7 +155,7 @@ flutter run \
   <dict>
     <key>CFBundleURLSchemes</key>
     <array>
-      <string>com.yourname.stravarunanalyzer</string>
+      <string>com.yourname.temanLari</string>
     </array>
   </dict>
 </array>
@@ -188,7 +188,7 @@ class StravaAuthDataSource {
 
     final result = await FlutterWebAuth2.authenticate(
       url: authUrl.toString(),
-      callbackUrlScheme: 'com.yourname.stravarunanalyzer',
+      callbackUrlScheme: 'com.yourname.temanLari',
     );
 
     final code = Uri.parse(result).queryParameters['code']!;

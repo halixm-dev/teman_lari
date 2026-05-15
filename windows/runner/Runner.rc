@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.stravaanalyzer" "\0"
-            VALUE "FileDescription", "strava_run_analyzer" "\0"
+            VALUE "FileDescription", "teman_lari" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "strava_run_analyzer" "\0"
+            VALUE "InternalName", "teman_lari" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.stravaanalyzer. All rights reserved." "\0"
-            VALUE "OriginalFilename", "strava_run_analyzer.exe" "\0"
-            VALUE "ProductName", "strava_run_analyzer" "\0"
+            VALUE "OriginalFilename", "teman_lari.exe" "\0"
+            VALUE "ProductName", "teman_lari" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

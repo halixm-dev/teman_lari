@@ -42,18 +42,18 @@ final _router = GoRouter(
 void main() {
   runApp(
     const ProviderScope(
-      child: StravaRunAnalyzerApp(),
+      child: temanLariApp(),
     ),
   );
 }
 
-class StravaRunAnalyzerApp extends StatelessWidget {
-  const StravaRunAnalyzerApp({super.key});
+class temanLariApp extends StatelessWidget {
+  const temanLariApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Strava Run Analyzer',
+      title: 'Teman Lari',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,

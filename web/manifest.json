@@ -1,6 +1,6 @@
 {
-    "name": "strava_run_analyzer",
-    "short_name": "strava_run_analyzer",
+    "name": "teman_lari",
+    "short_name": "teman_lari",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

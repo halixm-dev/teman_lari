@@ -1,4 +1,4 @@
-# strava_run_analyzer
+# teman_lari
 
 A new Flutter project.
 

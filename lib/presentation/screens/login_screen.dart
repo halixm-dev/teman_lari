@@ -25,7 +25,7 @@ class LoginScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 32),
                 Text(
-                  'Strava Run Analyzer',
+                  'Teman Lari',
                   style: Theme.of(context).textTheme.headlineMedium,
                   textAlign: TextAlign.center,
                 ),

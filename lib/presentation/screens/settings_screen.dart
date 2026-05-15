@@ -30,7 +30,7 @@ class SettingsScreen extends ConsumerWidget {
                 children: [
                   Text('About', style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 8),
-                  const Text('Strava Run Analyzer v1.0.0'),
+                  const Text('Teman Lari v1.0.0'),
                   const SizedBox(height: 4),
                   const Text('Built with Flutter & Riverpod'),
                 ],

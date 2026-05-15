@@ -5,10 +5,10 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = strava_run_analyzer
+PRODUCT_NAME = teman_lari
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.stravaanalyzer.stravaRunAnalyzer
+PRODUCT_BUNDLE_IDENTIFIER = com.stravaanalyzer.temanLari
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2026 com.stravaanalyzer. All rights reserved.

@@ -21,7 +21,7 @@ class StravaAuthDataSource {
 
     final result = await FlutterWebAuth2.authenticate(
       url: authUrl.toString(),
-      callbackUrlScheme: 'com.stravaanalyzer.stravarunanalyzer',
+      callbackUrlScheme: 'com.stravaanalyzer.temanLari',
     );
 
     final code = Uri.parse(result).queryParameters['code']!;
