@@ -29,8 +29,9 @@ class HrZone {
 class TrainingDay {
   final DateTime date;
   final WorkoutType type;
-  final double? targetDistanceKm;
-  final double? warmUpCoolDownKm;
+  final int? targetMinutes;
+  final int? warmUpMinutes;
+  final int? coolDownMinutes;
   final PaceZone? paceTarget;
   final HrZone? heartRateTarget;
   final String description;
@@ -40,16 +41,20 @@ class TrainingDay {
     required this.date,
     required this.type,
     required this.description,
-    this.targetDistanceKm,
-    this.warmUpCoolDownKm,
+    this.targetMinutes,
+    this.warmUpMinutes,
+    this.coolDownMinutes,
     this.paceTarget,
     this.heartRateTarget,
     this.estimatedDuration,
   });
 
-  double? get workDistanceKm {
-    if (targetDistanceKm == null || warmUpCoolDownKm == null) return null;
-    return targetDistanceKm! - warmUpCoolDownKm!;
+  int? get workMinutes {
+    if (targetMinutes == null) return null;
+    var work = targetMinutes!;
+    if (warmUpMinutes != null) work -= warmUpMinutes!;
+    if (coolDownMinutes != null) work -= coolDownMinutes!;
+    return work;
   }
 }
 

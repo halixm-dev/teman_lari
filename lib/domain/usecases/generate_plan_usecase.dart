@@ -17,7 +17,7 @@ class GeneratePlanUseCase {
     final thresholdPace = PaceZoneCalculator.estimateThresholdPace(activities);
     final paceZones = PaceZoneCalculator.fromThresholdPace(thresholdPace);
     final hrZones = _calculateHrZones(activities);
-    final weeklyKm = _targetWeeklyVolume(stats);
+    final weeklyMinutes = _targetWeeklyMinutes(stats);
     final startDate = _startDate(activities);
 
     return TrainingPlan(
@@ -26,7 +26,7 @@ class GeneratePlanUseCase {
       description: _planDescription(stats),
       days: _buildWeek(
         startDate: startDate,
-        weeklyKm: weeklyKm,
+        weeklyMinutes: weeklyMinutes,
         paceZones: paceZones,
         hrZones: hrZones,
         stats: stats,
@@ -36,34 +36,35 @@ class GeneratePlanUseCase {
 
   List<TrainingDay> _buildWeek({
     required DateTime startDate,
-    required double weeklyKm,
+    required double weeklyMinutes,
     required List<PaceZone> paceZones,
     required List<HrZone> hrZones,
     required RunningStats stats,
   }) {
-    final longRunKm = weeklyKm * 0.30;
-    final easyKm = weeklyKm * 0.20;
-    final tempoKm = weeklyKm * 0.15;
+    final longRunMin = (weeklyMinutes * 0.30).round();
+    final easyMin = (weeklyMinutes * 0.20).round();
+    final tempoWorkMin = (weeklyMinutes * 0.15).round();
 
     return [
       TrainingDay(
         date: startDate,
         type: WorkoutType.easy,
-        targetDistanceKm: easyKm,
+        targetMinutes: easyMin,
         paceTarget: paceZones[1],
         heartRateTarget: hrZones[1],
-        estimatedDuration: _estimateDuration(easyKm, paceZones[1]),
+        estimatedDuration: Duration(minutes: easyMin),
         description: 'Easy recovery run. Conversational pace throughout. '
             'Focus on form, not speed.',
       ),
       TrainingDay(
         date: startDate.add(const Duration(days: 1)),
         type: WorkoutType.intervals,
-        targetDistanceKm: _intervalDistance(stats),
-        warmUpCoolDownKm: 4.0,
+        targetMinutes: _intervalMinutes(stats),
+        warmUpMinutes: 10,
+        coolDownMinutes: 10,
         paceTarget: paceZones[4],
         heartRateTarget: hrZones[4],
-        estimatedDuration: _estimateDuration(_intervalDistance(stats), paceZones[4]),
+        estimatedDuration: Duration(minutes: _intervalMinutes(stats)),
         description: _intervalDescription(stats),
       ),
       TrainingDay(
@@ -75,23 +76,24 @@ class GeneratePlanUseCase {
       TrainingDay(
         date: startDate.add(const Duration(days: 3)),
         type: WorkoutType.easy,
-        targetDistanceKm: easyKm,
+        targetMinutes: easyMin,
         paceTarget: paceZones[1],
         heartRateTarget: hrZones[1],
-        estimatedDuration: _estimateDuration(easyKm, paceZones[1]),
+        estimatedDuration: Duration(minutes: easyMin),
         description: 'Easy aerobic run. Stay in Zone 2 the entire run. '
             'Great day for strides at the end (4x100m).',
       ),
       TrainingDay(
         date: startDate.add(const Duration(days: 4)),
         type: WorkoutType.tempo,
-        targetDistanceKm: tempoKm + 2,
-        warmUpCoolDownKm: 2.0,
+        targetMinutes: tempoWorkMin + 20,
+        warmUpMinutes: 10,
+        coolDownMinutes: 10,
         paceTarget: paceZones[3],
         heartRateTarget: hrZones[3],
-        estimatedDuration: _estimateDuration(tempoKm + 2, paceZones[3]),
-        description: '1km warm-up, ${tempoKm.toStringAsFixed(1)}km @ '
-            'threshold pace (Zone 4), 1km cool-down. '
+        estimatedDuration: Duration(minutes: tempoWorkMin + 20),
+        description: '10 min warm-up, $tempoWorkMin min @ '
+            'threshold pace (Zone 4), 10 min cool-down. '
             'Comfortably hard - you can speak in short sentences.',
       ),
       TrainingDay(
@@ -102,10 +104,10 @@ class GeneratePlanUseCase {
       TrainingDay(
         date: startDate.add(const Duration(days: 6)),
         type: WorkoutType.longRun,
-        targetDistanceKm: longRunKm,
+        targetMinutes: longRunMin,
         paceTarget: paceZones[1],
         heartRateTarget: hrZones[1],
-        estimatedDuration: _estimateDuration(longRunKm, paceZones[1]),
+        estimatedDuration: Duration(minutes: longRunMin),
         description: 'Long easy run - the most important run of the week. '
             'Stay strictly in Zone 2. Walk breaks are fine. '
             'Hydrate every 20-30 min.',
@@ -113,44 +115,36 @@ class GeneratePlanUseCase {
     ];
   }
 
-  Duration _estimateDuration(double distanceKm, PaceZone zone) {
-    final avgPaceSeconds = (zone.slowestPace.inSeconds + zone.fastestPace.inSeconds) ~/ 2;
-    return Duration(seconds: (distanceKm * avgPaceSeconds).round());
+  double _targetWeeklyMinutes(RunningStats stats) {
+    final recentMinutes = stats.recentWeeklyAvgMinutes;
+    if (recentMinutes <= 0) return 150;
+    if (stats.formScore < -10) return (recentMinutes * 0.80).clamp(60, 600);
+    if (stats.formScore < -5) return (recentMinutes * 0.95).clamp(60, 600);
+    return (recentMinutes * 1.10).clamp(60, 900);
   }
 
-  double _targetWeeklyVolume(RunningStats stats) {
-    final recentVolume = stats.recentWeeklyAvgKm;
-    if (recentVolume <= 0) return 15;
-    if (stats.formScore < -10) return (recentVolume * 0.80).clamp(10, 200);
-    if (stats.formScore < -5) return (recentVolume * 0.95).clamp(10, 200);
-    return (recentVolume * 1.10).clamp(10, 300);
-  }
-
-  double _intervalDistance(RunningStats stats) {
+  int _intervalMinutes(RunningStats stats) {
     final totalRuns = stats.totalRuns;
     final weeklyKm = stats.recentWeeklyAvgKm;
     if (totalRuns < 15 || weeklyKm < 20) {
-      // 2km warm-up + 4x400m (1.6km) + 3 recovery jogs (0.75km) + 2km cool-down
-      return 6.4;
+      return 30;
     }
     if (totalRuns > 50 || weeklyKm > 50) {
-      // 2km warm-up + 8x400m (3.2km) + 7 recovery jogs (1.75km) + 2km cool-down
-      return 9.0;
+      return 42;
     }
-    // 2km warm-up + 6x400m (2.4km) + 5 recovery jogs (1.25km) + 2km cool-down
-    return 7.7;
+    return 36;
   }
 
   String _intervalDescription(RunningStats stats) {
     final totalRuns = stats.totalRuns;
     final weeklyKm = stats.recentWeeklyAvgKm;
     if (totalRuns < 15 || weeklyKm < 20) {
-      return '2km warm-up @ Zone 2, then 4x400m @ Zone 5 with 90s recovery jogs, 2km cool-down.';
+      return '10 min warm-up @ Zone 2, then 4x90s @ Zone 5 with 90s recovery jogs, 10 min cool-down.';
     }
     if (totalRuns > 50 || weeklyKm > 50) {
-      return '2km warm-up @ Zone 2, then 8x400m @ Zone 5 with 90s recovery jogs, 2km cool-down.';
+      return '10 min warm-up @ Zone 2, then 8x90s @ Zone 5 with 90s recovery jogs, 10 min cool-down.';
     }
-    return '2km warm-up @ Zone 2, then 6x400m @ Zone 5 with 90s recovery jogs, 2km cool-down.';
+    return '10 min warm-up @ Zone 2, then 6x90s @ Zone 5 with 90s recovery jogs, 10 min cool-down.';
   }
 
   String _determineGoal(RunningStats stats) {

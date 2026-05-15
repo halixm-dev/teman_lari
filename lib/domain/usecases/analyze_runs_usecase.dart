@@ -16,6 +16,7 @@ class AnalyzeRunsUseCase {
       totalRuns: activities.length,
       totalDistanceKm: _totalDistance(activities),
       weeklyVolume: _weeklyVolume(activities),
+      weeklyMinutes: _weeklyMinutes(activities),
       averagePace: _averagePace(activities),
       paceProgression: _paceProgression(sortedByDate),
       heartRateZones: _hrZoneDistribution(activities,
@@ -150,6 +151,15 @@ class AnalyzeRunsUseCase {
     for (final activity in activities) {
       final weekKey = _isoWeekKey(activity.date);
       weekly[weekKey] = (weekly[weekKey] ?? 0) + activity.distanceKm;
+    }
+    return weekly;
+  }
+
+  Map<String, double> _weeklyMinutes(List<RunActivity> activities) {
+    final weekly = <String, double>{};
+    for (final activity in activities) {
+      final weekKey = _isoWeekKey(activity.date);
+      weekly[weekKey] = (weekly[weekKey] ?? 0) + activity.movingTime.inMinutes.toDouble();
     }
     return weekly;
   }

@@ -103,12 +103,13 @@ class _PlanDayCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 4),
-            if (!isRest && day.targetDistanceKm != null)
-              day.warmUpCoolDownKm != null
+            if (!isRest && day.targetMinutes != null)
+              day.warmUpMinutes != null
                   ? Text(
-                      'Walk ${day.warmUpCoolDownKm!.toStringAsFixed(1)} km + '
-                      'Run ${(day.targetDistanceKm! - day.warmUpCoolDownKm!).toStringAsFixed(1)} km')
-                  : Text('${day.targetDistanceKm!.toStringAsFixed(1)} km'),
+                      'Warmup ${day.warmUpMinutes} min + '
+                      'Run ${day.workMinutes} min + '
+                      'Cooldown ${day.coolDownMinutes} min')
+                  : Text('${day.targetMinutes} min'),
             if (day.paceTarget != null)
               Text(
                 '${_paceStr(day.paceTarget!.fastestPace)} - '

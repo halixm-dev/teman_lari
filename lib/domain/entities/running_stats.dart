@@ -28,6 +28,7 @@ class RunningStats {
   final int totalRuns;
   final double totalDistanceKm;
   final Map<String, double> weeklyVolume;
+  final Map<String, double> weeklyMinutes;
   final Duration averagePace;
   final List<PaceDataPoint> paceProgression;
   final Map<int, double> heartRateZones;
@@ -41,6 +42,7 @@ class RunningStats {
     required this.totalRuns,
     required this.totalDistanceKm,
     required this.weeklyVolume,
+    required this.weeklyMinutes,
     required this.averagePace,
     required this.paceProgression,
     required this.heartRateZones,
@@ -56,6 +58,7 @@ class RunningStats {
       totalRuns: 0,
       totalDistanceKm: 0,
       weeklyVolume: {},
+      weeklyMinutes: {},
       averagePace: Duration.zero,
       paceProgression: [],
       heartRateZones: {},
@@ -70,6 +73,14 @@ class RunningStats {
   double get recentWeeklyAvgKm {
     if (weeklyVolume.isEmpty) return 0;
     final values = weeklyVolume.values.toList();
+    final recentCount = values.length > 4 ? 4 : values.length;
+    final recent = values.sublist(values.length - recentCount);
+    return recent.reduce((a, b) => a + b) / recentCount;
+  }
+
+  double get recentWeeklyAvgMinutes {
+    if (weeklyMinutes.isEmpty) return 0;
+    final values = weeklyMinutes.values.toList();
     final recentCount = values.length > 4 ? 4 : values.length;
     final recent = values.sublist(values.length - recentCount);
     return recent.reduce((a, b) => a + b) / recentCount;
