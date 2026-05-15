@@ -1,4 +1,4 @@
-package com.stravaanalyzer.teman_lari
+package com.halixm.temanlari
 
 import io.flutter.embedding.android.FlutterActivity
 

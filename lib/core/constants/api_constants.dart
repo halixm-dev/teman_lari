@@ -6,7 +6,7 @@ class ApiConstants {
           defaultValue: 'ee210eb8a43b7c429b498c7dbda65f97ea250060');
   static const String stravaRedirectUri =
       String.fromEnvironment('STRAVA_REDIRECT_URI',
-          defaultValue: 'com.stravaanalyzer.stravarunanalyzer://callback');
+          defaultValue: 'com.halixm.temanlari://callback');
 
   static const String stravaAccessToken =
       String.fromEnvironment('STRAVA_ACCESS_TOKEN',
