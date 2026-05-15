@@ -34,6 +34,10 @@ dependencies:
   # Charts
   fl_chart: ^1.2.0
 
+  # GPS & Sensors
+  geolocator: ^14.0.1
+  pedometer: ^4.2.0
+
   # Navigation
   go_router: ^17.2.3
 

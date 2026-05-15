@@ -1,15 +1,19 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/services/gps_service.dart';
+import '../../core/services/pedometer_service.dart';
 import '../../domain/entities/training_plan.dart';
 import '../widgets/run_session/run_controls.dart';
 import '../widgets/run_session/run_pacer_display.dart';
 import '../widgets/run_session/run_secondary_metrics.dart';
 import '../widgets/run_session/run_session_state.dart';
 import '../widgets/run_session/run_timer_display.dart';
+
+enum PaceSource { gps, pedometer, none }
 
 class RunSessionScreen extends StatefulWidget {
   final TrainingDay day;
@@ -23,31 +27,148 @@ class RunSessionScreen extends StatefulWidget {
 class _RunSessionScreenState extends State<RunSessionScreen> {
   late RunSessionState _state;
   Timer? _timer;
-  final _random = Random();
+
+  final _gpsService = GpsService();
+  final _pedometerService = PedometerService();
+  StreamSubscription<Position>? _gpsSubscription;
+  StreamSubscription<int>? _pedometerSubscription;
+
+  // GPS state
+  double _smoothedSpeed = 0.0;
+  Position? _lastPosition;
+  int _gpsPaceSeconds = 0;
+  DateTime? _lastGpsUpdate;
+  bool _gpsPermissionGranted = false;
+  bool _gpsHasFix = false;
+
+  // Pedometer state
+  int _lastStepCount = 0;
+  final List<int> _stepHistory = [];
+
+  PaceSource _paceSource = PaceSource.none;
+
+  static const double _smoothingAlpha = 0.4;
+  static const Duration _gpsTimeout = Duration(seconds: 10);
+  static const double _minGpsSpeed = 0.5;
+  static const int _stepWindowSize = 10;
 
   @override
   void initState() {
     super.initState();
     final plan = widget.day;
-    final initialSeconds = plan.paceTarget != null
-        ? (plan.paceTarget!.fastestPace.inSeconds +
-                  plan.paceTarget!.slowestPace.inSeconds) ~/
-              2
-        : 330;
-    _state = RunSessionState(
-      plan: plan,
-      currentPaceSecondsPerKm: initialSeconds,
-    );
+    _state = RunSessionState(plan: plan, currentPaceSecondsPerKm: null);
+    _initSensors();
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _gpsSubscription?.cancel();
+    _pedometerSubscription?.cancel();
     super.dispose();
+  }
+
+  Future<void> _initSensors() async {
+    _gpsPermissionGranted = await _gpsService.requestPermission();
+    if (_gpsPermissionGranted) {
+      _gpsSubscription = _gpsService.trackPosition().listen(
+        _onGpsPosition,
+        onError: (_) {
+          if (mounted) setState(() => _gpsHasFix = false);
+        },
+      );
+    }
+
+    _pedometerSubscription = _pedometerService.trackSteps().listen(
+      _onPedometerStep,
+      onError: (_) {},
+    );
+  }
+
+  void _onGpsPosition(Position pos) {
+    _gpsHasFix = true;
+    _lastGpsUpdate = DateTime.now();
+
+    if (!_state.isRunning) {
+      _paceSource = PaceSource.gps;
+      setState(() {});
+    }
+
+    final rawSpeed = pos.speed;
+
+    if (rawSpeed > 0) {
+      if (_smoothedSpeed == 0) {
+        _smoothedSpeed = rawSpeed;
+      } else {
+        _smoothedSpeed =
+            _smoothingAlpha * rawSpeed + (1 - _smoothingAlpha) * _smoothedSpeed;
+      }
+    } else if (_lastPosition != null) {
+      final last = _lastPosition!;
+      final dist = Geolocator.distanceBetween(
+        last.latitude,
+        last.longitude,
+        pos.latitude,
+        pos.longitude,
+      );
+      final timeDelta = pos.timestamp
+          .difference(last.timestamp)
+          .inSeconds
+          .clamp(1, 60);
+      if (dist < 200) {
+        final calcSpeed = dist / timeDelta;
+        if (_smoothedSpeed == 0) {
+          _smoothedSpeed = calcSpeed;
+        } else {
+          _smoothedSpeed =
+              _smoothingAlpha * calcSpeed +
+              (1 - _smoothingAlpha) * _smoothedSpeed;
+        }
+      }
+    }
+
+    if (_smoothedSpeed > _minGpsSpeed) {
+      _gpsPaceSeconds = (1000 / _smoothedSpeed).round();
+    }
+
+    if (pos.accuracy < 50 && _lastPosition != null) {
+      final last = _lastPosition!;
+      final dist = Geolocator.distanceBetween(
+        last.latitude,
+        last.longitude,
+        pos.latitude,
+        pos.longitude,
+      );
+      if (dist > 0 && dist < 200) {
+        setState(() {
+          _state = RunSessionState(
+            plan: _state.plan,
+            phase: _state.phase,
+            elapsedSeconds: _state.elapsedSeconds,
+            currentPaceSecondsPerKm: _state.currentPaceSecondsPerKm,
+            distanceKm: _state.distanceKm + dist / 1000.0,
+            isRunning: _state.isRunning,
+            isLocked: _state.isLocked,
+            isAudioCoachOn: _state.isAudioCoachOn,
+          );
+        });
+        _pedometerService.calibrateStrideLength(dist);
+      }
+    }
+
+    _lastPosition = pos;
+  }
+
+  void _onPedometerStep(int steps) {
+    _pedometerService.updateSteps(steps);
   }
 
   void _start() {
     if (_timer != null && _timer!.isActive) return;
+
+    _lastStepCount = _pedometerService.stepsSinceStart;
+    _stepHistory.clear();
+
     _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
     setState(() {
       _state = RunSessionState(
@@ -55,6 +176,7 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
         phase: _state.phase,
         elapsedSeconds: _state.elapsedSeconds,
         currentPaceSecondsPerKm: _state.currentPaceSecondsPerKm,
+        distanceKm: _state.distanceKm,
         isRunning: true,
         isLocked: _state.isLocked,
         isAudioCoachOn: _state.isAudioCoachOn,
@@ -70,6 +192,7 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
         phase: _state.phase,
         elapsedSeconds: _state.elapsedSeconds,
         currentPaceSecondsPerKm: _state.currentPaceSecondsPerKm,
+        distanceKm: _state.distanceKm,
         isRunning: false,
         isLocked: _state.isLocked,
         isAudioCoachOn: _state.isAudioCoachOn,
@@ -88,8 +211,51 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
   void _tick() {
     final newElapsed = _state.elapsedSeconds + 1;
 
-    final jitter = (_random.nextInt(7) - 3);
-    final newPace = (_state.targetMidSeconds + jitter).clamp(120, 600);
+    final currentSteps = _pedometerService.stepsSinceStart;
+    final stepsThisSecond = (currentSteps - _lastStepCount).clamp(0, 5);
+    _stepHistory.add(stepsThisSecond);
+    if (_stepHistory.length > 30) {
+      _stepHistory.removeAt(0);
+    }
+    _lastStepCount = currentSteps;
+
+    final gpsTimedOut =
+        _lastGpsUpdate == null ||
+        DateTime.now().difference(_lastGpsUpdate!) > _gpsTimeout;
+    final gpsConnected = _gpsPermissionGranted && _gpsHasFix && !gpsTimedOut;
+    final gpsSpeedUsable = gpsConnected && _smoothedSpeed > _minGpsSpeed;
+
+    int? newPace;
+    if (gpsSpeedUsable) {
+      newPace = _gpsPaceSeconds.clamp(120, 600);
+      _paceSource = PaceSource.gps;
+    } else {
+      final windowSize = _stepHistory.length > _stepWindowSize
+          ? _stepWindowSize
+          : _stepHistory.length;
+      if (windowSize >= 5) {
+        final windowSteps = _stepHistory
+            .sublist(_stepHistory.length - windowSize)
+            .fold(0, (a, b) => a + b);
+        if (windowSteps > 3) {
+          final distMeters = windowSteps * _pedometerService.strideLength;
+          final paceSecPerKm = (windowSize / (distMeters / 1000)).round();
+          if (paceSecPerKm >= 120 && paceSecPerKm <= 1800) {
+            newPace = paceSecPerKm;
+            _paceSource = PaceSource.pedometer;
+          } else {
+            newPace = null;
+            _paceSource = gpsConnected ? PaceSource.gps : PaceSource.none;
+          }
+        } else {
+          newPace = null;
+          _paceSource = gpsConnected ? PaceSource.gps : PaceSource.none;
+        }
+      } else {
+        newPace = null;
+        _paceSource = gpsConnected ? PaceSource.gps : PaceSource.none;
+      }
+    }
 
     var newPhase = _state.phase;
     if (newElapsed >= _state.totalSeconds && _state.totalSeconds > 0) {
@@ -110,6 +276,7 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
         phase: newPhase,
         elapsedSeconds: newElapsed,
         currentPaceSecondsPerKm: newPace,
+        distanceKm: _state.distanceKm,
         isRunning: newPhase != WorkoutPhase.finished,
         isLocked: _state.isLocked,
         isAudioCoachOn: _state.isAudioCoachOn,
@@ -124,6 +291,7 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
         phase: _state.phase,
         elapsedSeconds: _state.elapsedSeconds,
         currentPaceSecondsPerKm: _state.currentPaceSecondsPerKm,
+        distanceKm: _state.distanceKm,
         isRunning: _state.isRunning,
         isLocked: !_state.isLocked,
         isAudioCoachOn: _state.isAudioCoachOn,
@@ -138,6 +306,7 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
         phase: _state.phase,
         elapsedSeconds: _state.elapsedSeconds,
         currentPaceSecondsPerKm: _state.currentPaceSecondsPerKm,
+        distanceKm: _state.distanceKm,
         isRunning: _state.isRunning,
         isLocked: _state.isLocked,
         isAudioCoachOn: !_state.isAudioCoachOn,
@@ -153,6 +322,7 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
         phase: WorkoutPhase.finished,
         elapsedSeconds: _state.elapsedSeconds,
         currentPaceSecondsPerKm: _state.currentPaceSecondsPerKm,
+        distanceKm: _state.distanceKm,
         isRunning: false,
         isLocked: _state.isLocked,
         isAudioCoachOn: _state.isAudioCoachOn,
@@ -207,6 +377,7 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
                         fastestTargetSeconds: _state.fastestTarget.inSeconds,
                         slowestTargetSeconds: _state.slowestTarget.inSeconds,
                       ),
+                      _PaceSourceIndicator(source: _paceSource),
                       RunSecondaryMetrics(
                         elapsedSeconds: _state.elapsedSeconds,
                         remainingSeconds: _state.remainingSeconds,
@@ -345,6 +516,49 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
     final m = totalSeconds ~/ 60;
     final s = totalSeconds % 60;
     return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+  }
+}
+
+class _PaceSourceIndicator extends StatelessWidget {
+  final PaceSource source;
+
+  const _PaceSourceIndicator({required this.source});
+
+  @override
+  Widget build(BuildContext context) {
+    final (icon, label, color) = switch (source) {
+      PaceSource.gps => (Icons.satellite_alt, 'GPS', const Color(0xFF22C55E)),
+      PaceSource.pedometer => (
+        Icons.directions_walk,
+        'Steps',
+        const Color(0xFFF59E0B),
+      ),
+      PaceSource.none => (
+        Icons.sensors_off,
+        'No Signal',
+        const Color(0xFFEF4444),
+      ),
+    };
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: color,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

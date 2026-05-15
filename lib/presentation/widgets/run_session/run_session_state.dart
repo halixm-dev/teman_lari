@@ -6,7 +6,8 @@ class RunSessionState {
   final TrainingDay plan;
   final WorkoutPhase phase;
   final int elapsedSeconds;
-  final int currentPaceSecondsPerKm;
+  final int? currentPaceSecondsPerKm;
+  final double distanceKm;
   final bool isRunning;
   final bool isLocked;
   final bool isAudioCoachOn;
@@ -15,7 +16,8 @@ class RunSessionState {
     required this.plan,
     this.phase = WorkoutPhase.warmup,
     this.elapsedSeconds = 0,
-    this.currentPaceSecondsPerKm = 330,
+    this.currentPaceSecondsPerKm,
+    this.distanceKm = 0.0,
     this.isRunning = false,
     this.isLocked = false,
     this.isAudioCoachOn = true,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class RunPacerDisplay extends StatelessWidget {
-  final int currentPaceSecondsPerKm;
+  final int? currentPaceSecondsPerKm;
   final int fastestTargetSeconds;
   final int slowestTargetSeconds;
 
@@ -23,7 +23,7 @@ class RunPacerDisplay extends StatelessWidget {
     final halfRange = (slowestTargetSeconds - fastestTargetSeconds).toDouble();
     final buffer = halfRange * 2;
     if (buffer <= 0) return 0.5;
-    return ((currentPaceSecondsPerKm - mid) / buffer + 0.5).clamp(0.0, 1.0);
+    return ((currentPaceSecondsPerKm! - mid) / buffer + 0.5).clamp(0.0, 1.0);
   }
 
   Color _paceStatusColor() {
@@ -44,8 +44,7 @@ class RunPacerDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = _paceStatusColor();
-    final statusLabel = _paceStatusLabel();
+    final hasPace = currentPaceSecondsPerKm != null;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24),
@@ -62,7 +61,7 @@ class RunPacerDisplay extends StatelessWidget {
             textBaseline: TextBaseline.alphabetic,
             children: [
               Text(
-                _formatPace(currentPaceSecondsPerKm),
+                hasPace ? _formatPace(currentPaceSecondsPerKm!) : "--'--",
                 style: const TextStyle(
                   fontFamily: 'JetBrains Mono',
                   fontSize: 36,
@@ -92,67 +91,67 @@ class RunPacerDisplay extends StatelessWidget {
               color: Color(0xFFAEAEB2),
             ),
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: SizedBox(
-                  height: 6,
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final pos = _pacePosition();
-                      final dotLeft = (pos * (constraints.maxWidth - 14)).clamp(
-                        0.0,
-                        constraints.maxWidth - 14,
-                      );
+          if (hasPace) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 6,
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final pos = _pacePosition();
+                        final dotLeft = (pos * (constraints.maxWidth - 14))
+                            .clamp(0.0, constraints.maxWidth - 14);
 
-                      return Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Row(
-                            children: [
-                              _segment(const Color(0xFFEF4444)),
-                              _segment(const Color(0xFFF59E0B)),
-                              _segment(const Color(0xFF22C55E)),
-                              _segment(const Color(0xFFF59E0B)),
-                              _segment(const Color(0xFFEF4444)),
-                            ],
-                          ),
-                          AnimatedPositioned(
-                            duration: const Duration(milliseconds: 200),
-                            curve: Curves.easeOutCubic,
-                            left: dotLeft,
-                            top: -4,
-                            child: Container(
-                              width: 14,
-                              height: 14,
-                              decoration: BoxDecoration(
-                                color: statusColor,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: const Color(0xFF1C1C1E),
-                                  width: 2,
+                        return Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Row(
+                              children: [
+                                _segment(const Color(0xFFEF4444)),
+                                _segment(const Color(0xFFF59E0B)),
+                                _segment(const Color(0xFF22C55E)),
+                                _segment(const Color(0xFFF59E0B)),
+                                _segment(const Color(0xFFEF4444)),
+                              ],
+                            ),
+                            AnimatedPositioned(
+                              duration: const Duration(milliseconds: 200),
+                              curve: Curves.easeOutCubic,
+                              left: dotLeft,
+                              top: -4,
+                              child: Container(
+                                width: 14,
+                                height: 14,
+                                decoration: BoxDecoration(
+                                  color: _paceStatusColor(),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: const Color(0xFF1C1C1E),
+                                    width: 2,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      );
-                    },
+                          ],
+                        );
+                      },
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                statusLabel,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: statusColor,
+                const SizedBox(width: 8),
+                Text(
+                  _paceStatusLabel(),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: _paceStatusColor(),
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ],
       ),
     );
