@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 import '../../domain/entities/running_stats.dart';
+import '../theme/app_colors.dart';
 
 class PaceProgressionChart extends StatelessWidget {
   final List<PaceDataPoint> dataPoints;
@@ -65,7 +66,7 @@ class PaceProgressionChart extends StatelessWidget {
             show: true,
             drawVerticalLine: false,
             getDrawingHorizontalLine: (_) => FlLine(
-              color: Colors.grey.withValues(alpha: 0.2),
+              color: AppColors.gray500.withValues(alpha: 0.2),
               strokeWidth: 1,
             ),
           ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/auth_provider.dart';
+import '../theme/app_colors.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -37,7 +38,7 @@ class SettingsScreen extends ConsumerWidget {
                   const Text(
                     'Powered by Strava',
                     style: TextStyle(
-                      color: Colors.grey,
+                      color: AppColors.gray500,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

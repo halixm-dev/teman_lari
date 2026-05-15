@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/training_plan.dart';
+import '../theme/app_colors.dart';
 import '../providers/activities_provider.dart';
 
 class PlanScreen extends ConsumerWidget {
@@ -139,7 +140,7 @@ class _PlanDayCard extends StatelessWidget {
       WorkoutType.tempo => Colors.orange,
       WorkoutType.intervals => Colors.red,
       WorkoutType.longRun => Colors.blue,
-      WorkoutType.rest => Colors.grey,
+      WorkoutType.rest => AppColors.gray500,
       WorkoutType.crossTraining => Colors.purple,
     };
   }
@@ -197,7 +198,7 @@ class _WorkoutTypeBadge extends StatelessWidget {
       WorkoutType.tempo => Colors.orange,
       WorkoutType.intervals => Colors.red,
       WorkoutType.longRun => Colors.blue,
-      WorkoutType.rest => Colors.grey,
+      WorkoutType.rest => AppColors.gray500,
       WorkoutType.crossTraining => Colors.purple,
     };
   }

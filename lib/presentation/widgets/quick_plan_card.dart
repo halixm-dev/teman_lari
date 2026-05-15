@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../providers/activities_provider.dart';
 
@@ -22,7 +23,7 @@ class QuickPlanCard extends ConsumerWidget {
                 Text('Training Plan',
                     style: Theme.of(context).textTheme.titleMedium),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () => context.go('/plan'),
                   child: const Text('View Full'),
                 ),
               ],

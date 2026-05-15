@@ -34,7 +34,7 @@ class RunningStats {
   final List<TrainingLoadPoint> trainingLoadHistory;
   final double? vo2MaxEstimate;
   final double fitnessScore;
-  final double fatigueSCore;
+  final double fatigueScore;
   final double formScore;
 
   const RunningStats({
@@ -47,7 +47,7 @@ class RunningStats {
     required this.trainingLoadHistory,
     required this.vo2MaxEstimate,
     required this.fitnessScore,
-    required this.fatigueSCore,
+    required this.fatigueScore,
     required this.formScore,
   });
 
@@ -62,7 +62,7 @@ class RunningStats {
       trainingLoadHistory: [],
       vo2MaxEstimate: null,
       fitnessScore: 0,
-      fatigueSCore: 0,
+      fatigueScore: 0,
       formScore: 0,
     );
   }

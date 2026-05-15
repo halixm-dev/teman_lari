@@ -29,6 +29,13 @@ class AppTheme {
         headlineLarge: AppTypography.headingLg,
         headlineMedium: AppTypography.headingMd,
         headlineSmall: AppTypography.headingSm,
+        titleLarge: AppTypography.headingMd,
+        titleMedium: AppTypography.headingSm,
+        titleSmall: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: AppColors.gray500,
+        ),
         bodyLarge: AppTypography.bodyLg,
         bodyMedium: AppTypography.bodyMd,
         bodySmall: AppTypography.bodySm,
@@ -40,7 +47,9 @@ class AppTheme {
         scrolledUnderElevation: 0,
         backgroundColor: AppColors.gray50,
         foregroundColor: AppColors.gray900,
-        titleTextStyle: AppTypography.headingMd.copyWith(color: AppColors.gray900),
+        titleTextStyle: AppTypography.headingMd.copyWith(
+          color: AppColors.gray900,
+        ),
       ),
       cardTheme: CardThemeData(
         color: AppColors.white,
@@ -80,7 +89,6 @@ class AppTheme {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-            side: BorderSide(color: AppColors.gray300),
           ),
         ),
       ),
@@ -95,17 +103,20 @@ class AppTheme {
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        indicatorColor: Colors.black,
+        indicatorColor: AppColors.gray200,
         backgroundColor: AppColors.white,
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return const IconThemeData(color: AppColors.brandOrange);
           }
-          return const IconThemeData(color: Colors.white);
+          return const IconThemeData(color: AppColors.gray900);
         }),
-        labelTextStyle: WidgetStateProperty.resolveWith(
-          (_) => AppTypography.bodySm.copyWith(color: Colors.white),
-        ),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          return AppTypography.bodySm.copyWith(
+            color: AppColors.gray900,
+            fontWeight: FontWeight.w600,
+          );
+        }),
       ),
     );
   }
@@ -127,16 +138,47 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: AppColors.surfacePrimaryDark,
       textTheme: TextTheme(
-        displayLarge: AppTypography.displayXl.copyWith(color: AppColors.textPrimaryDark),
-        displayMedium: AppTypography.displayLg.copyWith(color: AppColors.textPrimaryDark),
-        displaySmall: AppTypography.displayMd.copyWith(color: AppColors.textPrimaryDark),
-        headlineLarge: AppTypography.headingLg.copyWith(color: AppColors.textPrimaryDark),
-        headlineMedium: AppTypography.headingMd.copyWith(color: AppColors.textPrimaryDark),
-        headlineSmall: AppTypography.headingSm.copyWith(color: AppColors.textPrimaryDark),
-        bodyLarge: AppTypography.bodyLg.copyWith(color: AppColors.textPrimaryDark),
-        bodyMedium: AppTypography.bodyMd.copyWith(color: AppColors.textSecondaryDark),
-        bodySmall: AppTypography.bodySm.copyWith(color: AppColors.textSecondaryDark),
-        labelSmall: AppTypography.caption.copyWith(color: AppColors.textTertiaryDark),
+        displayLarge: AppTypography.displayXl.copyWith(
+          color: AppColors.textPrimaryDark,
+        ),
+        displayMedium: AppTypography.displayLg.copyWith(
+          color: AppColors.textPrimaryDark,
+        ),
+        displaySmall: AppTypography.displayMd.copyWith(
+          color: AppColors.textPrimaryDark,
+        ),
+        headlineLarge: AppTypography.headingLg.copyWith(
+          color: AppColors.textPrimaryDark,
+        ),
+        headlineMedium: AppTypography.headingMd.copyWith(
+          color: AppColors.textPrimaryDark,
+        ),
+        headlineSmall: AppTypography.headingSm.copyWith(
+          color: AppColors.textPrimaryDark,
+        ),
+        titleLarge: AppTypography.headingMd.copyWith(
+          color: AppColors.textPrimaryDark,
+        ),
+        titleMedium: AppTypography.headingSm.copyWith(
+          color: AppColors.textPrimaryDark,
+        ),
+        titleSmall: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textSecondaryDark,
+        ),
+        bodyLarge: AppTypography.bodyLg.copyWith(
+          color: AppColors.textPrimaryDark,
+        ),
+        bodyMedium: AppTypography.bodyMd.copyWith(
+          color: AppColors.textSecondaryDark,
+        ),
+        bodySmall: AppTypography.bodySm.copyWith(
+          color: AppColors.textSecondaryDark,
+        ),
+        labelSmall: AppTypography.caption.copyWith(
+          color: AppColors.textTertiaryDark,
+        ),
       ),
       appBarTheme: AppBarTheme(
         centerTitle: true,
@@ -144,7 +186,9 @@ class AppTheme {
         scrolledUnderElevation: 0,
         backgroundColor: AppColors.surfacePrimaryDark,
         foregroundColor: AppColors.textPrimaryDark,
-        titleTextStyle: AppTypography.headingMd.copyWith(color: AppColors.textPrimaryDark),
+        titleTextStyle: AppTypography.headingMd.copyWith(
+          color: AppColors.textPrimaryDark,
+        ),
       ),
       cardTheme: CardThemeData(
         color: AppColors.surfaceSecondaryDark,
@@ -199,17 +243,20 @@ class AppTheme {
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        indicatorColor: Colors.black,
+        indicatorColor: AppColors.surfaceTertiaryDark,
         backgroundColor: AppColors.surfaceSecondaryDark,
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return const IconThemeData(color: AppColors.brandOrange);
           }
-          return const IconThemeData(color: Colors.white);
+          return const IconThemeData(color: AppColors.textPrimaryDark);
         }),
-        labelTextStyle: WidgetStateProperty.resolveWith(
-          (_) => AppTypography.bodySm.copyWith(color: Colors.white),
-        ),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          return AppTypography.bodySm.copyWith(
+            color: AppColors.textPrimaryDark,
+            fontWeight: FontWeight.w600,
+          );
+        }),
       ),
     );
   }

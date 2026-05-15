@@ -33,7 +33,7 @@ class FitnessFormCard extends StatelessWidget {
                     color: Colors.blue),
                 _MetricChip(
                     label: 'Fatigue',
-                    value: stats.fatigueSCore.toStringAsFixed(0),
+                    value: stats.fatigueScore.toStringAsFixed(0),
                     color: Colors.red),
                 _MetricChip(
                     label: 'Form',

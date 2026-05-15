@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../providers/auth_provider.dart';
+import '../theme/app_colors.dart';
 
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
@@ -73,7 +74,7 @@ class LoginScreen extends ConsumerWidget {
                 const Text(
                   'Powered by Strava',
                   style: TextStyle(
-                    color: Colors.grey,
+                    color: AppColors.gray500,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

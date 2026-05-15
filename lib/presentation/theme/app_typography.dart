@@ -25,19 +25,19 @@ class AppTypography {
         height: 1.2,
       );
 
-  static TextStyle get headingLg => figtreeBold.copyWith(
+  static TextStyle get headingLg => figtree.copyWith(
         fontSize: 22,
         fontWeight: FontWeight.w600,
         height: 1.3,
       );
 
-  static TextStyle get headingMd => figtreeBold.copyWith(
+  static TextStyle get headingMd => figtree.copyWith(
         fontSize: 18,
         fontWeight: FontWeight.w600,
         height: 1.35,
       );
 
-  static TextStyle get headingSm => figtreeBold.copyWith(
+  static TextStyle get headingSm => figtree.copyWith(
         fontSize: 15,
         fontWeight: FontWeight.w600,
         height: 1.4,

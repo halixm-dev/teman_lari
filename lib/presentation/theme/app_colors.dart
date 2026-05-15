@@ -14,18 +14,12 @@ class AppColors {
   static const Color gray700 = Color(0xFF3D3D3D);
   static const Color gray500 = Color(0xFF707070);
   static const Color gray300 = Color(0xFFB0B0B0);
+  static const Color gray200 = Color(0xFFEEEEEE);
   static const Color gray100 = Color(0xFFF5F5F5);
   static const Color gray50 = Color(0xFFFAFAFA);
   static const Color white = Color(0xFFFFFFFF);
 
   // Semantic
-  static const Color kudos = Color(0xFFFC4C02);
-  static const Color pr = Color(0xFF8B5CF6);
-  static const Color kom = Color(0xFFFFD700);
-  static const Color run = Color(0xFFFC4C02);
-  static const Color ride = Color(0xFF0077B6);
-  static const Color swim = Color(0xFF00B4D8);
-  static const Color hike = Color(0xFF2D6A4F);
   static const Color success = Color(0xFF22C55E);
   static const Color warning = Color(0xFFF59E0B);
   static const Color danger = Color(0xFFEF4444);
@@ -38,9 +32,4 @@ class AppColors {
   static const Color textSecondaryDark = Color(0xFFAEAEB2);
   static const Color textTertiaryDark = Color(0xFF636366);
   static const Color dividerDark = Color(0xFF38383A);
-
-  // Sport colors
-  static const Color yoga = Color(0xFFA78BFA);
-  static const Color workout = Color(0xFF64748B);
-  static const Color ski = Color(0xFF60A5FA);
 }

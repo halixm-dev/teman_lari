@@ -18,7 +18,7 @@ class AnalyzeRunsUseCase {
       trainingLoadHistory: _trainingLoadHistory(sortedByDate),
       vo2MaxEstimate: _estimateVo2Max(activities),
       fitnessScore: _fitnessScore(activities),
-      fatigueSCore: _fatigueScore(activities),
+      fatigueScore: _fatigueScore(activities),
       formScore: _formScore(activities),
     );
   }

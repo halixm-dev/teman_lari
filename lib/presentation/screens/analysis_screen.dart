@@ -28,7 +28,7 @@ class AnalysisScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('Pace Progression',
-                              style: Theme.of(context).textTheme.titleMedium),
+                              style: Theme.of(context).textTheme.headlineSmall),
                           const SizedBox(height: 16),
                           PaceProgressionChart(
                               dataPoints: stats.paceProgression),
@@ -44,7 +44,7 @@ class AnalysisScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('Heart Rate Zones',
-                              style: Theme.of(context).textTheme.titleMedium),
+                              style: Theme.of(context).textTheme.headlineSmall),
                           const SizedBox(height: 16),
                           HrZoneDistributionChart(
                               zoneDistribution: stats.heartRateZones),
@@ -60,7 +60,7 @@ class AnalysisScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('Summary',
-                              style: Theme.of(context).textTheme.titleMedium),
+                              style: Theme.of(context).textTheme.headlineSmall),
                           const SizedBox(height: 8),
                           _statRow('Total Runs', '${stats.totalRuns}'),
                           _statRow('Total Distance',

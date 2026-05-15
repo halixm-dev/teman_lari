@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/utils/date_utils.dart';
 import '../../domain/entities/run_activity.dart';
 import '../providers/activities_provider.dart';
 
@@ -75,7 +76,7 @@ class _RunTile extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  '${run.date.day}/${run.date.month}/${run.date.year}',
+                  AppDateUtils.formatDate(run.date),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
