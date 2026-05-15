@@ -3,6 +3,9 @@ class Failure {
   final int? statusCode;
 
   const Failure(this.message, [this.statusCode]);
+
+  @override
+  String toString() => message;
 }
 
 class ServerFailure extends Failure {
