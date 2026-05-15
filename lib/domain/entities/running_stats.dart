@@ -1,0 +1,77 @@
+class PaceDataPoint {
+  final DateTime date;
+  final int paceSecondsPerKm;
+  final double distanceKm;
+
+  const PaceDataPoint({
+    required this.date,
+    required this.paceSecondsPerKm,
+    required this.distanceKm,
+  });
+}
+
+class TrainingLoadPoint {
+  final DateTime date;
+  final double fitness;
+  final double fatigue;
+  final double form;
+
+  const TrainingLoadPoint({
+    required this.date,
+    required this.fitness,
+    required this.fatigue,
+    required this.form,
+  });
+}
+
+class RunningStats {
+  final int totalRuns;
+  final double totalDistanceKm;
+  final Map<String, double> weeklyVolume;
+  final Duration averagePace;
+  final List<PaceDataPoint> paceProgression;
+  final Map<int, double> heartRateZones;
+  final List<TrainingLoadPoint> trainingLoadHistory;
+  final double? vo2MaxEstimate;
+  final double fitnessScore;
+  final double fatigueSCore;
+  final double formScore;
+
+  const RunningStats({
+    required this.totalRuns,
+    required this.totalDistanceKm,
+    required this.weeklyVolume,
+    required this.averagePace,
+    required this.paceProgression,
+    required this.heartRateZones,
+    required this.trainingLoadHistory,
+    required this.vo2MaxEstimate,
+    required this.fitnessScore,
+    required this.fatigueSCore,
+    required this.formScore,
+  });
+
+  factory RunningStats.empty() {
+    return RunningStats(
+      totalRuns: 0,
+      totalDistanceKm: 0,
+      weeklyVolume: {},
+      averagePace: Duration.zero,
+      paceProgression: [],
+      heartRateZones: {},
+      trainingLoadHistory: [],
+      vo2MaxEstimate: null,
+      fitnessScore: 0,
+      fatigueSCore: 0,
+      formScore: 0,
+    );
+  }
+
+  double get recentWeeklyAvgKm {
+    if (weeklyVolume.isEmpty) return 0;
+    final values = weeklyVolume.values.toList();
+    final recentCount = values.length > 4 ? 4 : values.length;
+    final recent = values.sublist(values.length - recentCount);
+    return recent.reduce((a, b) => a + b) / recentCount;
+  }
+}
