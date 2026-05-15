@@ -51,6 +51,16 @@ dev_dependencies:
   riverpod_generator: ^4.0.3
   mockito: ^5.6.4
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "Icon.png"
+  adaptive_icon_background: "#FC4C02"
+  adaptive_icon_foreground: "Icon_foreground.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true
 
 flutter:
   uses-material-design: true
