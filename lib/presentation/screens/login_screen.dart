@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../providers/auth_provider.dart';
 
@@ -8,6 +9,12 @@ class LoginScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(authStateProvider, (previous, next) {
+      if (next.isAuthenticated) {
+        context.go('/dashboard');
+      }
+    });
+
     final authState = ref.watch(authStateProvider);
 
     return Scaffold(
@@ -60,6 +67,14 @@ class LoginScreen extends ConsumerWidget {
                       horizontal: 32,
                       vertical: 16,
                     ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'Powered by Strava',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],

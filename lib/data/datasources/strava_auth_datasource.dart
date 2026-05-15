@@ -15,7 +15,7 @@ class StravaAuthDataSource {
       'client_id': ApiConstants.stravaClientId,
       'redirect_uri': ApiConstants.stravaRedirectUri,
       'response_type': 'code',
-      'scope': 'activity:read_all',
+      'scope': 'activity:read,activity:read_all',
       'approval_prompt': 'auto',
     });
 

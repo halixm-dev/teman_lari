@@ -20,7 +20,17 @@ class StravaAuthUseCase {
     if (tokens == null) return false;
 
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    return tokens.expiresAt > now;
+    if (tokens.expiresAt > now) {
+      return true;
+    }
+
+    try {
+      final newTokens = await authDataSource.refreshToken(tokens.refreshToken);
+      await tokenStorage.saveTokens(newTokens);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   Future<StravaTokens?> _seedPreconfiguredTokens() async {
@@ -29,11 +39,10 @@ class StravaAuthUseCase {
 
     if (accessToken.isEmpty || refreshToken.isEmpty) return null;
 
-    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     final tokens = StravaTokens(
       accessToken: accessToken,
       refreshToken: refreshToken,
-      expiresAt: now + (6 * 3600),
+      expiresAt: 0,
     );
 
     await tokenStorage.saveTokens(tokens);

@@ -104,7 +104,7 @@ cd teman_lari
 ### 3.2 Strava Developer Account
 
 1. Go to [https://developers.strava.com](https://developers.strava.com) and create an app.
-2. Set **Authorization Callback Domain** to your app's scheme (e.g., `com.yourname.temanLari`).
+2. Set **Authorization Callback Domain** to `localhost` (or your preferred domain, ensuring the `redirect_uri` host matches it).
 3. Note your **Client ID** and **Client Secret**.
 
 ### 3.3 Environment Config

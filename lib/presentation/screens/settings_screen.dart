@@ -33,6 +33,14 @@ class SettingsScreen extends ConsumerWidget {
                   const Text('Teman Lari v1.0.0'),
                   const SizedBox(height: 4),
                   const Text('Built with Flutter & Riverpod'),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Powered by Strava',
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
             ),
