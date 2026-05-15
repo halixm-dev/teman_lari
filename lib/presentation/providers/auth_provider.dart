@@ -65,7 +65,7 @@ class AuthState {
 
   const AuthState.unknown()
       : isAuthenticated = false,
-        isLoading = false,
+        isLoading = true,
         error = null;
 
   const AuthState.unauthenticated()
