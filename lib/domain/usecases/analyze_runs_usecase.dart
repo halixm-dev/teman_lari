@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import '../entities/run_activity.dart';
 import '../entities/running_stats.dart';
 
@@ -105,6 +107,11 @@ class AnalyzeRunsUseCase {
         restingHr: restingHr,
       );
       ema = tss * decay + ema * (1 - decay);
+    }
+    final lastDate = activities.last.date;
+    final daysSince = DateTime.now().difference(lastDate).inDays;
+    if (daysSince > 0) {
+      ema *= pow(1 - decay, daysSince).toDouble();
     }
     return ema;
   }
@@ -269,21 +276,37 @@ class AnalyzeRunsUseCase {
     int maxHr = 190,
     int restingHr = 60,
   }) {
-    double fitness = 0, fatigue = 0;
-    return sorted.map((activity) {
-      final tss = _trainingStressScore(
-        activity,
+    if (sorted.isEmpty) return [];
+
+    final tssByDate = <DateTime, double>{};
+    for (final a in sorted) {
+      final day = DateTime(a.date.year, a.date.month, a.date.day);
+      tssByDate[day] = _trainingStressScore(
+        a,
         maxHr: maxHr,
         restingHr: restingHr,
       );
-      fitness = tss * (2 / 43) + fitness * (41 / 43);
-      fatigue = tss * (2 / 8) + fatigue * (6 / 8);
-      return TrainingLoadPoint(
-        date: activity.date,
+    }
+
+    final first =
+        DateTime(sorted.first.date.year, sorted.first.date.month, sorted.first.date.day);
+    final last = DateTime.now();
+    const fitnessDecay = 2 / 43, fatigueDecay = 2 / 8;
+    double fitness = 0, fatigue = 0;
+    final result = <TrainingLoadPoint>[];
+
+    for (var d = first; !d.isAfter(last); d = d.add(const Duration(days: 1))) {
+      final tss = tssByDate[d] ?? 0;
+      fitness = tss * fitnessDecay + fitness * (1 - fitnessDecay);
+      fatigue = tss * fatigueDecay + fatigue * (1 - fatigueDecay);
+      result.add(TrainingLoadPoint(
+        date: d,
         fitness: fitness,
         fatigue: fatigue,
         form: fitness - fatigue,
-      );
-    }).toList();
+      ));
+    }
+
+    return result;
   }
 }
