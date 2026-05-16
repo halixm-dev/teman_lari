@@ -28,10 +28,10 @@ class LoginScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.directions_run,
+                  ImageIcon(
+                    AssetImage('assets/icons/Icon.png'),
                     size: 100,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: AppColors.brandOrange,
                   ),
                   const SizedBox(height: 32),
                   Text(

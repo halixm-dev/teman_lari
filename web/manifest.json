@@ -3,9 +3,9 @@
     "short_name": "Teman Lari",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#FC4C02",
+    "theme_color": "#FC4C02",
+    "description": "A Strava running analyzer app with training plan generation.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
