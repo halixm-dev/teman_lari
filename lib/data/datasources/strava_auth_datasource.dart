@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -11,9 +12,16 @@ class StravaAuthDataSource {
   StravaAuthDataSource(this._httpClient);
 
   Future<StravaTokens> authenticate() async {
+    final redirectUri = kIsWeb
+        ? 'http://localhost:62789'
+        : ApiConstants.stravaRedirectUri;
+    final callbackScheme = kIsWeb
+        ? 'http://localhost:62789'
+        : 'com.halixm.temanlari';
+
     final authUrl = Uri.https('www.strava.com', '/oauth/authorize', {
       'client_id': ApiConstants.stravaClientId,
-      'redirect_uri': ApiConstants.stravaRedirectUri,
+      'redirect_uri': redirectUri,
       'response_type': 'code',
       'scope': 'activity:read,activity:read_all',
       'approval_prompt': 'auto',
@@ -21,8 +29,8 @@ class StravaAuthDataSource {
 
     final result = await FlutterWebAuth2.authenticate(
       url: authUrl.toString(),
-      callbackUrlScheme: 'com.halixm.temanlari',
-    );
+      callbackUrlScheme: callbackScheme,
+    ).timeout(const Duration(seconds: 120));
 
     final code = Uri.parse(result).queryParameters['code']!;
 

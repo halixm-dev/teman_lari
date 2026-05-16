@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/utils/responsive.dart';
 import '../providers/activities_provider.dart';
 import '../widgets/fitness_form_card.dart';
 import '../widgets/stats_grid.dart';
@@ -25,7 +26,8 @@ class DashboardScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: activities.when(
+      body: ConstrainedContent(
+        child: activities.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(
           child: Column(
@@ -69,6 +71,7 @@ class DashboardScreen extends ConsumerWidget {
                   ),
                 ),
         ),
+      ),
       ),
     );
   }

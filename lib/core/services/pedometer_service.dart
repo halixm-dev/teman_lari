@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:pedometer/pedometer.dart';
 
 class PedometerService {
@@ -11,6 +12,7 @@ class PedometerService {
 
   /// Stream of step counts since start. Emits 0 if pedometer unavailable.
   Stream<int> trackSteps() {
+    if (kIsWeb) return const Stream.empty();
     return Pedometer.stepCountStream
         .map((event) => event.steps)
         .handleError((_) => _available = false);
@@ -21,6 +23,7 @@ class PedometerService {
   Future<bool> isAvailable({
     Duration timeout = const Duration(seconds: 3),
   }) async {
+    if (kIsWeb) return false;
     if (_available) return true;
     try {
       await Pedometer.stepCountStream.first.timeout(timeout);

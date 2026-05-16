@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/utils/responsive.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_colors.dart';
 
@@ -11,7 +12,8 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
-      body: ListView(
+      body: ConstrainedContent(
+        child: ListView(
         children: [
           Card(
             margin: const EdgeInsets.all(16),
@@ -47,6 +49,7 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }

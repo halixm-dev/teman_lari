@@ -102,6 +102,38 @@ For local development, use `http://localhost` as the redirect URI.
 | flutter_secure_storage | Secure token storage |
 | strava_flutter | Strava API integration |
 
+## Deployment (Vercel + GitHub)
+
+This app is configured for automatic deployment via [Vercel](https://vercel.com) + GitHub.
+
+### One-time Setup
+
+1. Push this repo to GitHub
+2. Go to [vercel.com](https://vercel.com), click **Add New → Project**, and import your GitHub repo
+3. Vercel will auto-detect `vercel.json` and run `bash build.sh`
+4. In Vercel dashboard → your project → **Settings → Environment Variables**, add:
+   - `STRAVA_CLIENT_ID`
+   - `STRAVA_CLIENT_SECRET`
+   - `STRAVA_REDIRECT_URI` — set to `https://your-app.vercel.app`
+5. Update your [Strava API app](https://www.strava.com/settings/api) callback domain to match your Vercel domain
+6. Update `STRAVA_REDIRECT_URI` in `lib/data/datasources/strava_auth_datasource.dart` line 16 from `http://localhost:62789` to your production URL
+
+### How it Works
+
+- Every push to `main` (or PR branch) triggers a Vercel deployment
+- `build.sh` installs Flutter SDK, passes Vercel env vars via `--dart-define`, and runs `flutter build web --release`
+- Output from `build/web` is deployed with SPA rewrites for client-side routing
+
+### Build Locally
+
+```bash
+flutter build web --release \
+  --dart-define=STRAVA_CLIENT_ID=... \
+  --dart-define=STRAVA_CLIENT_SECRET=... \
+  --dart-define=STRAVA_REDIRECT_URI=...
+npx vercel --prod
+```
+
 ## License
 
 MIT

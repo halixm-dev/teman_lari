@@ -1,4 +1,6 @@
 import 'dart:convert';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -6,8 +8,13 @@ import '../models/activity_model.dart';
 
 class LocalActivityDataSource {
   Database? _database;
+  bool _webUnsupported = false;
 
   Future<Database> get database async {
+    if (kIsWeb) {
+      _webUnsupported = true;
+      throw UnsupportedError('sqflite not available on web');
+    }
     _database ??= await _initDatabase();
     return _database!;
   }
@@ -49,62 +56,81 @@ class LocalActivityDataSource {
   }
 
   Future<void> saveActivities(List<ActivityModel> activities) async {
-    final db = await database;
-    final batch = db.batch();
-    for (final activity in activities) {
-      batch.insert('activities', {
-        'id': activity.id,
-        'data': jsonEncode(activity.toJson()),
-        'synced_at': DateTime.now().millisecondsSinceEpoch,
-      }, conflictAlgorithm: ConflictAlgorithm.replace);
-    }
-    await batch.commit(noResult: true);
+    if (_webUnsupported) return;
+    try {
+      final db = await database;
+      final batch = db.batch();
+      for (final activity in activities) {
+        batch.insert('activities', {
+          'id': activity.id,
+          'data': jsonEncode(activity.toJson()),
+          'synced_at': DateTime.now().millisecondsSinceEpoch,
+        }, conflictAlgorithm: ConflictAlgorithm.replace);
+      }
+      await batch.commit(noResult: true);
+    } catch (_) {}
   }
 
   Future<List<ActivityModel>?> getCachedActivities() async {
-    final db = await database;
-    final rows = await db.query('activities', orderBy: 'id DESC');
-    if (rows.isEmpty) return null;
+    if (_webUnsupported) return null;
+    try {
+      final db = await database;
+      final rows = await db.query('activities', orderBy: 'id DESC');
+      if (rows.isEmpty) return null;
 
-    final oldest = rows.last['synced_at'] as int;
-    final age = DateTime.now().millisecondsSinceEpoch - oldest;
-    if (age > 3600 * 1000) return null;
+      final oldest = rows.last['synced_at'] as int;
+      final age = DateTime.now().millisecondsSinceEpoch - oldest;
+      if (age > 3600 * 1000) return null;
 
-    return rows
-        .map((r) => ActivityModel.fromJson(jsonDecode(r['data'] as String)))
-        .toList();
+      return rows
+          .map((r) => ActivityModel.fromJson(jsonDecode(r['data'] as String)))
+          .toList();
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> saveHeartRateStream(int activityId, List<double> data) async {
-    final db = await database;
-    await db.insert('hr_streams', {
-      'activity_id': activityId,
-      'data': jsonEncode(data),
-      'synced_at': DateTime.now().millisecondsSinceEpoch,
-    }, conflictAlgorithm: ConflictAlgorithm.replace);
+    if (_webUnsupported) return;
+    try {
+      final db = await database;
+      await db.insert('hr_streams', {
+        'activity_id': activityId,
+        'data': jsonEncode(data),
+        'synced_at': DateTime.now().millisecondsSinceEpoch,
+      }, conflictAlgorithm: ConflictAlgorithm.replace);
+    } catch (_) {}
   }
 
   Future<Map<int, List<double>>> getCachedHeartRateStreams() async {
-    final db = await database;
-    final rows = await db.query('hr_streams');
-    if (rows.isEmpty) return {};
+    if (_webUnsupported) return {};
+    try {
+      final db = await database;
+      final rows = await db.query('hr_streams');
+      if (rows.isEmpty) return {};
 
-    final result = <int, List<double>>{};
-    final now = DateTime.now().millisecondsSinceEpoch;
-    for (final row in rows) {
-      final age = now - (row['synced_at'] as int);
-      if (age > 3600 * 1000) continue;
+      final result = <int, List<double>>{};
+      final now = DateTime.now().millisecondsSinceEpoch;
+      for (final row in rows) {
+        final age = now - (row['synced_at'] as int);
+        if (age > 3600 * 1000) continue;
 
-      final id = row['activity_id'] as int;
-      final raw = row['data'] as String;
-      result[id] = (jsonDecode(raw) as List<dynamic>).cast<double>();
+        final id = row['activity_id'] as int;
+        final raw = row['data'] as String;
+        result[id] = (jsonDecode(raw) as List<dynamic>).cast<double>();
+      }
+      return result;
+    } catch (_) {
+      return {};
     }
-    return result;
   }
 
   Future<void> clearCache() async {
-    final db = await database;
-    await db.delete('activities');
-    await db.delete('hr_streams');
+    if (_webUnsupported) return;
+    try {
+      final db = await database;
+      await db.delete('activities');
+      await db.delete('hr_streams');
+    } catch (_) {}
   }
 }

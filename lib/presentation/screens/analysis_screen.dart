@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/utils/responsive.dart';
 import '../providers/activities_provider.dart';
 import '../widgets/pace_chart.dart';
 import '../widgets/hr_zone_chart.dart';
@@ -14,7 +15,8 @@ class AnalysisScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Analysis')),
-      body: statsAsync.when(
+      body: ConstrainedContent(
+        child: statsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, _) => Center(child: Text('Error: $err')),
         data: (stats) {
@@ -95,6 +97,7 @@ class AnalysisScreen extends ConsumerWidget {
             ),
           );
         },
+      ),
       ),
     );
   }

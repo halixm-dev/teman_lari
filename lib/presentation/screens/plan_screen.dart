@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/utils/responsive.dart';
 import '../../domain/entities/training_plan.dart';
 import '../providers/activities_provider.dart';
 import '../theme/app_colors.dart';
@@ -15,34 +16,36 @@ class PlanScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Training Plan')),
-      body: plan.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, _) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+      body: ConstrainedContent(
+        child: plan.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, _) => Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                const SizedBox(height: 16),
+                const Text(
+                  'Could not generate your training plan.\n'
+                  'Make sure you\'re connected to Strava and have completed some runs.',
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+          data: (plan) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.error_outline, size: 64, color: Colors.red),
-              const SizedBox(height: 16),
-              const Text(
-                'Could not generate your training plan.\n'
-                'Make sure you\'re connected to Strava and have completed some runs.',
-                textAlign: TextAlign.center,
+              _PlanHeader(plan: plan),
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: plan.days.length,
+                  itemBuilder: (context, i) => _PlanDayCard(day: plan.days[i]),
+                ),
               ),
             ],
           ),
-        ),
-        data: (plan) => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _PlanHeader(plan: plan),
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: plan.days.length,
-                itemBuilder: (context, i) => _PlanDayCard(day: plan.days[i]),
-              ),
-            ),
-          ],
         ),
       ),
     );
