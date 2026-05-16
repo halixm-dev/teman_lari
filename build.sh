@@ -18,6 +18,8 @@ if [ ! -f "$FLUTTER_DIR/bin/flutter" ]; then
   rm /tmp/flutter.tar.xz
 fi
 
+git config --global --add safe.directory "$FLUTTER_DIR" 2>/dev/null || true
+
 export PATH="$FLUTTER_DIR/bin:$PATH"
 
 flutter config --enable-web --no-analytics
