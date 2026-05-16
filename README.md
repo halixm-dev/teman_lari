@@ -1,4 +1,4 @@
-# teman_lari
+# Teman Lari
 
 A Strava-integrated running companion app that helps you analyze your runs, track fitness metrics, and generate personalized training plans.
 
