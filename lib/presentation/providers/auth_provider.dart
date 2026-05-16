@@ -1,7 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
+import '../../core/network/strava_api_client.dart';
+import '../../data/datasources/preferences_storage.dart';
 import '../../data/datasources/strava_auth_datasource.dart';
+import '../../data/datasources/strava_activity_datasource.dart';
 import '../../data/datasources/token_storage.dart';
 import '../../domain/usecases/strava_auth_usecase.dart';
 
@@ -18,6 +21,22 @@ final stravaAuthUseCaseProvider = Provider<StravaAuthUseCase>((ref) {
     authDataSource: ref.read(stravaAuthDataSourceProvider),
     tokenStorage: ref.read(tokenStorageProvider),
   );
+});
+
+final authApiClientProvider = Provider<StravaApiClient>((ref) {
+  return StravaApiClient(
+    ref.read(tokenStorageProvider),
+    ref.read(stravaAuthDataSourceProvider),
+    http.Client(),
+  );
+});
+
+final authAthleteDataSourceProvider = Provider<StravaActivityDataSource>((ref) {
+  return StravaActivityDataSource(ref.read(authApiClientProvider));
+});
+
+final authPreferencesStorageProvider = Provider<PreferencesStorage>((ref) {
+  return PreferencesStorage();
 });
 
 final authStateProvider = NotifierProvider<AuthNotifier, AuthState>(
@@ -42,10 +61,23 @@ class AuthNotifier extends Notifier<AuthState> {
     state = const AuthState.loading();
     try {
       await ref.read(stravaAuthUseCaseProvider).authenticate();
+      await _syncAthleteProfile();
       state = const AuthState.authenticated();
     } catch (e) {
       state = AuthState.error(e.toString());
     }
+  }
+
+  Future<void> _syncAthleteProfile() async {
+    try {
+      final athlete =
+          await ref.read(authAthleteDataSourceProvider).getAthlete();
+      final storage = ref.read(authPreferencesStorageProvider);
+      await storage.updateFromStrava(
+        athleteMaxHr: athlete.maxHeartrate,
+        athleteDateOfBirth: athlete.dateOfBirth,
+      );
+    } catch (_) {}
   }
 
   Future<void> logout() async {

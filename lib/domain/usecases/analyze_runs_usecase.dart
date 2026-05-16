@@ -4,16 +4,18 @@ import '../entities/running_stats.dart';
 class AnalyzeRunsUseCase {
   RunningStats compute(
     List<RunActivity> activities, {
-    int? maxHr,
-    int? restingHr,
+    int? userMaxHr,
+    int? userRestingHr,
+    int? hrZoneWeeks,
   }) {
     if (activities.isEmpty) return RunningStats.empty();
 
     final sortedByDate = [...activities]
       ..sort((a, b) => a.date.compareTo(b.date));
 
-    final actualMaxHr = maxHr ?? _resolveMaxHr(activities) ?? 190;
-    final actualRestingHr = restingHr ?? _resolveRestingHr(activities) ?? 60;
+    final actualMaxHr = _resolveMaxHr(activities, userValue: userMaxHr) ?? 190;
+    final actualRestingHr =
+        _resolveRestingHr(activities, userValue: userRestingHr) ?? 65;
 
     return RunningStats(
       totalRuns: activities.length,
@@ -26,6 +28,7 @@ class AnalyzeRunsUseCase {
         activities,
         maxHr: actualMaxHr,
         restingHr: actualRestingHr,
+        hrZoneWeeks: hrZoneWeeks,
       ),
       trainingLoadHistory: _trainingLoadHistory(
         sortedByDate,
@@ -137,12 +140,15 @@ class AnalyzeRunsUseCase {
     List<RunActivity> activities, {
     int maxHr = 190,
     int restingHr = 60,
+    int? hrZoneWeeks,
   }) {
+    if (hrZoneWeeks != null && hrZoneWeeks > 0) {
+      final cutoff = DateTime.now().subtract(Duration(days: hrZoneWeeks * 7));
+      activities = activities.where((a) => a.date.isAfter(cutoff)).toList();
+    }
+
     final withHr = activities.where((a) => a.avgHeartRate != null);
     if (withHr.isEmpty) return {};
-
-    final actualMax = _resolveMaxHr(activities) ?? maxHr;
-    final actualResting = _resolveRestingHr(activities) ?? restingHr;
 
     final zoneSeconds = <int, double>{1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
     double totalSeconds = 0;
@@ -154,8 +160,8 @@ class AnalyzeRunsUseCase {
         for (final hr in stream) {
           final zone = _hrToZone(
             hr,
-            maxHr: actualMax,
-            restingHr: actualResting,
+            maxHr: maxHr,
+            restingHr: restingHr,
           );
           zoneSeconds[zone] = (zoneSeconds[zone] ?? 0) + secondsPerPoint;
         }
@@ -163,8 +169,8 @@ class AnalyzeRunsUseCase {
       } else {
         final zone = _hrToZone(
           activity.avgHeartRate!,
-          maxHr: actualMax,
-          restingHr: actualResting,
+          maxHr: maxHr,
+          restingHr: restingHr,
         );
         final seconds = activity.movingTime.inSeconds.toDouble();
         zoneSeconds[zone] = (zoneSeconds[zone] ?? 0) + seconds;
@@ -176,7 +182,11 @@ class AnalyzeRunsUseCase {
     return zoneSeconds.map((k, v) => MapEntry(k, v / totalSeconds));
   }
 
-  int? _resolveMaxHr(List<RunActivity> activities) {
+  int? _resolveMaxHr(
+    List<RunActivity> activities, {
+    int? userValue,
+  }) {
+    if (userValue != null) return userValue;
     final values = activities
         .where((a) => a.maxHeartRate != null)
         .map((a) => a.maxHeartRate!);
@@ -184,12 +194,12 @@ class AnalyzeRunsUseCase {
     return values.reduce((a, b) => a > b ? a : b).round();
   }
 
-  int? _resolveRestingHr(List<RunActivity> activities) {
-    final values = activities
-        .where((a) => a.avgHeartRate != null)
-        .map((a) => a.avgHeartRate!);
-    if (values.isEmpty) return null;
-    return values.reduce((a, b) => a < b ? a : b).round();
+  int? _resolveRestingHr(
+    List<RunActivity> activities, {
+    int? userValue,
+  }) {
+    if (userValue != null) return userValue;
+    return null;
   }
 
   int _hrToZone(double hr, {required int maxHr, int restingHr = 60}) {

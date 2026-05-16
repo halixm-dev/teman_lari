@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AthleteModel {
 
- int get id;@JsonKey(name: 'first_name') String? get firstName;@JsonKey(name: 'last_name') String? get lastName;@JsonKey(name: 'profile_medium') String? get profileMedium; String? get profile; String? get city; String? get state; String? get country;@JsonKey(name: 'sex') String? get sex;@JsonKey(name: 'premium') bool? get premium;@JsonKey(name: 'max_heartrate') double? get maxHeartrate;@JsonKey(name: 'ftp') int? get ftp;@JsonKey(name: 'weight') double? get weight;
+ int get id;@JsonKey(name: 'first_name') String? get firstName;@JsonKey(name: 'last_name') String? get lastName;@JsonKey(name: 'profile_medium') String? get profileMedium; String? get profile; String? get city; String? get state; String? get country;@JsonKey(name: 'sex') String? get sex;@JsonKey(name: 'premium') bool? get premium;@JsonKey(name: 'date_of_birth') String? get dateOfBirth;@JsonKey(name: 'max_heartrate') double? get maxHeartrate;@JsonKey(name: 'ftp') int? get ftp;@JsonKey(name: 'weight') double? get weight;
 /// Create a copy of AthleteModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $AthleteModelCopyWith<AthleteModel> get copyWith => _$AthleteModelCopyWithImpl<A
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AthleteModel&&(identical(other.id, id) || other.id == id)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.profileMedium, profileMedium) || other.profileMedium == profileMedium)&&(identical(other.profile, profile) || other.profile == profile)&&(identical(other.city, city) || other.city == city)&&(identical(other.state, state) || other.state == state)&&(identical(other.country, country) || other.country == country)&&(identical(other.sex, sex) || other.sex == sex)&&(identical(other.premium, premium) || other.premium == premium)&&(identical(other.maxHeartrate, maxHeartrate) || other.maxHeartrate == maxHeartrate)&&(identical(other.ftp, ftp) || other.ftp == ftp)&&(identical(other.weight, weight) || other.weight == weight));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AthleteModel&&(identical(other.id, id) || other.id == id)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.profileMedium, profileMedium) || other.profileMedium == profileMedium)&&(identical(other.profile, profile) || other.profile == profile)&&(identical(other.city, city) || other.city == city)&&(identical(other.state, state) || other.state == state)&&(identical(other.country, country) || other.country == country)&&(identical(other.sex, sex) || other.sex == sex)&&(identical(other.premium, premium) || other.premium == premium)&&(identical(other.dateOfBirth, dateOfBirth) || other.dateOfBirth == dateOfBirth)&&(identical(other.maxHeartrate, maxHeartrate) || other.maxHeartrate == maxHeartrate)&&(identical(other.ftp, ftp) || other.ftp == ftp)&&(identical(other.weight, weight) || other.weight == weight));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,firstName,lastName,profileMedium,profile,city,state,country,sex,premium,maxHeartrate,ftp,weight);
+int get hashCode => Object.hash(runtimeType,id,firstName,lastName,profileMedium,profile,city,state,country,sex,premium,dateOfBirth,maxHeartrate,ftp,weight);
 
 @override
 String toString() {
-  return 'AthleteModel(id: $id, firstName: $firstName, lastName: $lastName, profileMedium: $profileMedium, profile: $profile, city: $city, state: $state, country: $country, sex: $sex, premium: $premium, maxHeartrate: $maxHeartrate, ftp: $ftp, weight: $weight)';
+  return 'AthleteModel(id: $id, firstName: $firstName, lastName: $lastName, profileMedium: $profileMedium, profile: $profile, city: $city, state: $state, country: $country, sex: $sex, premium: $premium, dateOfBirth: $dateOfBirth, maxHeartrate: $maxHeartrate, ftp: $ftp, weight: $weight)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $AthleteModelCopyWith<$Res>  {
   factory $AthleteModelCopyWith(AthleteModel value, $Res Function(AthleteModel) _then) = _$AthleteModelCopyWithImpl;
 @useResult
 $Res call({
- int id,@JsonKey(name: 'first_name') String? firstName,@JsonKey(name: 'last_name') String? lastName,@JsonKey(name: 'profile_medium') String? profileMedium, String? profile, String? city, String? state, String? country,@JsonKey(name: 'sex') String? sex,@JsonKey(name: 'premium') bool? premium,@JsonKey(name: 'max_heartrate') double? maxHeartrate,@JsonKey(name: 'ftp') int? ftp,@JsonKey(name: 'weight') double? weight
+ int id,@JsonKey(name: 'first_name') String? firstName,@JsonKey(name: 'last_name') String? lastName,@JsonKey(name: 'profile_medium') String? profileMedium, String? profile, String? city, String? state, String? country,@JsonKey(name: 'sex') String? sex,@JsonKey(name: 'premium') bool? premium,@JsonKey(name: 'date_of_birth') String? dateOfBirth,@JsonKey(name: 'max_heartrate') double? maxHeartrate,@JsonKey(name: 'ftp') int? ftp,@JsonKey(name: 'weight') double? weight
 });
 
 
@@ -65,7 +65,7 @@ class _$AthleteModelCopyWithImpl<$Res>
 
 /// Create a copy of AthleteModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? firstName = freezed,Object? lastName = freezed,Object? profileMedium = freezed,Object? profile = freezed,Object? city = freezed,Object? state = freezed,Object? country = freezed,Object? sex = freezed,Object? premium = freezed,Object? maxHeartrate = freezed,Object? ftp = freezed,Object? weight = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? firstName = freezed,Object? lastName = freezed,Object? profileMedium = freezed,Object? profile = freezed,Object? city = freezed,Object? state = freezed,Object? country = freezed,Object? sex = freezed,Object? premium = freezed,Object? dateOfBirth = freezed,Object? maxHeartrate = freezed,Object? ftp = freezed,Object? weight = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,firstName: freezed == firstName ? _self.firstName : firstName // ignore: cast_nullable_to_non_nullable
@@ -77,7 +77,8 @@ as String?,state: freezed == state ? _self.state : state // ignore: cast_nullabl
 as String?,country: freezed == country ? _self.country : country // ignore: cast_nullable_to_non_nullable
 as String?,sex: freezed == sex ? _self.sex : sex // ignore: cast_nullable_to_non_nullable
 as String?,premium: freezed == premium ? _self.premium : premium // ignore: cast_nullable_to_non_nullable
-as bool?,maxHeartrate: freezed == maxHeartrate ? _self.maxHeartrate : maxHeartrate // ignore: cast_nullable_to_non_nullable
+as bool?,dateOfBirth: freezed == dateOfBirth ? _self.dateOfBirth : dateOfBirth // ignore: cast_nullable_to_non_nullable
+as String?,maxHeartrate: freezed == maxHeartrate ? _self.maxHeartrate : maxHeartrate // ignore: cast_nullable_to_non_nullable
 as double?,ftp: freezed == ftp ? _self.ftp : ftp // ignore: cast_nullable_to_non_nullable
 as int?,weight: freezed == weight ? _self.weight : weight // ignore: cast_nullable_to_non_nullable
 as double?,
@@ -165,10 +166,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'first_name')  String? firstName, @JsonKey(name: 'last_name')  String? lastName, @JsonKey(name: 'profile_medium')  String? profileMedium,  String? profile,  String? city,  String? state,  String? country, @JsonKey(name: 'sex')  String? sex, @JsonKey(name: 'premium')  bool? premium, @JsonKey(name: 'max_heartrate')  double? maxHeartrate, @JsonKey(name: 'ftp')  int? ftp, @JsonKey(name: 'weight')  double? weight)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'first_name')  String? firstName, @JsonKey(name: 'last_name')  String? lastName, @JsonKey(name: 'profile_medium')  String? profileMedium,  String? profile,  String? city,  String? state,  String? country, @JsonKey(name: 'sex')  String? sex, @JsonKey(name: 'premium')  bool? premium, @JsonKey(name: 'date_of_birth')  String? dateOfBirth, @JsonKey(name: 'max_heartrate')  double? maxHeartrate, @JsonKey(name: 'ftp')  int? ftp, @JsonKey(name: 'weight')  double? weight)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AthleteModel() when $default != null:
-return $default(_that.id,_that.firstName,_that.lastName,_that.profileMedium,_that.profile,_that.city,_that.state,_that.country,_that.sex,_that.premium,_that.maxHeartrate,_that.ftp,_that.weight);case _:
+return $default(_that.id,_that.firstName,_that.lastName,_that.profileMedium,_that.profile,_that.city,_that.state,_that.country,_that.sex,_that.premium,_that.dateOfBirth,_that.maxHeartrate,_that.ftp,_that.weight);case _:
   return orElse();
 
 }
@@ -186,10 +187,10 @@ return $default(_that.id,_that.firstName,_that.lastName,_that.profileMedium,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'first_name')  String? firstName, @JsonKey(name: 'last_name')  String? lastName, @JsonKey(name: 'profile_medium')  String? profileMedium,  String? profile,  String? city,  String? state,  String? country, @JsonKey(name: 'sex')  String? sex, @JsonKey(name: 'premium')  bool? premium, @JsonKey(name: 'max_heartrate')  double? maxHeartrate, @JsonKey(name: 'ftp')  int? ftp, @JsonKey(name: 'weight')  double? weight)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'first_name')  String? firstName, @JsonKey(name: 'last_name')  String? lastName, @JsonKey(name: 'profile_medium')  String? profileMedium,  String? profile,  String? city,  String? state,  String? country, @JsonKey(name: 'sex')  String? sex, @JsonKey(name: 'premium')  bool? premium, @JsonKey(name: 'date_of_birth')  String? dateOfBirth, @JsonKey(name: 'max_heartrate')  double? maxHeartrate, @JsonKey(name: 'ftp')  int? ftp, @JsonKey(name: 'weight')  double? weight)  $default,) {final _that = this;
 switch (_that) {
 case _AthleteModel():
-return $default(_that.id,_that.firstName,_that.lastName,_that.profileMedium,_that.profile,_that.city,_that.state,_that.country,_that.sex,_that.premium,_that.maxHeartrate,_that.ftp,_that.weight);case _:
+return $default(_that.id,_that.firstName,_that.lastName,_that.profileMedium,_that.profile,_that.city,_that.state,_that.country,_that.sex,_that.premium,_that.dateOfBirth,_that.maxHeartrate,_that.ftp,_that.weight);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -206,10 +207,10 @@ return $default(_that.id,_that.firstName,_that.lastName,_that.profileMedium,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id, @JsonKey(name: 'first_name')  String? firstName, @JsonKey(name: 'last_name')  String? lastName, @JsonKey(name: 'profile_medium')  String? profileMedium,  String? profile,  String? city,  String? state,  String? country, @JsonKey(name: 'sex')  String? sex, @JsonKey(name: 'premium')  bool? premium, @JsonKey(name: 'max_heartrate')  double? maxHeartrate, @JsonKey(name: 'ftp')  int? ftp, @JsonKey(name: 'weight')  double? weight)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id, @JsonKey(name: 'first_name')  String? firstName, @JsonKey(name: 'last_name')  String? lastName, @JsonKey(name: 'profile_medium')  String? profileMedium,  String? profile,  String? city,  String? state,  String? country, @JsonKey(name: 'sex')  String? sex, @JsonKey(name: 'premium')  bool? premium, @JsonKey(name: 'date_of_birth')  String? dateOfBirth, @JsonKey(name: 'max_heartrate')  double? maxHeartrate, @JsonKey(name: 'ftp')  int? ftp, @JsonKey(name: 'weight')  double? weight)?  $default,) {final _that = this;
 switch (_that) {
 case _AthleteModel() when $default != null:
-return $default(_that.id,_that.firstName,_that.lastName,_that.profileMedium,_that.profile,_that.city,_that.state,_that.country,_that.sex,_that.premium,_that.maxHeartrate,_that.ftp,_that.weight);case _:
+return $default(_that.id,_that.firstName,_that.lastName,_that.profileMedium,_that.profile,_that.city,_that.state,_that.country,_that.sex,_that.premium,_that.dateOfBirth,_that.maxHeartrate,_that.ftp,_that.weight);case _:
   return null;
 
 }
@@ -221,7 +222,7 @@ return $default(_that.id,_that.firstName,_that.lastName,_that.profileMedium,_tha
 @JsonSerializable()
 
 class _AthleteModel extends AthleteModel {
-  const _AthleteModel({required this.id, @JsonKey(name: 'first_name') this.firstName, @JsonKey(name: 'last_name') this.lastName, @JsonKey(name: 'profile_medium') this.profileMedium, this.profile, this.city, this.state, this.country, @JsonKey(name: 'sex') this.sex, @JsonKey(name: 'premium') this.premium, @JsonKey(name: 'max_heartrate') this.maxHeartrate, @JsonKey(name: 'ftp') this.ftp, @JsonKey(name: 'weight') this.weight}): super._();
+  const _AthleteModel({required this.id, @JsonKey(name: 'first_name') this.firstName, @JsonKey(name: 'last_name') this.lastName, @JsonKey(name: 'profile_medium') this.profileMedium, this.profile, this.city, this.state, this.country, @JsonKey(name: 'sex') this.sex, @JsonKey(name: 'premium') this.premium, @JsonKey(name: 'date_of_birth') this.dateOfBirth, @JsonKey(name: 'max_heartrate') this.maxHeartrate, @JsonKey(name: 'ftp') this.ftp, @JsonKey(name: 'weight') this.weight}): super._();
   factory _AthleteModel.fromJson(Map<String, dynamic> json) => _$AthleteModelFromJson(json);
 
 @override final  int id;
@@ -234,6 +235,7 @@ class _AthleteModel extends AthleteModel {
 @override final  String? country;
 @override@JsonKey(name: 'sex') final  String? sex;
 @override@JsonKey(name: 'premium') final  bool? premium;
+@override@JsonKey(name: 'date_of_birth') final  String? dateOfBirth;
 @override@JsonKey(name: 'max_heartrate') final  double? maxHeartrate;
 @override@JsonKey(name: 'ftp') final  int? ftp;
 @override@JsonKey(name: 'weight') final  double? weight;
@@ -251,16 +253,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AthleteModel&&(identical(other.id, id) || other.id == id)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.profileMedium, profileMedium) || other.profileMedium == profileMedium)&&(identical(other.profile, profile) || other.profile == profile)&&(identical(other.city, city) || other.city == city)&&(identical(other.state, state) || other.state == state)&&(identical(other.country, country) || other.country == country)&&(identical(other.sex, sex) || other.sex == sex)&&(identical(other.premium, premium) || other.premium == premium)&&(identical(other.maxHeartrate, maxHeartrate) || other.maxHeartrate == maxHeartrate)&&(identical(other.ftp, ftp) || other.ftp == ftp)&&(identical(other.weight, weight) || other.weight == weight));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AthleteModel&&(identical(other.id, id) || other.id == id)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.profileMedium, profileMedium) || other.profileMedium == profileMedium)&&(identical(other.profile, profile) || other.profile == profile)&&(identical(other.city, city) || other.city == city)&&(identical(other.state, state) || other.state == state)&&(identical(other.country, country) || other.country == country)&&(identical(other.sex, sex) || other.sex == sex)&&(identical(other.premium, premium) || other.premium == premium)&&(identical(other.dateOfBirth, dateOfBirth) || other.dateOfBirth == dateOfBirth)&&(identical(other.maxHeartrate, maxHeartrate) || other.maxHeartrate == maxHeartrate)&&(identical(other.ftp, ftp) || other.ftp == ftp)&&(identical(other.weight, weight) || other.weight == weight));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,firstName,lastName,profileMedium,profile,city,state,country,sex,premium,maxHeartrate,ftp,weight);
+int get hashCode => Object.hash(runtimeType,id,firstName,lastName,profileMedium,profile,city,state,country,sex,premium,dateOfBirth,maxHeartrate,ftp,weight);
 
 @override
 String toString() {
-  return 'AthleteModel(id: $id, firstName: $firstName, lastName: $lastName, profileMedium: $profileMedium, profile: $profile, city: $city, state: $state, country: $country, sex: $sex, premium: $premium, maxHeartrate: $maxHeartrate, ftp: $ftp, weight: $weight)';
+  return 'AthleteModel(id: $id, firstName: $firstName, lastName: $lastName, profileMedium: $profileMedium, profile: $profile, city: $city, state: $state, country: $country, sex: $sex, premium: $premium, dateOfBirth: $dateOfBirth, maxHeartrate: $maxHeartrate, ftp: $ftp, weight: $weight)';
 }
 
 
@@ -271,7 +273,7 @@ abstract mixin class _$AthleteModelCopyWith<$Res> implements $AthleteModelCopyWi
   factory _$AthleteModelCopyWith(_AthleteModel value, $Res Function(_AthleteModel) _then) = __$AthleteModelCopyWithImpl;
 @override @useResult
 $Res call({
- int id,@JsonKey(name: 'first_name') String? firstName,@JsonKey(name: 'last_name') String? lastName,@JsonKey(name: 'profile_medium') String? profileMedium, String? profile, String? city, String? state, String? country,@JsonKey(name: 'sex') String? sex,@JsonKey(name: 'premium') bool? premium,@JsonKey(name: 'max_heartrate') double? maxHeartrate,@JsonKey(name: 'ftp') int? ftp,@JsonKey(name: 'weight') double? weight
+ int id,@JsonKey(name: 'first_name') String? firstName,@JsonKey(name: 'last_name') String? lastName,@JsonKey(name: 'profile_medium') String? profileMedium, String? profile, String? city, String? state, String? country,@JsonKey(name: 'sex') String? sex,@JsonKey(name: 'premium') bool? premium,@JsonKey(name: 'date_of_birth') String? dateOfBirth,@JsonKey(name: 'max_heartrate') double? maxHeartrate,@JsonKey(name: 'ftp') int? ftp,@JsonKey(name: 'weight') double? weight
 });
 
 
@@ -288,7 +290,7 @@ class __$AthleteModelCopyWithImpl<$Res>
 
 /// Create a copy of AthleteModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? firstName = freezed,Object? lastName = freezed,Object? profileMedium = freezed,Object? profile = freezed,Object? city = freezed,Object? state = freezed,Object? country = freezed,Object? sex = freezed,Object? premium = freezed,Object? maxHeartrate = freezed,Object? ftp = freezed,Object? weight = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? firstName = freezed,Object? lastName = freezed,Object? profileMedium = freezed,Object? profile = freezed,Object? city = freezed,Object? state = freezed,Object? country = freezed,Object? sex = freezed,Object? premium = freezed,Object? dateOfBirth = freezed,Object? maxHeartrate = freezed,Object? ftp = freezed,Object? weight = freezed,}) {
   return _then(_AthleteModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,firstName: freezed == firstName ? _self.firstName : firstName // ignore: cast_nullable_to_non_nullable
@@ -300,7 +302,8 @@ as String?,state: freezed == state ? _self.state : state // ignore: cast_nullabl
 as String?,country: freezed == country ? _self.country : country // ignore: cast_nullable_to_non_nullable
 as String?,sex: freezed == sex ? _self.sex : sex // ignore: cast_nullable_to_non_nullable
 as String?,premium: freezed == premium ? _self.premium : premium // ignore: cast_nullable_to_non_nullable
-as bool?,maxHeartrate: freezed == maxHeartrate ? _self.maxHeartrate : maxHeartrate // ignore: cast_nullable_to_non_nullable
+as bool?,dateOfBirth: freezed == dateOfBirth ? _self.dateOfBirth : dateOfBirth // ignore: cast_nullable_to_non_nullable
+as String?,maxHeartrate: freezed == maxHeartrate ? _self.maxHeartrate : maxHeartrate // ignore: cast_nullable_to_non_nullable
 as double?,ftp: freezed == ftp ? _self.ftp : ftp // ignore: cast_nullable_to_non_nullable
 as int?,weight: freezed == weight ? _self.weight : weight // ignore: cast_nullable_to_non_nullable
 as double?,

@@ -18,6 +18,7 @@ abstract class AthleteModel with _$AthleteModel {
     String? country,
     @JsonKey(name: 'sex') String? sex,
     @JsonKey(name: 'premium') bool? premium,
+    @JsonKey(name: 'date_of_birth') String? dateOfBirth,
     @JsonKey(name: 'max_heartrate') double? maxHeartrate,
     @JsonKey(name: 'ftp') int? ftp,
     @JsonKey(name: 'weight') double? weight,

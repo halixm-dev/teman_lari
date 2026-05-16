@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 
 import '../../core/network/strava_api_client.dart';
 import '../../data/datasources/local_activity_datasource.dart';
+import '../../data/datasources/preferences_storage.dart';
 import '../../data/datasources/strava_activity_datasource.dart';
 import '../../data/repositories/activity_repository_impl.dart';
 import '../../domain/entities/run_activity.dart';
@@ -45,6 +46,10 @@ final getActivitiesUseCaseProvider = Provider<GetActivitiesUseCase>((ref) {
   return GetActivitiesUseCase(ref.read(activityRepositoryProvider));
 });
 
+final preferencesStorageProvider = Provider<PreferencesStorage>((ref) {
+  return PreferencesStorage();
+});
+
 final analyzeRunsUseCaseProvider = Provider<AnalyzeRunsUseCase>((ref) {
   return AnalyzeRunsUseCase();
 });
@@ -74,14 +79,17 @@ class ActivitiesNotifier extends AsyncNotifier<List<RunActivity>> {
 
 final runningStatsProvider = FutureProvider<RunningStats?>((ref) async {
   final activities = await ref.watch(activitiesProvider.future);
+  final prefs = await ref.read(preferencesStorageProvider).getPreferences();
   final repo = ref.read(activityRepositoryProvider);
   final withHrIds = activities
       .where((a) => a.avgHeartRate != null)
       .map((a) => a.id)
       .toList();
+
+  List<RunActivity> target;
   if (withHrIds.isNotEmpty) {
     final streams = await repo.getHeartRateStreams(withHrIds);
-    final enriched = activities.map((a) {
+    target = activities.map((a) {
       if (a.avgHeartRate == null) return a;
       final hrData = streams[a.id];
       if (hrData == null) return a;
@@ -101,9 +109,30 @@ final runningStatsProvider = FutureProvider<RunningStats?>((ref) async {
         heartRateData: hrData,
       );
     }).toList();
-    return ref.read(analyzeRunsUseCaseProvider).compute(enriched);
+  } else {
+    target = activities;
   }
-  return ref.read(analyzeRunsUseCaseProvider).compute(activities);
+
+  final useCase = ref.read(analyzeRunsUseCaseProvider);
+  final stats = useCase.compute(
+    target,
+    userMaxHr: prefs.maxHr,
+    userRestingHr: prefs.restingHr,
+    hrZoneWeeks: prefs.hrZoneWeeks,
+  );
+
+  final activityMaxHr = target
+      .where((a) => a.maxHeartRate != null)
+      .map((a) => a.maxHeartRate!)
+      .fold<double?>(null, (max, hr) => max == null ? hr : (hr > max ? hr : max));
+
+  if (activityMaxHr != null) {
+    await ref.read(preferencesStorageProvider).updateFromStrava(
+      activityMaxHr: activityMaxHr.round(),
+    );
+  }
+
+  return stats;
 });
 
 final trainingPlanProvider = FutureProvider<TrainingPlan>((ref) async {
