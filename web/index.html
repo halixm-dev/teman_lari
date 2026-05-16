@@ -33,6 +33,28 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+  <script>
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      if (params.has('code') || params.has('state') || params.has('flutter-web-auth-2')) {
+        var url = window.location.href;
+        var message = {'flutter-web-auth-2': url};
+        if (window.opener) {
+          window.opener.postMessage(message, window.location.origin);
+          window.close();
+        } else if (window.parent && window.parent !== window) {
+          window.parent.postMessage(message, window.location.origin);
+        } else {
+          localStorage.setItem('flutter-web-auth-2', url);
+          window.close();
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+          document.body.innerHTML = '<p>Authentication complete. You can close this window.</p>';
+        });
+        return;
+      }
+    })();
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
