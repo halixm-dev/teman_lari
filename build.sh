@@ -1,12 +1,21 @@
 #!/bin/bash
 set -e
 
-FLUTTER_VERSION="stable"
-FLUTTER_DIR="$HOME/flutter"
+FLUTTER_VERSION="3.41.9"
+CACHE_DIR="/vercel/.cache"
+FLUTTER_DIR="$CACHE_DIR/flutter"
+PUB_CACHE_DIR="$CACHE_DIR/pub-cache"
 
-if [ ! -d "$FLUTTER_DIR" ]; then
-  echo "Installing Flutter SDK..."
-  git clone https://github.com/flutter/flutter.git --depth 1 -b "$FLUTTER_VERSION" "$FLUTTER_DIR"
+export PUB_CACHE="$PUB_CACHE_DIR"
+
+if [ ! -f "$FLUTTER_DIR/bin/flutter" ]; then
+  echo "Downloading Flutter SDK $FLUTTER_VERSION..."
+  mkdir -p "$CACHE_DIR"
+  curl -fsSL \
+    "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_$FLUTTER_VERSION-stable.tar.xz" \
+    -o /tmp/flutter.tar.xz
+  tar xf /tmp/flutter.tar.xz -C "$CACHE_DIR"
+  rm /tmp/flutter.tar.xz
 fi
 
 export PATH="$FLUTTER_DIR/bin:$PATH"
