@@ -16,7 +16,7 @@ class StravaAuthDataSource {
         ? 'https://temanlari.vercel.app'
         : ApiConstants.stravaRedirectUri;
     final callbackScheme = kIsWeb
-        ? 'https://temanlari.vercel.app'
+        ? 'https'
         : 'com.halixm.temanlari';
 
     final authUrl = Uri.https('www.strava.com', '/oauth/authorize', {
