@@ -64,33 +64,50 @@ class GeneratePlanUseCase {
       .where((a) => a.movingTime.inMinutes >= 10)
       .toList();
 
-    final recentTypes = recentNonRest
-      .take(2)
-      .map((a) => _classifyWorkoutType(a, thresholdPace,
-          longRunMinDuration: longRunMinDuration))
-      .toList();
-
-    final lastRunDate = recentNonRest.first.date;
-    final daysSinceLastRun = startDate.difference(lastRunDate).inDays;
-
     List<WorkoutType> sequence;
 
-    if (daysSinceLastRun > 3) {
-      sequence = const [
-        WorkoutType.easy, WorkoutType.rest,
-        WorkoutType.easy, WorkoutType.tempo,
-        WorkoutType.rest, WorkoutType.longRun,
-        WorkoutType.easy,
-      ];
-    } else {
-      sequence = _next7Days(
-        recentTypes.isNotEmpty ? recentTypes.first : WorkoutType.easy,
-        secondLastType: recentTypes.length > 1 ? recentTypes[1] : null,
+    if (recentNonRest.isNotEmpty) {
+      final lastRunDate = recentNonRest.first.date;
+      final daysSinceLastRun = startDate.difference(lastRunDate).inDays;
+
+      final returnSeq = _continueReturnSequence(
+        recentNonRest,
+        thresholdPace,
+        longRunMinDuration,
       );
 
-      if (daysSinceLastRun >= 2 && sequence.first == WorkoutType.rest) {
-        sequence = [...sequence.sublist(1), WorkoutType.easy];
+      if (returnSeq != null) {
+        sequence = returnSeq;
+      } else if (daysSinceLastRun > 3) {
+        sequence = const [
+          WorkoutType.easy, WorkoutType.rest,
+          WorkoutType.easy, WorkoutType.tempo,
+          WorkoutType.rest, WorkoutType.longRun,
+          WorkoutType.easy,
+        ];
+      } else {
+        final recentTypes = recentNonRest
+          .take(2)
+          .map((a) => _classifyWorkoutType(a, thresholdPace,
+              longRunMinDuration: longRunMinDuration))
+          .toList();
+
+        sequence = _next7Days(
+          recentTypes.isNotEmpty ? recentTypes.first : WorkoutType.easy,
+          secondLastType: recentTypes.length > 1 ? recentTypes[1] : null,
+        );
+
+        if (daysSinceLastRun >= 2 && sequence.first == WorkoutType.rest) {
+          sequence = [...sequence.sublist(1), WorkoutType.easy];
+        }
       }
+    } else {
+      sequence = const [
+        WorkoutType.easy, WorkoutType.intervals,
+        WorkoutType.rest, WorkoutType.easy,
+        WorkoutType.tempo, WorkoutType.rest,
+        WorkoutType.longRun,
+      ];
     }
 
     final longRunMin = (weeklyMinutes * 0.30).round();
@@ -279,6 +296,62 @@ class GeneratePlanUseCase {
       default:
         return [..._defaultSeq];
     }
+  }
+
+  List<WorkoutType>? _continueReturnSequence(
+    List<RunActivity> sortedNonRest,
+    int thresholdPace,
+    int longRunMinDuration,
+  ) {
+    const returnSeq = [
+      WorkoutType.easy, WorkoutType.rest,
+      WorkoutType.easy, WorkoutType.tempo,
+      WorkoutType.rest, WorkoutType.longRun,
+      WorkoutType.easy,
+    ];
+    const runDays = [0, 2, 3, 5, 6];
+    const runTypes = [
+      WorkoutType.easy, WorkoutType.easy,
+      WorkoutType.tempo, WorkoutType.longRun,
+      WorkoutType.easy,
+    ];
+
+    // Find a gap > 3 days between any consecutive runs
+    int breakIdx = -1;
+    for (int i = 0; i < sortedNonRest.length - 1; i++) {
+      final gap =
+          sortedNonRest[i].date.difference(sortedNonRest[i + 1].date).inDays;
+      if (gap > 3) {
+        breakIdx = i;
+        break;
+      }
+    }
+    if (breakIdx < 0) return null;
+
+    // Runs after the break, oldest-first
+    final afterBreak =
+        sortedNonRest.sublist(0, breakIdx + 1).reversed.toList();
+    final recentTypes = afterBreak
+        .take(5)
+        .map((a) => _classifyWorkoutType(a, thresholdPace,
+            longRunMinDuration: longRunMinDuration))
+        .toList();
+
+    int matched = 0;
+    for (int i = 0; i < recentTypes.length && i < runTypes.length; i++) {
+      if (recentTypes[i] != runTypes[i]) break;
+      matched = i + 1;
+    }
+
+    if (matched >= runTypes.length) return null;
+
+    final startDay = matched > 0 ? runDays[matched - 1] + 1 : 0;
+    final remaining = returnSeq.sublist(startDay);
+    if (remaining.length >= 7) return remaining.take(7).toList();
+
+    final filler =
+        _next7Days(returnSeq.last).take(7 - remaining.length).toList();
+    return [...remaining, ...filler];
   }
 
   double _targetWeeklyMinutes(RunningStats stats) {
