@@ -30,6 +30,8 @@ class GeneratePlanUseCase {
         paceZones: paceZones,
         hrZones: hrZones,
         stats: stats,
+        activities: activities,
+        thresholdPace: thresholdPace,
       ),
     );
   }
@@ -40,84 +42,243 @@ class GeneratePlanUseCase {
     required List<PaceZone> paceZones,
     required List<HrZone> hrZones,
     required RunningStats stats,
+    required List<RunActivity> activities,
+    required int thresholdPace,
   }) {
+    final sorted = [...activities]
+      ..sort((a, b) => b.date.compareTo(a.date));
+
+    final easyLike = sorted
+        .where((a) => a.trainingLoad != TrainingLoad.hard &&
+            a.trainingLoad != TrainingLoad.veryHard &&
+            a.movingTime.inMinutes >= 10)
+        .map((a) => a.movingTime.inMinutes)
+        .toList()
+      ..sort();
+    final easyMedian = easyLike.isNotEmpty
+        ? easyLike[easyLike.length ~/ 2]
+        : 30;
+    final longRunMinDuration = (easyMedian * 1.5).round().clamp(20, 120);
+
+    final recentNonRest = sorted
+      .where((a) => a.movingTime.inMinutes >= 10)
+      .toList();
+
+    final recentTypes = recentNonRest
+      .take(2)
+      .map((a) => _classifyWorkoutType(a, thresholdPace,
+          longRunMinDuration: longRunMinDuration))
+      .toList();
+
+    final lastRunDate = recentNonRest.first.date;
+    final daysSinceLastRun = startDate.difference(lastRunDate).inDays;
+
+    List<WorkoutType> sequence;
+
+    if (daysSinceLastRun > 3) {
+      sequence = const [
+        WorkoutType.easy, WorkoutType.rest,
+        WorkoutType.easy, WorkoutType.tempo,
+        WorkoutType.rest, WorkoutType.longRun,
+        WorkoutType.easy,
+      ];
+    } else {
+      sequence = _next7Days(
+        recentTypes.isNotEmpty ? recentTypes.first : WorkoutType.easy,
+        secondLastType: recentTypes.length > 1 ? recentTypes[1] : null,
+      );
+
+      if (daysSinceLastRun >= 2 && sequence.first == WorkoutType.rest) {
+        sequence = [...sequence.sublist(1), WorkoutType.easy];
+      }
+    }
+
     final longRunMin = (weeklyMinutes * 0.30).round();
     final easyMin = (weeklyMinutes * 0.20).round();
     final tempoWorkMin = (weeklyMinutes * 0.15).round();
+    final intervalMin = _intervalMinutes(stats);
 
-    return [
-      TrainingDay(
-        date: startDate,
-        type: WorkoutType.easy,
-        targetMinutes: easyMin,
-        paceTarget: paceZones[1],
-        heartRateTarget: hrZones[1],
-        estimatedDuration: Duration(minutes: easyMin),
-        description:
-            'Easy recovery run. Conversational pace throughout. '
-            'Focus on form, not speed.',
-      ),
-      TrainingDay(
-        date: startDate.add(const Duration(days: 1)),
-        type: WorkoutType.intervals,
-        targetMinutes: _intervalMinutes(stats),
-        warmUpMinutes: 10,
-        coolDownMinutes: 10,
-        paceTarget: paceZones[4],
-        heartRateTarget: hrZones[4],
-        estimatedDuration: Duration(minutes: _intervalMinutes(stats)),
-        description: _intervalDescription(stats),
-      ),
-      TrainingDay(
-        date: startDate.add(const Duration(days: 2)),
-        type: WorkoutType.rest,
-        description:
-            'Rest or 20-30 min easy walk. Let your body absorb '
-            'yesterday\'s interval session.',
-      ),
-      TrainingDay(
-        date: startDate.add(const Duration(days: 3)),
-        type: WorkoutType.easy,
-        targetMinutes: easyMin,
-        paceTarget: paceZones[1],
-        heartRateTarget: hrZones[1],
-        estimatedDuration: Duration(minutes: easyMin),
-        description:
-            'Easy aerobic run. Stay in Zone 2 the entire run. '
-            'Great day for strides at the end (4x100m).',
-      ),
-      TrainingDay(
-        date: startDate.add(const Duration(days: 4)),
-        type: WorkoutType.tempo,
-        targetMinutes: tempoWorkMin + 20,
-        warmUpMinutes: 10,
-        coolDownMinutes: 10,
-        paceTarget: paceZones[3],
-        heartRateTarget: hrZones[3],
-        estimatedDuration: Duration(minutes: tempoWorkMin + 20),
-        description:
-            '10 min warm-up, $tempoWorkMin min @ '
-            'threshold pace (Zone 4), 10 min cool-down. '
-            'Comfortably hard - you can speak in short sentences.',
-      ),
-      TrainingDay(
-        date: startDate.add(const Duration(days: 5)),
-        type: WorkoutType.rest,
-        description: 'Full rest day before long run.',
-      ),
-      TrainingDay(
-        date: startDate.add(const Duration(days: 6)),
-        type: WorkoutType.longRun,
-        targetMinutes: longRunMin,
-        paceTarget: paceZones[1],
-        heartRateTarget: hrZones[1],
-        estimatedDuration: Duration(minutes: longRunMin),
-        description:
-            'Long easy run - the most important run of the week. '
-            'Stay strictly in Zone 2. Walk breaks are fine. '
-            'Hydrate every 20-30 min.',
-      ),
-    ];
+    return List.generate(7, (i) {
+      final date = startDate.add(Duration(days: i));
+      return _buildDay(
+        type: sequence[i],
+        date: date,
+        easyMin: easyMin,
+        tempoWorkMin: tempoWorkMin,
+        intervalMin: intervalMin,
+        longRunMin: longRunMin,
+        paceZones: paceZones,
+        hrZones: hrZones,
+        stats: stats,
+      );
+    });
+  }
+
+  TrainingDay _buildDay({
+    required WorkoutType type,
+    required DateTime date,
+    required int easyMin,
+    required int tempoWorkMin,
+    required int intervalMin,
+    required int longRunMin,
+    required List<PaceZone> paceZones,
+    required List<HrZone> hrZones,
+    required RunningStats stats,
+  }) {
+    switch (type) {
+      case WorkoutType.easy:
+        return TrainingDay(
+          date: date,
+          type: WorkoutType.easy,
+          targetMinutes: easyMin,
+          paceTarget: paceZones[1],
+          heartRateTarget: hrZones[1],
+          estimatedDuration: Duration(minutes: easyMin),
+          description:
+              'Easy recovery run. Conversational pace throughout. '
+              'Focus on form, not speed.',
+        );
+      case WorkoutType.intervals:
+        return TrainingDay(
+          date: date,
+          type: WorkoutType.intervals,
+          targetMinutes: intervalMin,
+          warmUpMinutes: 10,
+          coolDownMinutes: 10,
+          paceTarget: paceZones[4],
+          heartRateTarget: hrZones[4],
+          estimatedDuration: Duration(minutes: intervalMin),
+          description: _intervalDescription(stats),
+        );
+      case WorkoutType.tempo:
+        return TrainingDay(
+          date: date,
+          type: WorkoutType.tempo,
+          targetMinutes: tempoWorkMin + 20,
+          warmUpMinutes: 10,
+          coolDownMinutes: 10,
+          paceTarget: paceZones[3],
+          heartRateTarget: hrZones[3],
+          estimatedDuration: Duration(minutes: tempoWorkMin + 20),
+          description:
+              '10 min warm-up, $tempoWorkMin min @ '
+              'threshold pace (Zone 4), 10 min cool-down. '
+              'Comfortably hard - you can speak in short sentences.',
+        );
+      case WorkoutType.longRun:
+        return TrainingDay(
+          date: date,
+          type: WorkoutType.longRun,
+          targetMinutes: longRunMin,
+          paceTarget: paceZones[1],
+          heartRateTarget: hrZones[1],
+          estimatedDuration: Duration(minutes: longRunMin),
+          description:
+              'Long easy run - the most important run of the week. '
+              'Stay strictly in Zone 2. Walk breaks are fine. '
+              'Hydrate every 20-30 min.',
+        );
+      case WorkoutType.rest:
+        return TrainingDay(
+          date: date,
+          type: WorkoutType.rest,
+          description: 'Rest day. Let your body recover.',
+        );
+      case WorkoutType.crossTraining:
+        return TrainingDay(
+          date: date,
+          type: WorkoutType.crossTraining,
+          description: 'Cross-training day.',
+        );
+    }
+  }
+
+  static WorkoutType _classifyWorkoutType(
+    RunActivity activity,
+    int thresholdPaceSecPerKm, {
+    int longRunMinDuration = 55,
+  }) {
+    final pace = activity.pace.inSeconds;
+    final durationMin = activity.movingTime.inMinutes;
+
+    if (durationMin >= longRunMinDuration &&
+        pace > (thresholdPaceSecPerKm * 1.05).round()) {
+      return WorkoutType.longRun;
+    }
+
+    if (pace <= (thresholdPaceSecPerKm * 1.05).round()) {
+      if (pace < (thresholdPaceSecPerKm * 0.98).round() ||
+          activity.trainingLoad == TrainingLoad.veryHard) {
+        return WorkoutType.intervals;
+      }
+      return WorkoutType.tempo;
+    }
+
+    return WorkoutType.easy;
+  }
+
+  static const _easySeq = [
+    WorkoutType.intervals, WorkoutType.rest,
+    WorkoutType.easy, WorkoutType.tempo,
+    WorkoutType.rest, WorkoutType.longRun,
+    WorkoutType.easy,
+  ];
+
+  static const _intervalsSeq = [
+    WorkoutType.rest, WorkoutType.easy,
+    WorkoutType.tempo, WorkoutType.rest,
+    WorkoutType.longRun, WorkoutType.easy,
+    WorkoutType.intervals,
+  ];
+
+  static const _tempoSeq = [
+    WorkoutType.easy, WorkoutType.intervals,
+    WorkoutType.rest, WorkoutType.easy,
+    WorkoutType.longRun, WorkoutType.rest,
+    WorkoutType.tempo,
+  ];
+
+  static const _longRunSeq = [
+    WorkoutType.rest, WorkoutType.easy,
+    WorkoutType.intervals, WorkoutType.rest,
+    WorkoutType.easy, WorkoutType.tempo,
+    WorkoutType.rest,
+  ];
+
+  static const _intervalsThenEasySeq = [
+    WorkoutType.tempo, WorkoutType.rest,
+    WorkoutType.longRun, WorkoutType.easy,
+    WorkoutType.intervals, WorkoutType.rest,
+    WorkoutType.easy,
+  ];
+
+  static const _defaultSeq = [
+    WorkoutType.easy, WorkoutType.intervals,
+    WorkoutType.rest, WorkoutType.easy,
+    WorkoutType.tempo, WorkoutType.rest,
+    WorkoutType.longRun,
+  ];
+
+  List<WorkoutType> _next7Days(
+    WorkoutType lastType, {
+    WorkoutType? secondLastType,
+  }) {
+    if (secondLastType == WorkoutType.intervals &&
+        lastType == WorkoutType.easy) {
+      return [..._intervalsThenEasySeq];
+    }
+    switch (lastType) {
+      case WorkoutType.easy:
+        return [..._easySeq];
+      case WorkoutType.intervals:
+        return [..._intervalsSeq];
+      case WorkoutType.tempo:
+        return [..._tempoSeq];
+      case WorkoutType.longRun:
+        return [..._longRunSeq];
+      default:
+        return [..._defaultSeq];
+    }
   }
 
   double _targetWeeklyMinutes(RunningStats stats) {
@@ -131,12 +292,8 @@ class GeneratePlanUseCase {
   int _intervalMinutes(RunningStats stats) {
     final totalRuns = stats.totalRuns;
     final weeklyKm = stats.recentWeeklyAvgKm;
-    if (totalRuns < 15 || weeklyKm < 20) {
-      return 30;
-    }
-    if (totalRuns > 50 || weeklyKm > 50) {
-      return 42;
-    }
+    if (totalRuns < 15 || weeklyKm < 20) return 30;
+    if (totalRuns > 50 || weeklyKm > 50) return 42;
     return 36;
   }
 
