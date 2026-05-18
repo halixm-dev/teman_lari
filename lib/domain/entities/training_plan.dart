@@ -1,5 +1,14 @@
 enum WorkoutType { easy, tempo, intervals, longRun, rest, crossTraining }
 
+enum IntervalPhaseType { work, recovery }
+
+class IntervalPhase {
+  final IntervalPhaseType type;
+  final Duration duration;
+
+  const IntervalPhase({required this.type, required this.duration});
+}
+
 class PaceZone {
   final Duration slowestPace;
   final Duration fastestPace;
@@ -36,6 +45,7 @@ class TrainingDay {
   final HrZone? heartRateTarget;
   final String description;
   final Duration? estimatedDuration;
+  final List<IntervalPhase>? intervals;
 
   const TrainingDay({
     required this.date,
@@ -47,6 +57,7 @@ class TrainingDay {
     this.paceTarget,
     this.heartRateTarget,
     this.estimatedDuration,
+    this.intervals,
   });
 
   int? get workMinutes {

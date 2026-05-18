@@ -5,7 +5,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 
 import '../theme/app_colors.dart';
-import '../theme/app_theme.dart';
 import '../../core/services/gps_service.dart';
 import '../../core/services/pedometer_service.dart';
 import '../../domain/entities/training_plan.dart';
@@ -58,7 +57,12 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
   void initState() {
     super.initState();
     final plan = widget.day;
-    _state = RunSessionState(plan: plan, currentPaceSecondsPerKm: null);
+    final segments = RunSessionState.computeSegments(plan);
+    _state = RunSessionState(
+      plan: plan,
+      currentPaceSecondsPerKm: null,
+      segments: segments,
+    );
     _initSensors();
   }
 
@@ -152,6 +156,7 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
             isRunning: _state.isRunning,
             isLocked: _state.isLocked,
             isAudioCoachOn: _state.isAudioCoachOn,
+            segments: _state.segments,
           );
         });
         _pedometerService.calibrateStrideLength(dist);
@@ -182,6 +187,7 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
         isRunning: true,
         isLocked: _state.isLocked,
         isAudioCoachOn: _state.isAudioCoachOn,
+        segments: _state.segments,
       );
     });
   }
@@ -198,6 +204,7 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
         isRunning: false,
         isLocked: _state.isLocked,
         isAudioCoachOn: _state.isAudioCoachOn,
+        segments: _state.segments,
       );
     });
   }
@@ -260,16 +267,19 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
     }
 
     var newPhase = _state.phase;
-    if (newElapsed >= _state.totalSeconds && _state.totalSeconds > 0) {
+    final total = _state.totalSeconds;
+    if (total > 0 && newElapsed >= total) {
       _timer?.cancel();
       newPhase = WorkoutPhase.finished;
-    } else if (_state.warmUpSeconds > 0 && newElapsed < _state.warmUpSeconds) {
-      newPhase = WorkoutPhase.warmup;
-    } else if (_state.warmUpSeconds + _state.workSeconds > 0 &&
-        newElapsed < _state.warmUpSeconds + _state.workSeconds) {
-      newPhase = WorkoutPhase.work;
-    } else if (_state.totalSeconds > 0) {
-      newPhase = WorkoutPhase.cooldown;
+    } else {
+      int elapsed = 0;
+      for (final seg in _state.segments) {
+        if (newElapsed < elapsed + seg.durationSeconds) {
+          newPhase = seg.phase;
+          break;
+        }
+        elapsed += seg.durationSeconds;
+      }
     }
 
     setState(() {
@@ -282,6 +292,7 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
         isRunning: newPhase != WorkoutPhase.finished,
         isLocked: _state.isLocked,
         isAudioCoachOn: _state.isAudioCoachOn,
+        segments: _state.segments,
       );
     });
   }
@@ -297,6 +308,7 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
         isRunning: _state.isRunning,
         isLocked: !_state.isLocked,
         isAudioCoachOn: _state.isAudioCoachOn,
+        segments: _state.segments,
       );
     });
   }
@@ -312,6 +324,7 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
         isRunning: _state.isRunning,
         isLocked: _state.isLocked,
         isAudioCoachOn: !_state.isAudioCoachOn,
+        segments: _state.segments,
       );
     });
   }
@@ -334,16 +347,14 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Theme(
-      data: AppTheme.darkTheme,
-      child: PopScope(
-        canPop: false,
-        onPopInvokedWithResult: (didPop, _) {
-          if (!didPop) _showExitSheet(context);
-        },
-        child: Scaffold(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          body: SafeArea(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _showExitSheet(context);
+      },
+      child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: SafeArea(
             child: Stack(
               children: [
                 AbsorbPointer(
@@ -380,9 +391,9 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
                                 else
                                   Expanded(
                                     child: RunTimerDisplay(
-                                      progress: _state.totalProgress,
-                                      progressColor: _phaseColor(_state.phase),
+                                      phaseArcs: _buildPhaseArcs(),
                                       timeText: _formatTime(_state.elapsedSeconds),
+                                      phaseLabel: _currentPhaseLabel(),
                                     ),
                                   ),
                               ],
@@ -431,9 +442,9 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
                         ),
                         Expanded(
                           child: RunTimerDisplay(
-                            progress: _state.totalProgress,
-                            progressColor: _phaseColor(_state.phase),
+                            phaseArcs: _buildPhaseArcs(),
                             timeText: _formatTime(_state.elapsedSeconds),
+                            phaseLabel: _currentPhaseLabel(),
                           ),
                         ),
                         if (_state.phase == WorkoutPhase.finished)
@@ -476,11 +487,8 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
               ),
               if (_state.isLocked) ...[
                 Positioned.fill(
-                  child: GestureDetector(
-                    onTap: _toggleLock,
-                    child: Container(
-                      color: Colors.black.withValues(alpha: 0.3),
-                    ),
+                  child: Container(
+                    color: Colors.black.withValues(alpha: 0.3),
                   ),
                 ),
                 Positioned(
@@ -488,33 +496,36 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
                   left: 0,
                   right: 0,
                   child: Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.lock,
-                            color: Theme.of(context).colorScheme.onPrimary,
-                            size: 18,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Tap to Unlock',
-                            style: TextStyle(
+                    child: GestureDetector(
+                      onTap: _toggleLock,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.lock,
                               color: Theme.of(context).colorScheme.onPrimary,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
+                              size: 18,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 6),
+                            Text(
+                              'Tap to Unlock',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onPrimary,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -522,10 +533,44 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
               ],
               ],
             ),
-          ),
         ),
       ),
     );
+  }
+
+  List<PhaseArc> _buildPhaseArcs() {
+    final segments = _state.segments;
+    if (segments.isEmpty) return [];
+    final total = _state.totalSeconds;
+    if (total <= 0) return [];
+
+    int elapsed = 0;
+    final arcs = <PhaseArc>[];
+    for (final seg in segments) {
+      final sweep = seg.durationSeconds / total;
+      double fill = 0.0;
+      if (_state.elapsedSeconds >= elapsed + seg.durationSeconds) {
+        fill = 1.0;
+      } else if (_state.elapsedSeconds > elapsed) {
+        fill = (_state.elapsedSeconds - elapsed) / seg.durationSeconds;
+      }
+      arcs.add(PhaseArc(
+        sweepFraction: sweep,
+        fillFraction: fill,
+        color: phaseColor(seg.type),
+      ));
+      elapsed += seg.durationSeconds;
+    }
+    return arcs;
+  }
+
+  String? _currentPhaseLabel() {
+    if (_state.phase == WorkoutPhase.finished) return null;
+    final idx = _state.currentSegmentIndex;
+    if (idx < _state.segments.length) {
+      return phaseLabelFromType(_state.segments[idx].type);
+    }
+    return null;
   }
 
   void _showExitSheet(BuildContext context) {
