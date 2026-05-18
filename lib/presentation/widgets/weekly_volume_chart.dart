@@ -2,87 +2,99 @@ import 'package:flutter/material.dart';
 
 import '../../domain/entities/running_stats.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_spacing.dart';
 
-class WeeklyVolumeChart extends StatelessWidget {
+class WeeklyVolumeChart extends StatefulWidget {
   final RunningStats stats;
 
   const WeeklyVolumeChart({super.key, required this.stats});
 
   @override
-  Widget build(BuildContext context) {
-    final entries = stats.weeklyVolume.entries.toList()
+  State<WeeklyVolumeChart> createState() => _WeeklyVolumeChartState();
+}
+
+class _WeeklyVolumeChartState extends State<WeeklyVolumeChart> {
+  String? _selectedWeekKey;
+
+  List<MapEntry<String, double>> get _entries {
+    final entries = widget.stats.weeklyVolume.entries.toList()
       ..sort((a, b) => a.key.compareTo(b.key));
-    final recent = entries.length > 8
-        ? entries.sublist(entries.length - 8)
+    return entries.length > 12
+        ? entries.sublist(entries.length - 12)
         : entries;
+  }
 
-    if (recent.isEmpty) return const SizedBox.shrink();
+  @override
+  void initState() {
+    super.initState();
+    final e = _entries;
+    if (e.isNotEmpty) _selectedWeekKey = e.last.key;
+  }
 
-    final maxVol = recent.map((e) => e.value).reduce(
-      (a, b) => a > b ? a : b,
-    );
+  String _formatWeekLabel(String key) {
+    final parts = key.split('-');
+    if (parts.length < 3) return key;
+    final year = int.tryParse(parts[0]) ?? 0;
+    final month = int.tryParse(parts[1].replaceFirst('W', '')) ?? 1;
+    final day = int.tryParse(parts[2]) ?? 1;
+    final monday = DateTime(year, month, day);
+    final sunday = monday.add(const Duration(days: 6));
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    if (monday.month == sunday.month) {
+      return '${months[monday.month - 1]} ${monday.day}-${sunday.day}, ${sunday.year}';
+    }
+    return '${months[monday.month - 1]} ${monday.day} - ${months[sunday.month - 1]} ${sunday.day}, ${sunday.year}';
+  }
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final labelColor = isDark ? AppColors.textSecondaryDark : AppColors.gray500;
+  String _formatMinutes(double minutes) {
+    final hrs = minutes ~/ 60;
+    final mins = minutes % 60;
+    if (hrs > 0) return '${hrs}h ${mins.toInt()}m';
+    return '${mins.toInt()}m';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final entries = _entries;
+    if (entries.isEmpty) return const SizedBox.shrink();
+
+    if (_selectedWeekKey == null ||
+        !widget.stats.weeklyVolume.containsKey(_selectedWeekKey)) {
+      _selectedWeekKey = entries.last.key;
+    }
+
+    final selectedDistance =
+        widget.stats.weeklyVolume[_selectedWeekKey] ?? 0;
+    final selectedMinutes =
+        widget.stats.weeklyMinutes[_selectedWeekKey] ?? 0;
 
     return Card(
       child: Padding(
-        padding: AppSpacing.cardPadding,
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            _WeeklySummary(
+              weekLabel: _formatWeekLabel(_selectedWeekKey!),
+              distance: selectedDistance,
+              time: _formatMinutes(selectedMinutes),
+            ),
+            const SizedBox(height: 16),
             Text(
-              'Weekly Volume',
+              'Volume Trend',
               style: Theme.of(context).textTheme.titleMedium,
             ),
-            const SizedBox(height: AppSpacing.space4),
+            const SizedBox(height: 12),
             SizedBox(
-              height: 80,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: recent.map((e) {
-                  final ratio = maxVol > 0 ? e.value / maxVol : 0.0;
-                  return Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text(
-                            e.value.toStringAsFixed(0),
-                            style: TextStyle(
-                              fontSize: 9,
-                              color: labelColor,
-                              height: 1,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Container(
-                            height: (ratio * 56).clamp(4, 56),
-                            decoration: BoxDecoration(
-                              color: AppColors.brandOrange.withValues(
-                                alpha: 0.3 + (ratio * 0.7),
-                              ),
-                              borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(3),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            _shortLabel(e.key),
-                            style: TextStyle(
-                              fontSize: 8,
-                              color: labelColor,
-                              height: 1,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }).toList(),
+              height: 200,
+              child: _VolumeLineChart(
+                entries: entries,
+                selectedKey: _selectedWeekKey!,
+                onWeekSelected: (key) {
+                  setState(() => _selectedWeekKey = key);
+                },
               ),
             ),
           ],
@@ -90,11 +102,289 @@ class WeeklyVolumeChart extends StatelessWidget {
       ),
     );
   }
+}
 
-  String _shortLabel(String isoWeek) {
+class _WeeklySummary extends StatelessWidget {
+  final String weekLabel;
+  final double distance;
+  final String time;
+
+  const _WeeklySummary({
+    required this.weekLabel,
+    required this.distance,
+    required this.time,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor =
+        isDark ? AppColors.surfaceSecondaryDark : AppColors.brandOrangeTint;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            weekLabel,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              _SummaryItem(
+                label: 'Distance',
+                value: '${distance.toStringAsFixed(1)} km',
+              ),
+              const SizedBox(width: 24),
+              _SummaryItem(label: 'Time', value: time),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SummaryItem extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _SummaryItem({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+      ],
+    );
+  }
+}
+
+class _VolumeLineChart extends StatelessWidget {
+  final List<MapEntry<String, double>> entries;
+  final String selectedKey;
+  final ValueChanged<String> onWeekSelected;
+
+  const _VolumeLineChart({
+    required this.entries,
+    required this.selectedKey,
+    required this.onWeekSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return GestureDetector(
+          onTapDown: (details) {
+            final width = constraints.maxWidth;
+            const paddingLeft = 8.0;
+            const paddingRight = 40.0;
+            final chartWidth = width - paddingLeft - paddingRight;
+            final stepX = entries.length > 1
+                ? chartWidth / (entries.length - 1)
+                : chartWidth;
+
+            final tapX = details.localPosition.dx - paddingLeft;
+            final index =
+                (tapX / stepX).round().clamp(0, entries.length - 1);
+            onWeekSelected(entries[index].key);
+          },
+          child: CustomPaint(
+            size: Size(constraints.maxWidth, constraints.maxHeight),
+            painter: _VolumeLinePainter(
+              entries: entries,
+              selectedKey: selectedKey,
+              isDark: Theme.of(context).brightness == Brightness.dark,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _VolumeLinePainter extends CustomPainter {
+  final List<MapEntry<String, double>> entries;
+  final String selectedKey;
+  final bool isDark;
+
+  _VolumeLinePainter({
+    required this.entries,
+    required this.selectedKey,
+    required this.isDark,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const paddingLeft = 8.0;
+    const paddingRight = 40.0;
+    const paddingTop = 20.0;
+    const paddingBottom = 30.0;
+
+    final chartWidth = size.width - paddingLeft - paddingRight;
+    final chartHeight = size.height - paddingTop - paddingBottom;
+
+    if (entries.isEmpty || chartWidth <= 0 || chartHeight <= 0) return;
+
+    final maxVol =
+        entries.map((e) => e.value).reduce((a, b) => a > b ? a : b);
+    final effectiveMax = maxVol > 0 ? maxVol : 1.0;
+
+    final stepX = entries.length > 1
+        ? chartWidth / (entries.length - 1)
+        : chartWidth;
+
+    final labelColor =
+        isDark ? AppColors.textSecondaryDark : AppColors.gray500;
+    final gridColor = isDark ? AppColors.dividerDark : AppColors.gray200;
+
+    final tp = TextPainter(
+      textAlign: TextAlign.right,
+      textDirection: TextDirection.ltr,
+    );
+
+    // Grid lines and Y-axis labels
+    for (int i = 0; i < 3; i++) {
+      final yRatio = i / 2.0;
+      final y = paddingTop + chartHeight * (1 - yRatio);
+      final value = (effectiveMax * (1 - yRatio)).toStringAsFixed(1);
+
+      canvas.drawLine(
+        Offset(paddingLeft, y),
+        Offset(size.width - paddingRight, y),
+        Paint()
+          ..color = gridColor
+          ..strokeWidth = 0.5,
+      );
+
+      tp.text = TextSpan(
+        text: '$value km',
+        style: TextStyle(color: labelColor, fontSize: 10),
+      );
+      tp.layout();
+      tp.paint(
+        canvas,
+        Offset(size.width - paddingRight + 4, y - tp.height / 2),
+      );
+    }
+
+    // X-axis labels
+    final xTp = TextPainter(
+      textAlign: TextAlign.center,
+      textDirection: TextDirection.ltr,
+    );
+
+    for (int i = 0; i < entries.length; i++) {
+      if (entries.length > 8 && i % 2 != 0) continue;
+
+      final x = paddingLeft + stepX * i;
+      final label = _xLabel(entries[i].key, i);
+
+      xTp.text = TextSpan(
+        text: label,
+        style: TextStyle(color: labelColor, fontSize: 8),
+      );
+      xTp.layout();
+      xTp.paint(canvas, Offset(x - xTp.width / 2, size.height - paddingBottom + 8));
+    }
+
+    // Build points
+    final points = <Offset>[];
+    for (int i = 0; i < entries.length; i++) {
+      final x = paddingLeft + stepX * i;
+      final yRatio = maxVol > 0 ? entries[i].value / effectiveMax : 0.0;
+      final y = paddingTop + chartHeight * (1 - yRatio);
+      points.add(Offset(x, y));
+    }
+
+    // Draw line
+    final linePaint = Paint()
+      ..color = AppColors.brandOrange
+      ..strokeWidth = 2.5
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final path = Path();
+    for (int i = 0; i < points.length; i++) {
+      if (i == 0) {
+        path.moveTo(points[i].dx, points[i].dy);
+      } else {
+        path.lineTo(points[i].dx, points[i].dy);
+      }
+    }
+    canvas.drawPath(path, linePaint);
+
+    // Draw dots and selected marker
+    final dotPaint = Paint()
+      ..color = AppColors.brandOrange
+      ..style = PaintingStyle.fill;
+
+    final selectedIdx = entries.indexWhere((e) => e.key == selectedKey);
+
+    for (int i = 0; i < points.length; i++) {
+      if (i == selectedIdx) {
+        // Vertical white line marker
+        final markerPaint = Paint()
+          ..color = Colors.white
+          ..strokeWidth = 2.0
+          ..style = PaintingStyle.stroke;
+
+        canvas.drawLine(
+          Offset(points[i].dx, points[i].dy - 10),
+          Offset(points[i].dx, paddingTop),
+          markerPaint,
+        );
+
+        // Glow
+        final glowPaint = Paint()
+          ..color = AppColors.brandOrange.withValues(alpha: 0.3)
+          ..style = PaintingStyle.fill;
+        canvas.drawCircle(points[i], 10, glowPaint);
+
+        // Main dot
+        canvas.drawCircle(points[i], 5, dotPaint);
+      } else {
+        canvas.drawCircle(points[i], 3.5, dotPaint);
+      }
+    }
+  }
+
+  String _xLabel(String isoWeek, int index) {
     final parts = isoWeek.split('-');
-    if (parts.length < 2) return '';
-    final weekNum = parts.last;
-    return 'W$weekNum';
+    if (parts.length < 3) return 'W${index + 1}';
+    final month = int.tryParse(parts[1].replaceFirst('W', '')) ?? 0;
+    final day = int.tryParse(parts[2]) ?? 0;
+    return '$month/$day';
+  }
+
+  @override
+  bool shouldRepaint(covariant _VolumeLinePainter oldDelegate) {
+    return oldDelegate.entries != entries ||
+        oldDelegate.selectedKey != selectedKey ||
+        oldDelegate.isDark != isDark;
   }
 }

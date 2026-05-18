@@ -5,6 +5,7 @@ import '../../core/utils/responsive.dart';
 import '../providers/activities_provider.dart';
 import '../widgets/pace_chart.dart';
 import '../widgets/hr_zone_chart.dart';
+import '../widgets/stats_grid.dart';
 
 class AnalysisScreen extends ConsumerWidget {
   const AnalysisScreen({super.key});
@@ -28,6 +29,10 @@ class AnalysisScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                _DataPeriodBanner(),
+                const SizedBox(height: 16),
+                StatsGrid(stats: stats, showVo2Max: true),
+                const SizedBox(height: 16),
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
@@ -63,36 +68,6 @@ class AnalysisScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Summary',
-                          style: Theme.of(context).textTheme.headlineSmall,
-                        ),
-                        const SizedBox(height: 8),
-                        _statRow('Total Runs', '${stats.totalRuns}'),
-                        _statRow(
-                          'Total Distance',
-                          '${stats.totalDistanceKm.toStringAsFixed(1)} km',
-                        ),
-                        _statRow(
-                          'Average Pace',
-                          '${stats.averagePace.inMinutes}:${(stats.averagePace.inSeconds % 60).toString().padLeft(2, '0')} /km',
-                        ),
-                        if (stats.vo2MaxEstimate != null)
-                          _statRow(
-                            'VO2 Max Estimate',
-                            stats.vo2MaxEstimate!.toStringAsFixed(1),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
               ],
             ),
           );
@@ -101,15 +76,33 @@ class AnalysisScreen extends ConsumerWidget {
       ),
     );
   }
+}
 
-  Widget _statRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+class _DataPeriodBanner extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.blueGrey.shade800 : Colors.blue.shade50,
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Icon(
+            Icons.info_outline,
+            size: 14,
+            color: isDark ? Colors.blue.shade200 : Colors.blue.shade700,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            'Analysis based on 1 year of Strava data',
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark ? Colors.blue.shade200 : Colors.blue.shade700,
+            ),
+          ),
         ],
       ),
     );

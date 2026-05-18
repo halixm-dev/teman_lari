@@ -19,7 +19,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String? _restingHrError;
   String? _maxHrError;
   int? _storedAge;
-  int _hrZoneWeeks = 12;
 
   @override
   void dispose() {
@@ -115,28 +114,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ],
               ),
             ],
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                const Text('HR Zone Analysis Window: '),
-                const SizedBox(width: 8),
-                DropdownButton<int>(
-                  value: _hrZoneWeeks,
-                  items: const [
-                    DropdownMenuItem(value: 4, child: Text('4 weeks')),
-                    DropdownMenuItem(value: 8, child: Text('8 weeks')),
-                    DropdownMenuItem(value: 12, child: Text('12 weeks (Recommended)')),
-                    DropdownMenuItem(value: 26, child: Text('26 weeks')),
-                    DropdownMenuItem(value: 52, child: Text('52 weeks')),
-                  ],
-                  onChanged: (v) {
-                    if (v == null) return;
-                    setState(() => _hrZoneWeeks = v);
-                    ref.read(preferencesStorageProvider).saveHrZoneWeeks(v);
-                  },
-                ),
-              ],
-            ),
           ],
         ),
       ),
@@ -209,7 +186,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final maxStr = prefs.maxHr?.toString() ?? '';
     _maxHrController.text = maxStr;
     _storedAge = prefs.age;
-    _hrZoneWeeks = prefs.hrZoneWeeks;
     if (mounted) setState(() {});
   }
 

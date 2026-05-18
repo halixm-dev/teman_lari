@@ -4,9 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/utils/responsive.dart';
 import '../providers/activities_provider.dart';
 import '../widgets/fitness_form_card.dart';
-import '../widgets/stats_grid.dart';
 import '../widgets/recent_runs_list.dart';
-import '../widgets/quick_plan_card.dart';
 import '../widgets/today_workout_card.dart';
 import '../widgets/weekly_volume_chart.dart';
 
@@ -76,15 +74,11 @@ class DashboardScreen extends ConsumerWidget {
                       children: [
                         FitnessFormCard(stats: stats),
                         const SizedBox(height: 16),
-                        StatsGrid(stats: stats),
-                        const SizedBox(height: 16),
                         const TodayWorkoutCard(),
                         const SizedBox(height: 16),
                         WeeklyVolumeChart(stats: stats),
                         const SizedBox(height: 16),
                         const RecentRunsList(),
-                        const SizedBox(height: 16),
-                        const QuickPlanCard(),
                       ],
                     ),
                   ),

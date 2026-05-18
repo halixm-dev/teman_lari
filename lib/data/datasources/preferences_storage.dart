@@ -4,13 +4,11 @@ class HrPreferences {
   final int? maxHr;
   final int restingHr;
   final int? age;
-  final int hrZoneWeeks;
 
   const HrPreferences({
     this.maxHr,
     this.restingHr = 65,
     this.age,
-    this.hrZoneWeeks = 12,
   });
 }
 
@@ -18,7 +16,6 @@ class PreferencesStorage {
   static const _keyRestingHr = 'resting_hr';
   static const _keyMaxHr = 'max_hr';
   static const _keyDateOfBirth = 'date_of_birth';
-  static const _keyHrZoneWeeks = 'hr_zone_weeks';
   static const _keyAthleteName = 'athlete_name';
 
   Future<SharedPreferences> get _prefs => SharedPreferences.getInstance();
@@ -29,7 +26,6 @@ class PreferencesStorage {
       restingHr: prefs.getInt(_keyRestingHr) ?? 65,
       maxHr: prefs.getInt(_keyMaxHr),
       age: _computeAge(prefs.getString(_keyDateOfBirth)),
-      hrZoneWeeks: prefs.getInt(_keyHrZoneWeeks) ?? 12,
     );
   }
 
@@ -46,11 +42,6 @@ class PreferencesStorage {
   Future<void> clearMaxHr() async {
     final prefs = await _prefs;
     await prefs.remove(_keyMaxHr);
-  }
-
-  Future<void> saveHrZoneWeeks(int value) async {
-    final prefs = await _prefs;
-    await prefs.setInt(_keyHrZoneWeeks, value);
   }
 
   Future<void> saveDateOfBirth(String value) async {

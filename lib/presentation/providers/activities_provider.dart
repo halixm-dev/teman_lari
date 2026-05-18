@@ -79,13 +79,8 @@ final runningStatsProvider = FutureProvider<RunningStats?>((ref) async {
   final prefs = await ref.read(preferencesStorageProvider).getPreferences();
   final repo = ref.read(activityRepositoryProvider);
   final sortedActivities = [...activities]..sort((a, b) => b.date.compareTo(a.date));
-  final hrZoneWeeks = prefs.hrZoneWeeks;
-  final cutoff = hrZoneWeeks > 0
-      ? DateTime.now().subtract(Duration(days: hrZoneWeeks * 7))
-      : null;
-
   final withHrIds = sortedActivities
-      .where((a) => a.avgHeartRate != null && (cutoff == null || a.date.isAfter(cutoff)))
+      .where((a) => a.avgHeartRate != null)
       .map((a) => a.id)
       .take(50)
       .toList();
@@ -122,7 +117,6 @@ final runningStatsProvider = FutureProvider<RunningStats?>((ref) async {
     target,
     userMaxHr: prefs.maxHr,
     userRestingHr: prefs.restingHr,
-    hrZoneWeeks: prefs.hrZoneWeeks,
   );
 
   final activityMaxHr = target

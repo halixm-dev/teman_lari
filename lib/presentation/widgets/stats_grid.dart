@@ -4,8 +4,9 @@ import '../../domain/entities/running_stats.dart';
 
 class StatsGrid extends StatelessWidget {
   final RunningStats stats;
+  final bool showVo2Max;
 
-  const StatsGrid({super.key, required this.stats});
+  const StatsGrid({super.key, required this.stats, this.showVo2Max = false});
 
   @override
   Widget build(BuildContext context) {
@@ -36,12 +37,20 @@ class StatsGrid extends StatelessWidget {
               '${stats.averagePace.inMinutes}:${(stats.averagePace.inSeconds % 60).toString().padLeft(2, '0')}',
           color: Colors.orange,
         ),
-        _StatCard(
-          icon: Icons.show_chart,
-          label: 'Weekly Avg',
-          value: '${stats.recentWeeklyAvgKm.toStringAsFixed(1)} km',
-          color: Colors.purple,
-        ),
+        if (showVo2Max)
+          _StatCard(
+            icon: Icons.favorite,
+            label: 'VO2 Max',
+            value: stats.vo2MaxEstimate?.toStringAsFixed(1) ?? 'N/A',
+            color: Colors.purple,
+          )
+        else
+          _StatCard(
+            icon: Icons.show_chart,
+            label: 'Weekly Avg',
+            value: '${stats.recentWeeklyAvgKm.toStringAsFixed(1)} km',
+            color: Colors.purple,
+          ),
       ],
     );
   }

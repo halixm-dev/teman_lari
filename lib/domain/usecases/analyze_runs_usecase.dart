@@ -6,7 +6,6 @@ class AnalyzeRunsUseCase {
     List<RunActivity> activities, {
     int? userMaxHr,
     int? userRestingHr,
-    int? hrZoneWeeks,
   }) {
     if (activities.isEmpty) return RunningStats.empty();
 
@@ -28,7 +27,6 @@ class AnalyzeRunsUseCase {
         activities,
         maxHr: actualMaxHr,
         restingHr: actualRestingHr,
-        hrZoneWeeks: hrZoneWeeks,
       ),
       trainingLoadHistory: _trainingLoadHistory(
         sortedByDate,
@@ -150,13 +148,7 @@ class AnalyzeRunsUseCase {
     List<RunActivity> activities, {
     int maxHr = 190,
     int restingHr = 60,
-    int? hrZoneWeeks,
   }) {
-    if (hrZoneWeeks != null && hrZoneWeeks > 0) {
-      final cutoff = DateTime.now().subtract(Duration(days: hrZoneWeeks * 7));
-      activities = activities.where((a) => a.date.isAfter(cutoff)).toList();
-    }
-
     final withHr = activities.where((a) => a.avgHeartRate != null);
     if (withHr.isEmpty) return {};
 
