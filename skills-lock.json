@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "agentmd": {
+      "source": "mryll/skills",
+      "sourceType": "github",
+      "skillPath": "skills/agentmd/SKILL.md",
+      "computedHash": "08cf373785afe97d46c2328157046d21a2bfae978d59cfdefa66486fc1fbbc7a"
+    },
     "flutter-add-integration-test": {
       "source": "flutter/skills",
       "sourceType": "github",
