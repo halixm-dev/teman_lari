@@ -5,26 +5,32 @@ import '../../core/errors/failures.dart';
 import '../../domain/entities/run_activity.dart';
 import '../../domain/repositories/activity_repository.dart';
 import '../datasources/local_activity_datasource.dart';
+import '../datasources/preferences_storage.dart';
 import '../datasources/strava_activity_datasource.dart';
 import '../models/activity_model.dart';
 
 class ActivityRepositoryImpl implements ActivityRepository {
   final StravaActivityDataSource remoteDataSource;
   final LocalActivityDataSource localDataSource;
+  final PreferencesStorage preferencesStorage;
 
   ActivityRepositoryImpl({
     required this.remoteDataSource,
     required this.localDataSource,
+    required this.preferencesStorage,
   });
 
   @override
   Future<List<RunActivity>> getAllRunningActivities({
     int monthsBack = 12,
   }) async {
+    final prefs = await preferencesStorage.getPreferences();
+    final maxHr = prefs.maxHr ?? 190;
+
     try {
       final cached = await localDataSource.getCachedActivities();
       if (cached != null) {
-        return _mapModelsToEntities(cached);
+        return _mapModelsToEntities(cached, maxHr: maxHr);
       }
     } catch (_) {}
 
@@ -33,7 +39,7 @@ class ActivityRepositoryImpl implements ActivityRepository {
         monthsBack: monthsBack,
       );
       await localDataSource.saveActivities(remoteActivities);
-      return _mapModelsToEntities(remoteActivities);
+      return _mapModelsToEntities(remoteActivities, maxHr: maxHr);
     } on StravaApiException catch (e) {
       throw ServerFailure(e.message, e.statusCode);
     }
@@ -89,7 +95,10 @@ class ActivityRepositoryImpl implements ActivityRepository {
     return result;
   }
 
-  List<RunActivity> _mapModelsToEntities(List<ActivityModel> models) {
+  List<RunActivity> _mapModelsToEntities(
+    List<ActivityModel> models, {
+    int maxHr = 190,
+  }) {
     return models.map((model) {
       final date = DateTime.parse(model.startDate);
       final distanceKm = model.distance / 1000.0;
@@ -99,7 +108,7 @@ class ActivityRepositoryImpl implements ActivityRepository {
 
       TrainingLoad load;
       if (model.averageHeartrate != null) {
-        final hrPercent = model.averageHeartrate! / 190;
+        final hrPercent = model.averageHeartrate! / maxHr;
         if (hrPercent < 0.70) {
           load = TrainingLoad.easy;
         } else if (hrPercent < 0.80) {

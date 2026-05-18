@@ -16,6 +16,8 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final _restingHrController = TextEditingController();
   final _maxHrController = TextEditingController();
+  String? _restingHrError;
+  String? _maxHrError;
   int? _storedAge;
   int _hrZoneWeeks = 12;
 
@@ -89,6 +91,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               label: 'Resting Heart Rate (bpm)',
               hint: '65',
               keyboardType: TextInputType.number,
+              errorText: _restingHrError,
               onChanged: (v) => _saveRestingHr(v),
             ),
             const SizedBox(height: 12),
@@ -96,6 +99,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               controller: _maxHrController,
               label: 'Max Heart Rate (bpm)',
               hint: _buildMaxHrHint(),
+              errorText: _maxHrError,
               keyboardType: TextInputType.number,
               onChanged: (v) => _saveMaxHr(v),
             ),
@@ -145,12 +149,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     required String hint,
     required TextInputType keyboardType,
     required ValueChanged<String> onChanged,
+    String? errorText,
   }) {
     return TextField(
       controller: controller,
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
+        errorText: errorText,
         border: const OutlineInputBorder(),
         isDense: true,
       ),
@@ -169,18 +175,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Future<void> _saveRestingHr(String value) async {
     final parsed = int.tryParse(value);
-    if (parsed == null || parsed < 30 || parsed > 120) return;
+    if (parsed == null || parsed < 30 || parsed > 120) {
+      if (value.isNotEmpty) {
+        setState(() => _restingHrError = 'Enter a value between 30–120');
+      } else {
+        setState(() => _restingHrError = null);
+      }
+      return;
+    }
+    setState(() => _restingHrError = null);
     await ref.read(preferencesStorageProvider).saveRestingHr(parsed);
   }
 
   Future<void> _saveMaxHr(String value) async {
     final storage = ref.read(preferencesStorageProvider);
     if (value.isEmpty) {
+      setState(() => _maxHrError = null);
       await storage.clearMaxHr();
       return;
     }
     final parsed = int.tryParse(value);
-    if (parsed == null || parsed < 100 || parsed > 250) return;
+    if (parsed == null || parsed < 100 || parsed > 250) {
+      setState(() => _maxHrError = 'Enter a value between 100–250');
+      return;
+    }
+    setState(() => _maxHrError = null);
     await storage.saveMaxHr(parsed);
   }
 

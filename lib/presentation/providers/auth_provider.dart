@@ -80,9 +80,14 @@ class AuthNotifier extends Notifier<AuthState> {
       final athlete =
           await ref.read(authAthleteDataSourceProvider).getAthlete();
       final storage = ref.read(authPreferencesStorageProvider);
+      final name = [
+        if (athlete.firstName != null) athlete.firstName,
+        if (athlete.lastName != null) athlete.lastName,
+      ].join(' ');
       await storage.updateFromStrava(
         athleteMaxHr: athlete.maxHeartrate,
         athleteDateOfBirth: athlete.dateOfBirth,
+        athleteName: name.isNotEmpty ? name : null,
       );
     } catch (_) {}
   }

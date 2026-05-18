@@ -7,6 +7,8 @@ import '../widgets/fitness_form_card.dart';
 import '../widgets/stats_grid.dart';
 import '../widgets/recent_runs_list.dart';
 import '../widgets/quick_plan_card.dart';
+import '../widgets/today_workout_card.dart';
+import '../widgets/weekly_volume_chart.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -15,10 +17,23 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(runningStatsProvider);
     final activities = ref.watch(activitiesProvider);
+    final athleteNameAsync = ref.watch(athleteNameProvider);
+
+    final greeting = athleteNameAsync.whenOrNull(
+          data: (name) => name,
+        ) ??
+        'Runner';
+
+    final hour = DateTime.now().hour;
+    final timeGreeting = hour < 12
+        ? 'Good morning'
+        : hour < 17
+            ? 'Good afternoon'
+            : 'Good evening';
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Running'),
+        title: Text('$timeGreeting, $greeting'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -62,6 +77,10 @@ class DashboardScreen extends ConsumerWidget {
                         FitnessFormCard(stats: stats),
                         const SizedBox(height: 16),
                         StatsGrid(stats: stats),
+                        const SizedBox(height: 16),
+                        const TodayWorkoutCard(),
+                        const SizedBox(height: 16),
+                        WeeklyVolumeChart(stats: stats),
                         const SizedBox(height: 16),
                         const RecentRunsList(),
                         const SizedBox(height: 16),

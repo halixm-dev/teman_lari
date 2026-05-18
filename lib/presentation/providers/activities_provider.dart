@@ -34,19 +34,20 @@ final localActivityDataSourceProvider = Provider<LocalActivityDataSource>((
   return LocalActivityDataSource();
 });
 
+final preferencesStorageProvider = Provider<PreferencesStorage>((ref) {
+  return PreferencesStorage();
+});
+
 final activityRepositoryProvider = Provider<ActivityRepository>((ref) {
   return ActivityRepositoryImpl(
     remoteDataSource: ref.read(stravaActivityDataSourceProvider),
     localDataSource: ref.read(localActivityDataSourceProvider),
+    preferencesStorage: ref.read(preferencesStorageProvider),
   );
 });
 
 final getActivitiesUseCaseProvider = Provider<GetActivitiesUseCase>((ref) {
   return GetActivitiesUseCase(ref.read(activityRepositoryProvider));
-});
-
-final preferencesStorageProvider = Provider<PreferencesStorage>((ref) {
-  return PreferencesStorage();
 });
 
 final analyzeRunsUseCaseProvider = Provider<AnalyzeRunsUseCase>((ref) {
@@ -69,10 +70,7 @@ class ActivitiesNotifier extends AsyncNotifier<List<RunActivity>> {
   }
 
   Future<void> refresh() async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(
-      () => ref.read(getActivitiesUseCaseProvider).execute(monthsBack: 12),
-    );
+    ref.invalidateSelf();
   }
 }
 
@@ -144,4 +142,8 @@ final runningStatsProvider = FutureProvider<RunningStats?>((ref) async {
 final trainingPlanProvider = FutureProvider<TrainingPlan>((ref) async {
   final activities = await ref.watch(activitiesProvider.future);
   return ref.read(generatePlanUseCaseProvider).generate(activities);
+});
+
+final athleteNameProvider = FutureProvider<String?>((ref) async {
+  return ref.read(preferencesStorageProvider).getAthleteName();
 });

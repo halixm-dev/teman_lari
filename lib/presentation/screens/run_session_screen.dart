@@ -56,9 +56,9 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
   WorkoutPhase? _lastPhase;
   int _lastAnnouncedKm = 0;
 
-  static const double _smoothingAlpha = 0.4;
+  static const double _smoothingAlpha = 0.25;
   static const Duration _gpsTimeout = Duration(seconds: 10);
-  static const double _minGpsSpeed = 0.5;
+  static const double _minGpsSpeed = 1.0;
   static const int _stepWindowSize = 10;
 
   @override
