@@ -15,22 +15,38 @@ class WeeklyVolumeChart extends StatefulWidget {
 class _WeeklyVolumeChartState extends State<WeeklyVolumeChart> {
   String? _selectedWeekKey;
 
+  String _isoWeekKey(DateTime date) {
+    final monday = date.subtract(Duration(days: date.weekday - 1));
+    return '${monday.year}-W${monday.month.toString().padLeft(2, '0')}-${monday.day.toString().padLeft(2, '0')}';
+  }
+
+  String get _currentWeekKey {
+    final now = DateTime.now();
+    final monday = now.subtract(Duration(days: now.weekday - 1));
+    return _isoWeekKey(monday);
+  }
+
   List<MapEntry<String, double>> get _entries {
-    final entries = widget.stats.weeklyVolume.entries.toList()
-      ..sort((a, b) => a.key.compareTo(b.key));
-    return entries.length > 12
-        ? entries.sublist(entries.length - 12)
-        : entries;
+    final now = DateTime.now();
+    final currentMonday = now.subtract(Duration(days: now.weekday - 1));
+    final entries = <MapEntry<String, double>>[];
+    for (int i = 11; i >= 0; i--) {
+      final monday = currentMonday.subtract(Duration(days: i * 7));
+      final key = _isoWeekKey(monday);
+      final value = widget.stats.weeklyVolume[key] ?? 0.0;
+      entries.add(MapEntry(key, value));
+    }
+    return entries;
   }
 
   @override
   void initState() {
     super.initState();
-    final e = _entries;
-    if (e.isNotEmpty) _selectedWeekKey = e.last.key;
+    _selectedWeekKey = _currentWeekKey;
   }
 
   String _formatWeekLabel(String key) {
+    if (key == _currentWeekKey) return 'This Week';
     final parts = key.split('-');
     if (parts.length < 3) return key;
     final year = int.tryParse(parts[0]) ?? 0;
@@ -43,9 +59,9 @@ class _WeeklyVolumeChartState extends State<WeeklyVolumeChart> {
       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
     ];
     if (monday.month == sunday.month) {
-      return '${months[monday.month - 1]} ${monday.day}-${sunday.day}, ${sunday.year}';
+      return '${monday.day} ${months[monday.month - 1]} ${monday.year} - ${sunday.day} ${months[sunday.month - 1]} ${sunday.year}';
     }
-    return '${months[monday.month - 1]} ${monday.day} - ${months[sunday.month - 1]} ${sunday.day}, ${sunday.year}';
+    return '${monday.day} ${months[monday.month - 1]} ${monday.year} - ${sunday.day} ${months[sunday.month - 1]} ${sunday.year}';
   }
 
   String _formatMinutes(double minutes) {
@@ -58,12 +74,8 @@ class _WeeklyVolumeChartState extends State<WeeklyVolumeChart> {
   @override
   Widget build(BuildContext context) {
     final entries = _entries;
-    if (entries.isEmpty) return const SizedBox.shrink();
 
-    if (_selectedWeekKey == null ||
-        !widget.stats.weeklyVolume.containsKey(_selectedWeekKey)) {
-      _selectedWeekKey = entries.last.key;
-    }
+    _selectedWeekKey ??= _currentWeekKey;
 
     final selectedDistance =
         widget.stats.weeklyVolume[_selectedWeekKey] ?? 0;
@@ -80,6 +92,7 @@ class _WeeklyVolumeChartState extends State<WeeklyVolumeChart> {
               weekLabel: _formatWeekLabel(_selectedWeekKey!),
               distance: selectedDistance,
               time: _formatMinutes(selectedMinutes),
+              labelStyle: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 16),
             Text(
@@ -108,11 +121,13 @@ class _WeeklySummary extends StatelessWidget {
   final String weekLabel;
   final double distance;
   final String time;
+  final TextStyle? labelStyle;
 
   const _WeeklySummary({
     required this.weekLabel,
     required this.distance,
     required this.time,
+    this.labelStyle,
   });
 
   @override
@@ -123,7 +138,7 @@ class _WeeklySummary extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.fromLTRB(8, 12, 12, 12),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(8),
@@ -133,9 +148,7 @@ class _WeeklySummary extends StatelessWidget {
         children: [
           Text(
             weekLabel,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            style: labelStyle,
           ),
           const SizedBox(height: 8),
           Row(
@@ -194,23 +207,30 @@ class _VolumeLineChart extends StatelessWidget {
     required this.onWeekSelected,
   });
 
+  int _indexFromDx(double dx, double width) {
+    const paddingLeft = 8.0;
+    const paddingRight = 40.0;
+    final chartWidth = width - paddingLeft - paddingRight;
+    final stepX = entries.length > 1
+        ? chartWidth / (entries.length - 1)
+        : chartWidth;
+    final tapX = dx - paddingLeft;
+    return (tapX / stepX).round().clamp(0, entries.length - 1);
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         return GestureDetector(
           onTapDown: (details) {
-            final width = constraints.maxWidth;
-            const paddingLeft = 8.0;
-            const paddingRight = 40.0;
-            final chartWidth = width - paddingLeft - paddingRight;
-            final stepX = entries.length > 1
-                ? chartWidth / (entries.length - 1)
-                : chartWidth;
-
-            final tapX = details.localPosition.dx - paddingLeft;
             final index =
-                (tapX / stepX).round().clamp(0, entries.length - 1);
+                _indexFromDx(details.localPosition.dx, constraints.maxWidth);
+            onWeekSelected(entries[index].key);
+          },
+          onPanUpdate: (details) {
+            final index =
+                _indexFromDx(details.localPosition.dx, constraints.maxWidth);
             onWeekSelected(entries[index].key);
           },
           child: CustomPaint(
@@ -299,14 +319,14 @@ class _VolumeLinePainter extends CustomPainter {
     );
 
     for (int i = 0; i < entries.length; i++) {
-      if (entries.length > 8 && i % 2 != 0) continue;
-
       final x = paddingLeft + stepX * i;
-      final label = _xLabel(entries[i].key, i);
+      final label = _xLabel(entries[i].key);
+
+      if (label.isEmpty) continue;
 
       xTp.text = TextSpan(
         text: label,
-        style: TextStyle(color: labelColor, fontSize: 8),
+        style: TextStyle(color: labelColor, fontSize: 9, fontWeight: FontWeight.w600),
       );
       xTp.layout();
       xTp.paint(canvas, Offset(x - xTp.width / 2, size.height - paddingBottom + 8));
@@ -347,14 +367,14 @@ class _VolumeLinePainter extends CustomPainter {
 
     for (int i = 0; i < points.length; i++) {
       if (i == selectedIdx) {
-        // Vertical white line marker
+        // Full vertical white line marker
         final markerPaint = Paint()
           ..color = Colors.white
           ..strokeWidth = 2.0
           ..style = PaintingStyle.stroke;
 
         canvas.drawLine(
-          Offset(points[i].dx, points[i].dy - 10),
+          Offset(points[i].dx, size.height - paddingBottom),
           Offset(points[i].dx, paddingTop),
           markerPaint,
         );
@@ -373,12 +393,18 @@ class _VolumeLinePainter extends CustomPainter {
     }
   }
 
-  String _xLabel(String isoWeek, int index) {
+  String _xLabel(String isoWeek) {
     final parts = isoWeek.split('-');
-    if (parts.length < 3) return 'W${index + 1}';
+    if (parts.length < 3) return '';
     final month = int.tryParse(parts[1].replaceFirst('W', '')) ?? 0;
     final day = int.tryParse(parts[2]) ?? 0;
-    return '$month/$day';
+    if (day > 7) return '';
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    if (month < 1 || month > 12) return '';
+    return months[month - 1];
   }
 
   @override
