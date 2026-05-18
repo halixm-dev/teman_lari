@@ -23,6 +23,7 @@ class AppColors {
   static const Color success = Color(0xFF22C55E);
   static const Color warning = Color(0xFFF59E0B);
   static const Color danger = Color(0xFFEF4444);
+  static const Color info = Color(0xFF3B82F6);
 
   // Dark mode surfaces
   static const Color surfacePrimaryDark = Color(0xFF1C1C1E);

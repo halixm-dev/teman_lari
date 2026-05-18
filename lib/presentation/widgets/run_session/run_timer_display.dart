@@ -16,6 +16,7 @@ class RunTimerDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return AspectRatio(
       aspectRatio: 1,
       child: Padding(
@@ -32,7 +33,7 @@ class RunTimerDisplay extends StatelessWidget {
                   size: Size.infinite,
                   painter: _CircularProgressPainter(
                     progress: progress,
-                    trackColor: const Color(0xFF3A3A3C),
+                    trackColor: theme.colorScheme.surfaceContainerHighest,
                     progressColor: color ?? progressColor,
                   ),
                 );
@@ -43,11 +44,10 @@ class RunTimerDisplay extends StatelessWidget {
               children: [
                 Text(
                   timeText,
-                  style: const TextStyle(
+                  style: theme.textTheme.displayLarge?.copyWith(
                     fontFamily: 'JetBrains Mono',
                     fontSize: 72,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFFF2F2F7),
                     height: 1.0,
                   ),
                 ),

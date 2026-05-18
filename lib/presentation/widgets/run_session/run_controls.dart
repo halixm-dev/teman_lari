@@ -64,6 +64,7 @@ class _RunControlsState extends State<RunControls> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       child: Row(
@@ -90,15 +91,16 @@ class _RunControlsState extends State<RunControls> {
               child: ValueListenableBuilder<double>(
                 valueListenable: _holdProgress,
                 builder: (context, progress, _) {
+                  final primaryColor = theme.colorScheme.primary;
                   return Container(
                     width: 80,
                     height: 80,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFC4C02),
+                      color: primaryColor,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFFC4C02).withValues(alpha: 0.3),
+                          color: primaryColor.withValues(alpha: 0.3),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -113,14 +115,16 @@ class _RunControlsState extends State<RunControls> {
                             height: 80,
                             child: CircularProgressIndicator(
                               value: progress,
-                              color: Colors.white.withValues(alpha: 0.4),
+                              color: theme.colorScheme.onPrimary.withValues(
+                                alpha: 0.4,
+                              ),
                               strokeWidth: 3,
                               backgroundColor: Colors.transparent,
                             ),
                           ),
                         Icon(
                           widget.isRunning ? Icons.pause : Icons.play_arrow,
-                          color: Colors.white,
+                          color: theme.colorScheme.onPrimary,
                           size: 36,
                         ),
                       ],
@@ -148,20 +152,23 @@ class _IconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return SizedBox(
       width: 56,
       height: 56,
       child: Material(
         color: isActive
-            ? const Color(0xFFFC4C02).withValues(alpha: 0.15)
-            : const Color(0xFF3A3A3C),
+            ? theme.colorScheme.primary.withValues(alpha: 0.15)
+            : theme.colorScheme.surfaceContainerHighest,
         shape: const CircleBorder(),
         child: InkWell(
           onTap: onPressed,
           customBorder: const CircleBorder(),
           child: Icon(
             icon,
-            color: isActive ? const Color(0xFFFC4C02) : const Color(0xFFAEAEB2),
+            color: isActive
+                ? theme.colorScheme.primary
+                : theme.colorScheme.onSurfaceVariant,
             size: 24,
           ),
         ),

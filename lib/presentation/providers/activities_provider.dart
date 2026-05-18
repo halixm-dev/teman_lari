@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
 
 import '../../core/network/strava_api_client.dart';
 import '../../data/datasources/local_activity_datasource.dart';
@@ -19,7 +18,7 @@ final stravaApiClientProvider = Provider<StravaApiClient>((ref) {
   return StravaApiClient(
     ref.read(tokenStorageProvider),
     ref.read(stravaAuthDataSourceProvider),
-    http.Client(),
+    ref.read(httpClientProvider),
   );
 });
 
@@ -81,9 +80,16 @@ final runningStatsProvider = FutureProvider<RunningStats?>((ref) async {
   final activities = await ref.watch(activitiesProvider.future);
   final prefs = await ref.read(preferencesStorageProvider).getPreferences();
   final repo = ref.read(activityRepositoryProvider);
-  final withHrIds = activities
-      .where((a) => a.avgHeartRate != null)
+  final sortedActivities = [...activities]..sort((a, b) => b.date.compareTo(a.date));
+  final hrZoneWeeks = prefs.hrZoneWeeks;
+  final cutoff = hrZoneWeeks > 0
+      ? DateTime.now().subtract(Duration(days: hrZoneWeeks * 7))
+      : null;
+
+  final withHrIds = sortedActivities
+      .where((a) => a.avgHeartRate != null && (cutoff == null || a.date.isAfter(cutoff)))
       .map((a) => a.id)
+      .take(50)
       .toList();
 
   List<RunActivity> target;

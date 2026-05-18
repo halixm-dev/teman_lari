@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
+
 class RunPacerDisplay extends StatelessWidget {
   final int? currentPaceSecondsPerKm;
   final int fastestTargetSeconds;
@@ -28,9 +30,9 @@ class RunPacerDisplay extends StatelessWidget {
 
   Color _paceStatusColor() {
     final pos = _pacePosition();
-    if (pos < 0.2 || pos > 0.8) return const Color(0xFFEF4444);
-    if (pos < 0.4 || pos > 0.6) return const Color(0xFFF59E0B);
-    return const Color(0xFF22C55E);
+    if (pos < 0.2 || pos > 0.8) return AppColors.danger;
+    if (pos < 0.4 || pos > 0.6) return AppColors.warning;
+    return AppColors.success;
   }
 
   String _paceStatusLabel() {
@@ -45,12 +47,13 @@ class RunPacerDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasPace = currentPaceSecondsPerKm != null;
+    final theme = Theme.of(context);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2C2E),
+        color: theme.cardTheme.color,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -62,21 +65,19 @@ class RunPacerDisplay extends StatelessWidget {
             children: [
               Text(
                 hasPace ? _formatPace(currentPaceSecondsPerKm!) : "--'--",
-                style: const TextStyle(
+                style: theme.textTheme.displayMedium?.copyWith(
                   fontFamily: 'JetBrains Mono',
                   fontSize: 36,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFFF2F2F7),
+                  color: theme.colorScheme.onSurface,
                   height: 1.0,
                 ),
               ),
               const SizedBox(width: 4),
-              const Text(
+              Text(
                 '/km',
-                style: TextStyle(
-                  fontSize: 14,
+                style: theme.textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFF636366),
                   height: 1.0,
                 ),
               ),
@@ -85,11 +86,7 @@ class RunPacerDisplay extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             'Target: ${_formatPace(fastestTargetSeconds)} - ${_formatPace(slowestTargetSeconds)} /km',
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFFAEAEB2),
-            ),
+            style: theme.textTheme.bodySmall,
           ),
           if (hasPace) ...[
             const SizedBox(height: 12),
@@ -109,11 +106,11 @@ class RunPacerDisplay extends StatelessWidget {
                           children: [
                             Row(
                               children: [
-                                _segment(const Color(0xFFEF4444)),
-                                _segment(const Color(0xFFF59E0B)),
-                                _segment(const Color(0xFF22C55E)),
-                                _segment(const Color(0xFFF59E0B)),
-                                _segment(const Color(0xFFEF4444)),
+                                _segment(AppColors.danger),
+                                _segment(AppColors.warning),
+                                _segment(AppColors.success),
+                                _segment(AppColors.warning),
+                                _segment(AppColors.danger),
                               ],
                             ),
                             AnimatedPositioned(
@@ -128,7 +125,7 @@ class RunPacerDisplay extends StatelessWidget {
                                   color: _paceStatusColor(),
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: const Color(0xFF1C1C1E),
+                                    color: theme.scaffoldBackgroundColor,
                                     width: 2,
                                   ),
                                 ),

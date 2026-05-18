@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 
+import '../theme/app_colors.dart';
+import '../theme/app_theme.dart';
 import '../../core/services/gps_service.dart';
 import '../../core/services/pedometer_service.dart';
 import '../../domain/entities/training_plan.dart';
@@ -332,17 +334,19 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _showExitSheet(context);
-      },
-      child: Scaffold(
-        backgroundColor: const Color(0xFF1C1C1E),
-        body: SafeArea(
-          child: Stack(
-            children: [
-              AbsorbPointer(
+    return Theme(
+      data: AppTheme.darkTheme,
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) _showExitSheet(context);
+        },
+        child: Scaffold(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          body: SafeArea(
+            child: Stack(
+              children: [
+                AbsorbPointer(
                 absorbing: _state.isLocked,
                 child: OrientationBuilder(
                   builder: (context, orientation) {
@@ -484,18 +488,22 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
                           vertical: 10,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFC4C02),
+                          color: Theme.of(context).colorScheme.primary,
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.lock, color: Colors.white, size: 18),
-                            SizedBox(width: 6),
+                            Icon(
+                              Icons.lock,
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 6),
                             Text(
                               'Tap to Unlock',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: Theme.of(context).colorScheme.onPrimary,
                                 fontWeight: FontWeight.w600,
                                 fontSize: 14,
                               ),
@@ -506,7 +514,8 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
                     ),
                   ),
                 ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -516,11 +525,12 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
   void _showExitSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF2C2C2E),
+      backgroundColor: Theme.of(context).cardTheme.color,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (sheetContext) {
+        final theme = Theme.of(context);
         return Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -530,23 +540,21 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
                 width: 32,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF636366),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
+              Text(
                 'End Workout?',
-                style: TextStyle(
-                  fontSize: 18,
+                style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFFF2F2F7),
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 'Your progress so far will be saved.',
-                style: TextStyle(fontSize: 14, color: Color(0xFFAEAEB2)),
+                style: theme.textTheme.bodySmall,
               ),
               const SizedBox(height: 24),
               Row(
@@ -555,8 +563,12 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
                     child: OutlinedButton(
                       onPressed: () => Navigator.of(sheetContext).pop(),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFFF2F2F7),
-                        side: const BorderSide(color: Color(0xFF3A3A3C)),
+                        foregroundColor: theme.colorScheme.onSurface,
+                        side: BorderSide(
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.12,
+                          ),
+                        ),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       child: const Text('Resume'),
@@ -571,7 +583,8 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
                         context.pop();
                       },
                       style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFFEF4444),
+                        backgroundColor: theme.colorScheme.error,
+                        foregroundColor: theme.colorScheme.onError,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       child: const Text('End'),
@@ -602,16 +615,16 @@ class _PaceSourceIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (icon, label, color) = switch (source) {
-      PaceSource.gps => (Icons.satellite_alt, 'GPS', const Color(0xFF22C55E)),
+      PaceSource.gps => (Icons.satellite_alt, 'GPS', AppColors.success),
       PaceSource.pedometer => (
         Icons.directions_walk,
         'Steps',
-        const Color(0xFFF59E0B),
+        AppColors.warning,
       ),
       PaceSource.none => (
         Icons.sensors_off,
         'No Signal',
-        const Color(0xFFEF4444),
+        AppColors.danger,
       ),
     };
 
@@ -652,6 +665,7 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
       child: Row(
@@ -662,10 +676,8 @@ class _Header extends StatelessWidget {
               children: [
                 Text(
                   planName,
-                  style: const TextStyle(
-                    fontSize: 18,
+                  style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFFF2F2F7),
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -716,9 +728,9 @@ class _Header extends StatelessWidget {
           ),
           IconButton(
             onPressed: onExit,
-            icon: const Icon(Icons.close, color: Color(0xFFAEAEB2)),
+            icon: Icon(Icons.close, color: theme.colorScheme.onSurfaceVariant),
             style: IconButton.styleFrom(
-              backgroundColor: const Color(0xFF3A3A3C),
+              backgroundColor: theme.colorScheme.surfaceContainerHighest,
               minimumSize: const Size(44, 44),
             ),
           ),
@@ -739,10 +751,10 @@ class _Header extends StatelessWidget {
 
 Color _phaseColor(WorkoutPhase phase) {
   return switch (phase) {
-    WorkoutPhase.warmup => const Color(0xFF22C55E),
-    WorkoutPhase.work => const Color(0xFFFC4C02),
-    WorkoutPhase.cooldown => const Color(0xFF3B82F6),
-    WorkoutPhase.finished => const Color(0xFF22C55E),
+    WorkoutPhase.warmup => AppColors.success,
+    WorkoutPhase.work => AppColors.brandOrange,
+    WorkoutPhase.cooldown => AppColors.info,
+    WorkoutPhase.finished => AppColors.success,
   };
 }
 

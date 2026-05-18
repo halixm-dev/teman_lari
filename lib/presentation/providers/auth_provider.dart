@@ -8,12 +8,19 @@ import '../../data/datasources/strava_activity_datasource.dart';
 import '../../data/datasources/token_storage.dart';
 import '../../domain/usecases/strava_auth_usecase.dart';
 
+// Shared HTTP client with proper disposal
+final httpClientProvider = Provider.autoDispose<http.Client>((ref) {
+  final client = http.Client();
+  ref.onDispose(() => client.close());
+  return client;
+});
+
 final tokenStorageProvider = Provider<TokenStorage>((ref) {
   return TokenStorage();
 });
 
 final stravaAuthDataSourceProvider = Provider<StravaAuthDataSource>((ref) {
-  return StravaAuthDataSource(http.Client());
+  return StravaAuthDataSource(ref.read(httpClientProvider));
 });
 
 final stravaAuthUseCaseProvider = Provider<StravaAuthUseCase>((ref) {
@@ -27,7 +34,7 @@ final authApiClientProvider = Provider<StravaApiClient>((ref) {
   return StravaApiClient(
     ref.read(tokenStorageProvider),
     ref.read(stravaAuthDataSourceProvider),
-    http.Client(),
+    ref.read(httpClientProvider),
   );
 });
 

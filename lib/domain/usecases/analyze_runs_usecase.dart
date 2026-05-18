@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import '../entities/run_activity.dart';
 import '../entities/running_stats.dart';
 
@@ -98,21 +96,26 @@ class AnalyzeRunsUseCase {
     int restingHr = 60,
   }) {
     if (activities.isEmpty) return 0;
+
+    final tssByDate = <DateTime, double>{};
+    for (final a in activities) {
+      final day = DateTime(a.date.year, a.date.month, a.date.day);
+      tssByDate[day] =
+          (tssByDate[day] ?? 0) +
+          _trainingStressScore(a, maxHr: maxHr, restingHr: restingHr);
+    }
+
     final decay = 2 / (decayDays + 1);
     double ema = 0;
-    for (final activity in activities) {
-      final tss = _trainingStressScore(
-        activity,
-        maxHr: maxHr,
-        restingHr: restingHr,
-      );
+    final sortedByDate = tssByDate.keys.toList()..sort();
+    final first = sortedByDate.first;
+    final last = DateTime.now();
+
+    for (var d = first; !d.isAfter(last); d = d.add(const Duration(days: 1))) {
+      final tss = tssByDate[d] ?? 0;
       ema = tss * decay + ema * (1 - decay);
     }
-    final lastDate = activities.last.date;
-    final daysSince = DateTime.now().difference(lastDate).inDays;
-    if (daysSince > 0) {
-      ema *= pow(1 - decay, daysSince).toDouble();
-    }
+
     return ema;
   }
 
@@ -285,11 +288,9 @@ class AnalyzeRunsUseCase {
     final tssByDate = <DateTime, double>{};
     for (final a in sorted) {
       final day = DateTime(a.date.year, a.date.month, a.date.day);
-      tssByDate[day] = _trainingStressScore(
-        a,
-        maxHr: maxHr,
-        restingHr: restingHr,
-      );
+      tssByDate[day] =
+          (tssByDate[day] ?? 0) +
+          _trainingStressScore(a, maxHr: maxHr, restingHr: restingHr);
     }
 
     final first =

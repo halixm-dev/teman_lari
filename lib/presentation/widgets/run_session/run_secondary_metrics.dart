@@ -18,6 +18,7 @@ class RunSecondaryMetrics extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
       child: Row(
@@ -28,7 +29,11 @@ class RunSecondaryMetrics extends StatelessWidget {
               value: _formatTime(elapsedSeconds),
             ),
           ),
-          Container(width: 1, height: 32, color: const Color(0xFF38383A)),
+          Container(
+            width: 1,
+            height: 32,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.12),
+          ),
           Expanded(
             child: _MetricTile(
               label: 'Remaining',
@@ -49,26 +54,22 @@ class _MetricTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF636366),
+          style: theme.textTheme.labelSmall?.copyWith(
             letterSpacing: 0.05,
           ),
         ),
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(
+          style: theme.textTheme.headlineMedium?.copyWith(
             fontFamily: 'JetBrains Mono',
-            fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: Color(0xFFF2F2F7),
             height: 1.0,
           ),
         ),
