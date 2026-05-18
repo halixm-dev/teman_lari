@@ -116,13 +116,13 @@ class _MultiPhaseProgressPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
-    canvas.drawArc(rect, -pi / 2, 2 * pi, false, trackPaint);
-
-    if (phaseArcs.isEmpty) return;
 
     final totalSweep =
         phaseArcs.fold(0.0, (sum, arc) => sum + arc.sweepFraction);
-    if (totalSweep <= 0) return;
+    if (phaseArcs.isEmpty || totalSweep <= 0) {
+      canvas.drawArc(rect, -pi / 2, 2 * pi, false, trackPaint);
+      return;
+    }
 
     final gapAngle = phaseArcs.length > 1 ? 0.02 : 0.0;
     final availableSweep = 2 * pi - gapAngle * phaseArcs.length;
@@ -132,8 +132,10 @@ class _MultiPhaseProgressPainter extends CustomPainter {
       if (arc.sweepFraction <= 0) continue;
 
       final sweepAngle = (arc.sweepFraction / totalSweep) * availableSweep;
-      final fillAngle = sweepAngle * arc.fillFraction.clamp(0.0, 1.0);
 
+      canvas.drawArc(rect, currentAngle, sweepAngle, false, trackPaint);
+
+      final fillAngle = sweepAngle * arc.fillFraction.clamp(0.0, 1.0);
       if (fillAngle > 0) {
         final progressPaint = Paint()
           ..color = arc.color
