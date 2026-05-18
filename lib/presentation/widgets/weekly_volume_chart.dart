@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../domain/entities/running_stats.dart';
@@ -97,16 +99,12 @@ class _WeeklyVolumeChartState extends State<WeeklyVolumeChart> {
               labelStyle: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 16),
-            Text(
-              'Volume Trend',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 12),
             SizedBox(
               height: 200,
               child: _VolumeLineChart(
                 entries: entries,
                 selectedKey: _selectedWeekKey!,
+                isDark: Theme.of(context).brightness == Brightness.dark,
                 onWeekSelected: (key) {
                   setState(() => _selectedWeekKey = key);
                 },
@@ -140,7 +138,7 @@ class _WeeklySummary extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(8, 12, 12, 12),
+      padding: const EdgeInsets.fromLTRB(0, 12, 12, 12),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(8),
@@ -201,16 +199,18 @@ class _SummaryItem extends StatelessWidget {
 class _VolumeLineChart extends StatelessWidget {
   final List<MapEntry<String, double>> entries;
   final String selectedKey;
+  final bool isDark;
   final ValueChanged<String> onWeekSelected;
 
   const _VolumeLineChart({
     required this.entries,
     required this.selectedKey,
+    required this.isDark,
     required this.onWeekSelected,
   });
 
   int _indexFromDx(double dx, double width) {
-    const paddingLeft = 8.0;
+    const paddingLeft = 16.0;
     const paddingRight = 40.0;
     final chartWidth = width - paddingLeft - paddingRight;
     final stepX = entries.length > 1
@@ -240,7 +240,7 @@ class _VolumeLineChart extends StatelessWidget {
             painter: _VolumeLinePainter(
               entries: entries,
               selectedKey: selectedKey,
-              isDark: Theme.of(context).brightness == Brightness.dark,
+              isDark: isDark,
             ),
           ),
         );
@@ -262,7 +262,7 @@ class _VolumeLinePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    const paddingLeft = 8.0;
+    const paddingLeft = 16.0;
     const paddingRight = 40.0;
     const paddingTop = 20.0;
     const paddingBottom = 30.0;
@@ -313,6 +313,21 @@ class _VolumeLinePainter extends CustomPainter {
         Offset(size.width - paddingRight + 4, y - tp.height / 2),
       );
     }
+
+    // Y-axis title
+    final titleTp = TextPainter(
+      text: TextSpan(
+        text: 'Volume Trend',
+        style: TextStyle(color: labelColor, fontSize: 10),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    titleTp.layout();
+    canvas.save();
+    canvas.translate(6, paddingTop + chartHeight / 2);
+    canvas.rotate(-math.pi / 2);
+    titleTp.paint(canvas, Offset(-titleTp.width / 2, 0));
+    canvas.restore();
 
     // X-axis labels
     final xTp = TextPainter(
