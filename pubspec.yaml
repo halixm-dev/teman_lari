@@ -43,8 +43,8 @@ dependencies:
   go_router: ^17.2.3
 
   # Audio
-  audioplayers: ^6.4.0
-  flutter_tts: ^4.2.4
+  audioplayers: ^6.6.0
+  flutter_tts: ^4.2.5
 
   # Utils
   intl: ^0.20.2

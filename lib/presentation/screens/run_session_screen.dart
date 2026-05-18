@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/services/audio_coach_service.dart';
+import '../../core/services/sound_effects_service.dart';
+
 import '../theme/app_colors.dart';
 import '../../core/services/gps_service.dart';
 import '../../core/services/pedometer_service.dart';
@@ -48,6 +51,11 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
 
   PaceSource _paceSource = PaceSource.none;
 
+  final _audioCoach = AudioCoachService();
+  final _soundFx = SoundEffectsService();
+  WorkoutPhase? _lastPhase;
+  int _lastAnnouncedKm = 0;
+
   static const double _smoothingAlpha = 0.4;
   static const Duration _gpsTimeout = Duration(seconds: 10);
   static const double _minGpsSpeed = 0.5;
@@ -64,6 +72,7 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
       segments: segments,
     );
     _initSensors();
+    _audioCoach.init();
   }
 
   @override
@@ -71,6 +80,8 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
     _timer?.cancel();
     _gpsSubscription?.cancel();
     _pedometerSubscription?.cancel();
+    _audioCoach.dispose();
+    _soundFx.dispose();
     super.dispose();
   }
 
@@ -190,10 +201,13 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
         segments: _state.segments,
       );
     });
+    _soundFx.playGo();
+    if (_state.isAudioCoachOn) _audioCoach.announceCountdown(0);
   }
 
   void _pause() {
     _timer?.cancel();
+    _soundFx.playPause();
     setState(() {
       _state = RunSessionState(
         plan: _state.plan,
@@ -282,6 +296,24 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
       }
     }
 
+    if (_lastPhase != null &&
+        newPhase != _lastPhase &&
+        newPhase != WorkoutPhase.finished) {
+      _soundFx.playPhaseChange();
+      if (_state.isAudioCoachOn) _audioCoach.announcePhaseChange(newPhase);
+    }
+    _lastPhase = newPhase;
+
+    final currentKm = _state.distanceKm.floor();
+    if (currentKm > _lastAnnouncedKm && currentKm > 0) {
+      _lastAnnouncedKm = currentKm;
+      _soundFx.playSplit();
+      if (_state.isAudioCoachOn && _state.currentPaceSecondsPerKm != null) {
+        _audioCoach.announceSplit(
+            currentKm, _state.currentPaceSecondsPerKm!);
+      }
+    }
+
     setState(() {
       _state = RunSessionState(
         plan: _state.plan,
@@ -331,6 +363,8 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
 
   void _endWorkout() {
     _timer?.cancel();
+    _soundFx.playComplete();
+    if (_state.isAudioCoachOn) _audioCoach.announceWorkoutComplete();
     setState(() {
       _state = RunSessionState(
         plan: _state.plan,
