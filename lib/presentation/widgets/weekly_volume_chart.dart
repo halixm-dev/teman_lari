@@ -58,10 +58,12 @@ class _WeeklyVolumeChartState extends State<WeeklyVolumeChart> {
       'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
     ];
-    if (monday.month == sunday.month) {
-      return '${monday.day}-${sunday.day} ${months[monday.month - 1]} ${monday.year}';
+    final mMon = months[monday.month - 1];
+    final sMon = months[sunday.month - 1];
+    if (monday.year == sunday.year) {
+      return '${monday.day} $mMon - ${sunday.day} $sMon ${sunday.year}';
     }
-    return '${monday.day} ${months[monday.month - 1]} - ${sunday.day} ${months[sunday.month - 1]} ${sunday.year}';
+    return '${monday.day} $mMon ${monday.year} - ${sunday.day} $sMon ${sunday.year}';
   }
 
   String _formatMinutes(double minutes) {
