@@ -70,15 +70,7 @@ class GeneratePlanUseCase {
       final lastRunDate = recentNonRest.first.date;
       final daysSinceLastRun = startDate.difference(lastRunDate).inDays;
 
-      final returnSeq = _continueReturnSequence(
-        recentNonRest,
-        thresholdPace,
-        longRunMinDuration,
-      );
-
-      if (returnSeq != null) {
-        sequence = returnSeq;
-      } else if (daysSinceLastRun > 3) {
+      if (daysSinceLastRun > 3) {
         sequence = const [
           WorkoutType.easy, WorkoutType.rest,
           WorkoutType.easy, WorkoutType.tempo,
@@ -86,19 +78,29 @@ class GeneratePlanUseCase {
           WorkoutType.easy,
         ];
       } else {
-        final recentTypes = recentNonRest
-          .take(2)
-          .map((a) => _classifyWorkoutType(a, thresholdPace,
-              longRunMinDuration: longRunMinDuration))
-          .toList();
-
-        sequence = _next7Days(
-          recentTypes.isNotEmpty ? recentTypes.first : WorkoutType.easy,
-          secondLastType: recentTypes.length > 1 ? recentTypes[1] : null,
+        final returnSeq = _continueReturnSequence(
+          recentNonRest,
+          thresholdPace,
+          longRunMinDuration,
         );
 
-        if (daysSinceLastRun >= 2 && sequence.first == WorkoutType.rest) {
-          sequence = [...sequence.sublist(1), WorkoutType.easy];
+        if (returnSeq != null) {
+          sequence = returnSeq;
+        } else {
+          final recentTypes = recentNonRest
+            .take(2)
+            .map((a) => _classifyWorkoutType(a, thresholdPace,
+                longRunMinDuration: longRunMinDuration))
+            .toList();
+
+          sequence = _next7Days(
+            recentTypes.isNotEmpty ? recentTypes.first : WorkoutType.easy,
+            secondLastType: recentTypes.length > 1 ? recentTypes[1] : null,
+          );
+
+          if (daysSinceLastRun >= 2 && sequence.first == WorkoutType.rest) {
+            sequence = [...sequence.sublist(1), WorkoutType.easy];
+          }
         }
       }
     } else {
