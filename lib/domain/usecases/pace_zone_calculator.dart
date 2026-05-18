@@ -46,9 +46,9 @@ class PaceZoneCalculator {
       return (candidates.first.pace.inSeconds * 1.05).round();
     }
 
-    final avgPace =
-        activities.fold<int>(0, (sum, a) => sum + a.pace.inSeconds) ~/
-        activities.length;
+    final avgPaceSecondsPerKm =
+        activities.fold<int>(0, (sum, a) => sum + a.movingTime.inSeconds) ~/
+        activities.fold<double>(0, (sum, a) => sum + a.distanceKm).round();
     return (avgPace * 0.90).round();
   }
 }

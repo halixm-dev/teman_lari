@@ -266,9 +266,13 @@ class AnalyzeRunsUseCase {
   Duration _averagePace(List<RunActivity> activities) {
     final totalSeconds = activities.fold<int>(
       0,
-      (sum, a) => sum + a.pace.inSeconds,
+      (sum, a) => sum + a.movingTime.inSeconds,
     );
-    return Duration(seconds: totalSeconds ~/ activities.length);
+    final totalDistance = activities.fold<double>(
+      0,
+      (sum, a) => sum + a.distanceKm,
+    );
+    return Duration(seconds: (totalSeconds / totalDistance).round());
   }
 
   List<TrainingLoadPoint> _trainingLoadHistory(
