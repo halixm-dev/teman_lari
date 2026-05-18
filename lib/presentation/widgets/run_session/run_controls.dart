@@ -116,9 +116,9 @@ class _RunControlsState extends State<RunControls> {
                             child: CircularProgressIndicator(
                               value: progress,
                               color: theme.colorScheme.onPrimary.withValues(
-                                alpha: 0.4,
+                                alpha: 0.6,
                               ),
-                              strokeWidth: 3,
+                              strokeWidth: 4,
                               backgroundColor: Colors.transparent,
                             ),
                           ),
@@ -168,7 +168,7 @@ class _IconButton extends StatelessWidget {
             icon,
             color: isActive
                 ? theme.colorScheme.primary
-                : theme.colorScheme.onSurfaceVariant,
+                : theme.colorScheme.onSurface,
             size: 24,
           ),
         ),

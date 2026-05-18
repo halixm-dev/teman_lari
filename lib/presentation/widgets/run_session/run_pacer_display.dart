@@ -159,7 +159,7 @@ class RunPacerDisplay extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 1),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.6),
+          color: color.withValues(alpha: 0.8),
           borderRadius: BorderRadius.circular(3),
         ),
       ),

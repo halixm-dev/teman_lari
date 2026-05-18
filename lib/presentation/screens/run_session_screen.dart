@@ -373,7 +373,7 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
                                       style: TextStyle(
                                         fontSize: 22,
                                         fontWeight: FontWeight.w700,
-                                        color: _phaseColor(_state.phase),
+                                        color: _phaseColorLight(_state.phase),
                                       ),
                                     ),
                                   )
@@ -444,7 +444,7 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
                               style: TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.w700,
-                                color: _phaseColor(_state.phase),
+                                color: _phaseColorLight(_state.phase),
                               ),
                             ),
                           )
@@ -474,46 +474,52 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
                   },
                 ),
               ),
-              if (_state.isLocked)
+              if (_state.isLocked) ...[
+                Positioned.fill(
+                  child: GestureDetector(
+                    onTap: _toggleLock,
+                    child: Container(
+                      color: Colors.black.withValues(alpha: 0.3),
+                    ),
+                  ),
+                ),
                 Positioned(
                   top: 80,
                   left: 0,
                   right: 0,
                   child: Center(
-                    child: GestureDetector(
-                      onTap: _toggleLock,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.lock,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.lock,
+                            color: Theme.of(context).colorScheme.onPrimary,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Tap to Unlock',
+                            style: TextStyle(
                               color: Theme.of(context).colorScheme.onPrimary,
-                              size: 18,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
                             ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Tap to Unlock',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onPrimary,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
+              ],
               ],
             ),
           ),
@@ -708,7 +714,7 @@ class _Header extends StatelessWidget {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: _phaseColor(phase).withValues(alpha: 0.2),
+                          color: _phaseColor(phase).withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -716,7 +722,7 @@ class _Header extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: _phaseColor(phase),
+                            color: _phaseColorLight(phase),
                           ),
                         ),
                       ),
@@ -728,7 +734,7 @@ class _Header extends StatelessWidget {
           ),
           IconButton(
             onPressed: onExit,
-            icon: Icon(Icons.close, color: theme.colorScheme.onSurfaceVariant),
+            icon: Icon(Icons.close, color: theme.colorScheme.onSurface),
             style: IconButton.styleFrom(
               backgroundColor: theme.colorScheme.surfaceContainerHighest,
               minimumSize: const Size(44, 44),
@@ -755,6 +761,15 @@ Color _phaseColor(WorkoutPhase phase) {
     WorkoutPhase.work => AppColors.brandOrange,
     WorkoutPhase.cooldown => AppColors.info,
     WorkoutPhase.finished => AppColors.success,
+  };
+}
+
+Color _phaseColorLight(WorkoutPhase phase) {
+  return switch (phase) {
+    WorkoutPhase.warmup => const Color(0xFF6EE7A0),
+    WorkoutPhase.work => AppColors.brandOrangeLight,
+    WorkoutPhase.cooldown => const Color(0xFF7CB3F8),
+    WorkoutPhase.finished => const Color(0xFF6EE7A0),
   };
 }
 

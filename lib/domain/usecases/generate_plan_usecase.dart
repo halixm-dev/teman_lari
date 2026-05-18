@@ -343,7 +343,7 @@ class GeneratePlanUseCase {
       matched = i + 1;
     }
 
-    if (matched >= runTypes.length) return null;
+    if (matched == runTypes.length) return [..._defaultSeq];
 
     final startDay = matched > 0 ? runDays[matched - 1] + 1 : 0;
     final remaining = returnSeq.sublist(startDay);

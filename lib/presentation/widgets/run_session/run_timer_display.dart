@@ -33,7 +33,7 @@ class RunTimerDisplay extends StatelessWidget {
                   size: Size.infinite,
                   painter: _CircularProgressPainter(
                     progress: progress,
-                    trackColor: theme.colorScheme.surfaceContainerHighest,
+                    trackColor: Colors.white.withValues(alpha: 0.1),
                     progressColor: color ?? progressColor,
                   ),
                 );

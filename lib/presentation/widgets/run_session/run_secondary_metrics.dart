@@ -32,7 +32,7 @@ class RunSecondaryMetrics extends StatelessWidget {
           Container(
             width: 1,
             height: 32,
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.12),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.25),
           ),
           Expanded(
             child: _MetricTile(
@@ -62,6 +62,7 @@ class _MetricTile extends StatelessWidget {
           label,
           style: theme.textTheme.labelSmall?.copyWith(
             letterSpacing: 0.05,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
           ),
         ),
         const SizedBox(height: 4),
