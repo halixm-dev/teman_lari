@@ -9,7 +9,7 @@ import '../../data/datasources/token_storage.dart';
 import '../../domain/usecases/strava_auth_usecase.dart';
 
 // Shared HTTP client with proper disposal
-final httpClientProvider = Provider.autoDispose<http.Client>((ref) {
+final httpClientProvider = Provider<http.Client>((ref) {
   final client = http.Client();
   ref.onDispose(() => client.close());
   return client;
