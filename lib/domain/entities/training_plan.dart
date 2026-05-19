@@ -1,3 +1,6 @@
+import 'run_walk_phase.dart';
+import 'running_stats.dart';
+
 enum WorkoutType { easy, tempo, intervals, longRun, rest, crossTraining }
 
 enum IntervalPhaseType { work, recovery }
@@ -46,6 +49,7 @@ class TrainingDay {
   final String description;
   final Duration? estimatedDuration;
   final List<IntervalPhase>? intervals;
+  final RunWalkPhase? runWalkPhase;
 
   const TrainingDay({
     required this.date,
@@ -58,6 +62,7 @@ class TrainingDay {
     this.heartRateTarget,
     this.estimatedDuration,
     this.intervals,
+    this.runWalkPhase,
   });
 
   int? get workMinutes {
@@ -74,12 +79,16 @@ class TrainingPlan {
   final List<TrainingDay> days;
   final String goal;
   final String description;
+  final int weekInCycle;
+  final CyclePhase cyclePhase;
 
   const TrainingPlan({
     required this.startDate,
     required this.days,
     required this.goal,
     required this.description,
+    this.weekInCycle = -1,
+    this.cyclePhase = CyclePhase.beginner,
   });
 
   factory TrainingPlan.empty() {
@@ -88,6 +97,8 @@ class TrainingPlan {
       days: [],
       goal: 'No data available',
       description: 'Connect Strava and complete some runs to generate a plan.',
+      weekInCycle: -1,
+      cyclePhase: CyclePhase.beginner,
     );
   }
 }

@@ -1,4 +1,6 @@
+import '../entities/return_context.dart';
 import '../entities/run_activity.dart';
+import '../entities/running_stats.dart';
 import '../entities/training_plan.dart';
 
 abstract class WorkoutSequenceStrategy {
@@ -7,6 +9,12 @@ abstract class WorkoutSequenceStrategy {
     required int thresholdPace,
     required int longRunMinDuration,
     required int returnGapDays,
+    required int totalRuns,
+    required int continuousRunThreshold,
+    ReturnContext? returnContext,
+    int returnRampWeek = 0,
+    int weekInCycle = -1,
+    CyclePhase phase = CyclePhase.beginner,
   });
 }
 
@@ -27,11 +35,29 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
     required int thresholdPace,
     required int longRunMinDuration,
     required int returnGapDays,
+    required int totalRuns,
+    required int continuousRunThreshold,
+    ReturnContext? returnContext,
+    int returnRampWeek = 0,
+    int weekInCycle = -1,
+    CyclePhase phase = CyclePhase.beginner,
   }) {
     final now = DateTime.now();
     final startDate = _hasRunToday(recentActivities)
         ? now.add(const Duration(days: 1))
         : now;
+
+    if (totalRuns < continuousRunThreshold) {
+      return _beginnerSequence();
+    }
+
+    if (returnContext != null && returnContext.isReturning && returnRampWeek > 0) {
+      return _returnRampSequence(returnContext, returnRampWeek);
+    }
+
+    if (weekInCycle == 3 && phase == CyclePhase.advanced) {
+      return _easyOnlySequence();
+    }
 
     // 1. Build a continuous day-by-day history of the last 14 days
     List<WorkoutType> history = _buildContinuousHistory(
@@ -68,6 +94,60 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
     }
 
     return nextWeek;
+  }
+
+  List<WorkoutType> _beginnerSequence() {
+    return [
+      WorkoutType.easy,
+      WorkoutType.rest,
+      WorkoutType.easy,
+      WorkoutType.rest,
+      WorkoutType.easy,
+      WorkoutType.rest,
+      WorkoutType.rest,
+    ];
+  }
+
+  List<WorkoutType> _returnRampSequence(ReturnContext ctx, int rampWeek) {
+    switch (ctx.category) {
+      case GapCategory.short:
+        return _easyOnlySequence();
+      case GapCategory.long:
+        return rampWeek <= 1
+            ? _easyOnlySequence()
+            : _tempoAndLongRunSequence();
+      case GapCategory.injury:
+        return rampWeek <= 2
+            ? _easyOnlySequence()
+            : _tempoAndLongRunSequence();
+      case GapCategory.extended:
+      case GapCategory.none:
+        return _easyOnlySequence();
+    }
+  }
+
+  List<WorkoutType> _easyOnlySequence() {
+    return [
+      WorkoutType.easy,
+      WorkoutType.rest,
+      WorkoutType.easy,
+      WorkoutType.rest,
+      WorkoutType.easy,
+      WorkoutType.rest,
+      WorkoutType.rest,
+    ];
+  }
+
+  List<WorkoutType> _tempoAndLongRunSequence() {
+    return [
+      WorkoutType.easy,
+      WorkoutType.rest,
+      WorkoutType.tempo,
+      WorkoutType.rest,
+      WorkoutType.easy,
+      WorkoutType.rest,
+      WorkoutType.longRun,
+    ];
   }
 
   /// Evaluates the history to decide the absolute best next workout

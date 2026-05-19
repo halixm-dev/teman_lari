@@ -1,3 +1,7 @@
+import 'return_context.dart';
+
+enum CyclePhase { beginner, baseBuilding, intermediate, advanced, returning }
+
 class PaceDataPoint {
   final DateTime date;
   final int paceSecondsPerKm;
@@ -37,6 +41,8 @@ class RunningStats {
   final double fitnessScore;
   final double fatigueScore;
   final double formScore;
+  final ReturnContext? returnContext;
+  final CyclePhase recommendedPhase;
 
   const RunningStats({
     required this.totalRuns,
@@ -51,6 +57,8 @@ class RunningStats {
     required this.fitnessScore,
     required this.fatigueScore,
     required this.formScore,
+    this.returnContext,
+    this.recommendedPhase = CyclePhase.beginner,
   });
 
   factory RunningStats.empty() {
@@ -67,6 +75,8 @@ class RunningStats {
       fitnessScore: 0,
       fatigueScore: 0,
       formScore: 0,
+      returnContext: null,
+      recommendedPhase: CyclePhase.beginner,
     );
   }
 

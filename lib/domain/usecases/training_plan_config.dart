@@ -37,6 +37,28 @@ class TrainingPlanConfig {
   // --- Gap threshold for return sequence ---
   final int returnGapDays;
 
+  // --- Periodization (Advanced only) ---
+  final int cycleLengthWeeks;
+  final double deloadVolumeFraction;
+  final double buildWeekVolumeIncrement;
+  final double deloadLongRunFraction;
+
+  // --- Beginner protocol ---
+  final int beginnerMaxRunsPerWeek;
+  final int beginnerMinEasyMinutes;
+  final int beginnerWeeklyMinTarget;
+  final int continuousRunThreshold;
+
+  // --- Returning runner protocol ---
+  final int shortGapDays;
+  final int longGapDays;
+  final int injuryGapDays;
+  final int staleActivityDays;
+  final double returnStartFraction;
+  final double returnWeeklyIncreaseCap;
+  final int returnEasyOnlyWeeks;
+  final int returnRampWeeks;
+
   const TrainingPlanConfig({
     this.longRunFraction = 0.30,
     this.easyFraction = 0.20,
@@ -62,6 +84,22 @@ class TrainingPlanConfig {
     this.aerobicFitnessScore = 30.0,
     this.freshFormScore = 10.0,
     this.returnGapDays = 3,
+    this.cycleLengthWeeks = 4,
+    this.deloadVolumeFraction = 0.50,
+    this.buildWeekVolumeIncrement = 0.10,
+    this.deloadLongRunFraction = 0.50,
+    this.beginnerMaxRunsPerWeek = 3,
+    this.beginnerMinEasyMinutes = 10,
+    this.beginnerWeeklyMinTarget = 45,
+    this.continuousRunThreshold = 15,
+    this.shortGapDays = 3,
+    this.longGapDays = 7,
+    this.injuryGapDays = 14,
+    this.staleActivityDays = 90,
+    this.returnStartFraction = 0.55,
+    this.returnWeeklyIncreaseCap = 0.10,
+    this.returnEasyOnlyWeeks = 1,
+    this.returnRampWeeks = 3,
   });
 
   static const defaultConfig = TrainingPlanConfig();

@@ -17,6 +17,8 @@ class PreferencesStorage {
   static const _keyMaxHr = 'max_hr';
   static const _keyDateOfBirth = 'date_of_birth';
   static const _keyAthleteName = 'athlete_name';
+  static const _keyWeekInCycle = 'week_in_cycle';
+  static const _keyCycleStartDate = 'cycle_start_date';
 
   Future<SharedPreferences> get _prefs => SharedPreferences.getInstance();
 
@@ -84,6 +86,30 @@ class PreferencesStorage {
   Future<void> saveAthleteName(String name) async {
     final prefs = await _prefs;
     await prefs.setString(_keyAthleteName, name);
+  }
+
+  Future<int> getWeekInCycle() async {
+    final prefs = await _prefs;
+    return prefs.getInt(_keyWeekInCycle) ?? 0;
+  }
+
+  Future<void> setWeekInCycle(int value) async {
+    final prefs = await _prefs;
+    await prefs.setInt(_keyWeekInCycle, value);
+  }
+
+  Future<DateTime> getCycleStartDate() async {
+    final prefs = await _prefs;
+    final stored = prefs.getString(_keyCycleStartDate);
+    if (stored != null) {
+      return DateTime.parse(stored);
+    }
+    return DateTime.now();
+  }
+
+  Future<void> setCycleStartDate(DateTime value) async {
+    final prefs = await _prefs;
+    await prefs.setString(_keyCycleStartDate, value.toIso8601String());
   }
 
   int? _pickBestMaxHr({

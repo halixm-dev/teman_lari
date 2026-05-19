@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:teman_lari/domain/entities/return_context.dart';
 import 'package:teman_lari/domain/entities/run_activity.dart';
 import 'package:teman_lari/domain/entities/running_stats.dart';
 import 'package:teman_lari/domain/entities/training_plan.dart';
@@ -31,6 +32,12 @@ class _AllEasyStrategy implements WorkoutSequenceStrategy {
     required int thresholdPace,
     required int longRunMinDuration,
     required int returnGapDays,
+    required int totalRuns,
+    required int continuousRunThreshold,
+    ReturnContext? returnContext,
+    int returnRampWeek = 0,
+    int weekInCycle = -1,
+    CyclePhase phase = CyclePhase.beginner,
   }) =>
       List.filled(7, WorkoutType.easy);
 }
@@ -40,7 +47,7 @@ class _MockAnalyzeRuns extends AnalyzeRunsUseCase {
 
   @override
   RunningStats compute(List<RunActivity> activities,
-      {int? userMaxHr, int? userRestingHr, int? hrZoneWeeks}) {
+      {int? userMaxHr, int? userRestingHr, TrainingPlanConfig? config}) {
     return stats ?? super.compute(activities);
   }
 }
@@ -494,6 +501,22 @@ void main() {
       expect(cfg.aerobicFitnessScore, 30.0);
       expect(cfg.freshFormScore, 10.0);
       expect(cfg.returnGapDays, 3);
+      expect(cfg.cycleLengthWeeks, 4);
+      expect(cfg.deloadVolumeFraction, 0.50);
+      expect(cfg.buildWeekVolumeIncrement, 0.10);
+      expect(cfg.deloadLongRunFraction, 0.50);
+      expect(cfg.beginnerMaxRunsPerWeek, 3);
+      expect(cfg.beginnerMinEasyMinutes, 10);
+      expect(cfg.beginnerWeeklyMinTarget, 45);
+      expect(cfg.continuousRunThreshold, 15);
+      expect(cfg.shortGapDays, 3);
+      expect(cfg.longGapDays, 7);
+      expect(cfg.injuryGapDays, 14);
+      expect(cfg.staleActivityDays, 90);
+      expect(cfg.returnStartFraction, 0.55);
+      expect(cfg.returnWeeklyIncreaseCap, 0.10);
+      expect(cfg.returnEasyOnlyWeeks, 1);
+      expect(cfg.returnRampWeeks, 3);
     });
 
     test('custom config changes interval tiers', () {

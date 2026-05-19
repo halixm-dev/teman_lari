@@ -157,7 +157,21 @@ final runningStatsProvider = FutureProvider<RunningStats?>((ref) async {
 
 final trainingPlanProvider = FutureProvider<TrainingPlan>((ref) async {
   final activities = await ref.watch(activitiesProvider.future);
-  return ref.read(generatePlanUseCaseProvider).generate(activities);
+  final weekInCycle = await ref.watch(weekInCycleProvider.future);
+  return ref.read(generatePlanUseCaseProvider).generate(
+    activities,
+    weekInCycle: weekInCycle,
+  );
+});
+
+final weekInCycleProvider = FutureProvider<int>((ref) async {
+  final prefs = ref.read(preferencesStorageProvider);
+  return prefs.getWeekInCycle();
+});
+
+final cycleStartDateProvider = FutureProvider<DateTime>((ref) async {
+  final prefs = ref.read(preferencesStorageProvider);
+  return prefs.getCycleStartDate();
 });
 
 final athleteNameProvider = FutureProvider<String?>((ref) async {
