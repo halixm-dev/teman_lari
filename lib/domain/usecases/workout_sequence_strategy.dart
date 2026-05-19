@@ -42,14 +42,20 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
     );
 
     List<WorkoutType> nextWeek = [];
+    int plannedEasyRunCount = 0;
 
     // 2. Dynamically simulate and build the next 7 days
     for (int i = 0; i < 7; i++) {
-      bool isReturning = _checkIfReturningFromBreak(history, returnGapDays);
+      bool isReturning = _checkIfReturningFromBreak(
+        history,
+        returnGapDays,
+        plannedEasyRunCount: plannedEasyRunCount,
+      );
       WorkoutType next = _pickNextWorkout(history, isReturning);
       
       nextWeek.add(next);
-      
+      if (next == WorkoutType.easy) plannedEasyRunCount++;
+
       // Insert the picked workout at the front of our simulated history 
       // so the next iteration makes decisions based on it.
       history.insert(0, next);
@@ -116,7 +122,11 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
   }
 
   /// Checks if a gap > returnGapDays exists recently without enough easy runs following it
-  bool _checkIfReturningFromBreak(List<WorkoutType> history, int returnGapDays) {
+  bool _checkIfReturningFromBreak(
+    List<WorkoutType> history,
+    int returnGapDays, {
+    int plannedEasyRunCount = 0,
+  }) {
     int currentRestStreak = 0;
     int easyRunsSinceGap = 0;
     bool foundGap = false;
@@ -143,7 +153,7 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
       // If completely new user (all rest history), treat as returning to ease them in
       return history.every((w) => w == WorkoutType.rest);
     }
-    return easyRunsSinceGap < targetEasyRunsAfterBreak;
+    return (easyRunsSinceGap + plannedEasyRunCount) < targetEasyRunsAfterBreak;
   }
 
   List<WorkoutType> _buildContinuousHistory(

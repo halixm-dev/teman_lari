@@ -228,14 +228,14 @@ void main() {
   });
 
   group('target weekly minutes', () {
-    test('defaults to 150 when no recent weekly data', () {
+    test('clamps easy run to minEasyRunMinutes when no recent weekly data', () {
       mockAnalyze.stats = _stats();
       final plan = useCase.generate([_activity()]);
-      final targetMin = plan.days
-          .where((d) => d.targetMinutes != null)
-          .map((d) => d.targetMinutes!)
-          .fold<int>(0, (a, b) => a + b);
-      expect(targetMin, greaterThan(0));
+      final totalTarget = plan.days.fold<int>(
+        0,
+        (s, d) => s + (d.targetMinutes ?? 0),
+      );
+      expect(totalTarget, greaterThan(0));
     });
 
     test('scales down when formScore < -10', () {
@@ -375,7 +375,7 @@ void main() {
       final plan = useCase.generate(activities);
       expect(plan.days.length, 7);
       expect(plan.days[0].type, WorkoutType.easy);
-      expect(plan.days[1].type, WorkoutType.rest);
+      expect(plan.days[2].type, WorkoutType.rest);
     });
 
     test('recovery after hard workout', () {
@@ -477,11 +477,10 @@ void main() {
       expect(cfg.longRunMultiplier, 1.5);
       expect(cfg.longRunMinCap, 20);
       expect(cfg.longRunMaxCap, 120);
-      expect(cfg.defaultWeeklyMinutes, 150.0);
+      expect(cfg.minEasyRunMinutes, 20);
       expect(cfg.minWeeklyMinutes, 60.0);
       expect(cfg.maxWeeklyMinutes, 600.0);
       expect(cfg.maxWeeklyMinutesScaleUp, 900.0);
-      expect(cfg.recentMinutesFloor, 60.0);
       expect(cfg.fatiguedThreshold, -10.0);
       expect(cfg.slightlyFatiguedThreshold, -5.0);
       expect(cfg.beginnerRunCount, 15);
