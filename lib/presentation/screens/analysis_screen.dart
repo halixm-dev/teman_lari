@@ -15,7 +15,15 @@ class AnalysisScreen extends ConsumerWidget {
     final statsAsync = ref.watch(runningStatsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Analysis')),
+      appBar: AppBar(
+        title: const Text('Analysis'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.info_outline),
+            onPressed: () => _showDataPeriodInfo(context),
+          ),
+        ],
+      ),
       body: ConstrainedContent(
         child: statsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -29,7 +37,6 @@ class AnalysisScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _DataPeriodBanner(),
                 const SizedBox(height: 16),
                 StatsGrid(stats: stats, showVo2Max: true),
                 const SizedBox(height: 16),
@@ -78,33 +85,20 @@ class AnalysisScreen extends ConsumerWidget {
   }
 }
 
-class _DataPeriodBanner extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: isDark ? Colors.blueGrey.shade800 : Colors.blue.shade50,
-        borderRadius: BorderRadius.circular(8),
+void _showDataPeriodInfo(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Data Period'),
+      content: const Text(
+        'Analysis based on 1 year of Strava data',
       ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.info_outline,
-            size: 14,
-            color: isDark ? Colors.blue.shade200 : Colors.blue.shade700,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            'Analysis based on 1 year of Strava data',
-            style: TextStyle(
-              fontSize: 12,
-              color: isDark ? Colors.blue.shade200 : Colors.blue.shade700,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('OK'),
+        ),
+      ],
+    ),
+  );
 }
