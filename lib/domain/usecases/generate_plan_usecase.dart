@@ -123,13 +123,14 @@ class GeneratePlanUseCase {
   }) {
     switch (type) {
       case WorkoutType.easy:
+        final effective = easyMin.clamp(config.minEasyRunMinutes, 9999);
         return TrainingDay(
           date: date,
           type: WorkoutType.easy,
-          targetMinutes: easyMin,
+          targetMinutes: effective,
           paceTarget: paceZones[1],
           heartRateTarget: hrZones[1],
-          estimatedDuration: Duration(minutes: easyMin),
+          estimatedDuration: Duration(minutes: effective),
           description: descriptions.easy(),
         );
       case WorkoutType.intervals:
@@ -197,9 +198,6 @@ class GeneratePlanUseCase {
 
   double _targetWeeklyMinutes(RunningStats stats) {
     final recentMinutes = stats.recentWeeklyAvgMinutes;
-    if (recentMinutes < config.recentMinutesFloor) {
-      return config.defaultWeeklyMinutes;
-    }
     if (stats.formScore < config.fatiguedThreshold) {
       return (recentMinutes * 0.80)
           .clamp(config.minWeeklyMinutes, config.maxWeeklyMinutes);

@@ -6,16 +6,15 @@ class TrainingPlanConfig {
 
   // --- Duration bounds ---
   final int minRunDuration;
+  final int minEasyRunMinutes;
   final double longRunMultiplier;
   final int longRunMinCap;
   final int longRunMaxCap;
 
   // --- Weekly minute bounds ---
-  final double defaultWeeklyMinutes;
   final double minWeeklyMinutes;
   final double maxWeeklyMinutes;
   final double maxWeeklyMinutesScaleUp;
-  final double recentMinutesFloor;
 
   // --- Form thresholds ---
   final double fatiguedThreshold;
@@ -43,14 +42,13 @@ class TrainingPlanConfig {
     this.easyFraction = 0.20,
     this.tempoFraction = 0.15,
     this.minRunDuration = 10,
+    this.minEasyRunMinutes = 20,
     this.longRunMultiplier = 1.5,
     this.longRunMinCap = 20,
     this.longRunMaxCap = 120,
-    this.defaultWeeklyMinutes = 150.0,
     this.minWeeklyMinutes = 60.0,
     this.maxWeeklyMinutes = 600.0,
     this.maxWeeklyMinutesScaleUp = 900.0,
-    this.recentMinutesFloor = 60.0,
     this.fatiguedThreshold = -10.0,
     this.slightlyFatiguedThreshold = -5.0,
     this.beginnerRunCount = 15,
