@@ -17,15 +17,15 @@ class WeeklyVolumeChart extends StatefulWidget {
 class _WeeklyVolumeChartState extends State<WeeklyVolumeChart> {
   String? _selectedWeekKey;
 
-  String _isoWeekKey(DateTime date) {
+  String _weekCommencingKey(DateTime date) {
     final monday = date.subtract(Duration(days: date.weekday - 1));
-    return '${monday.year}-W${monday.month.toString().padLeft(2, '0')}-${monday.day.toString().padLeft(2, '0')}';
+    return '${monday.year}-${monday.month.toString().padLeft(2, '0')}-${monday.day.toString().padLeft(2, '0')}';
   }
 
   String get _currentWeekKey {
     final now = DateTime.now();
     final monday = now.subtract(Duration(days: now.weekday - 1));
-    return _isoWeekKey(monday);
+    return _weekCommencingKey(monday);
   }
 
   List<MapEntry<String, double>> get _entries {
@@ -34,7 +34,7 @@ class _WeeklyVolumeChartState extends State<WeeklyVolumeChart> {
     final entries = <MapEntry<String, double>>[];
     for (int i = 11; i >= 0; i--) {
       final monday = currentMonday.subtract(Duration(days: i * 7));
-      final key = _isoWeekKey(monday);
+      final key = _weekCommencingKey(monday);
       final value = widget.stats.weeklyVolume[key] ?? 0.0;
       entries.add(MapEntry(key, value));
     }
@@ -52,7 +52,7 @@ class _WeeklyVolumeChartState extends State<WeeklyVolumeChart> {
     final parts = key.split('-');
     if (parts.length < 3) return key;
     final year = int.tryParse(parts[0]) ?? 0;
-    final month = int.tryParse(parts[1].replaceFirst('W', '')) ?? 1;
+    final month = int.tryParse(parts[1]) ?? 1;
     final day = int.tryParse(parts[2]) ?? 1;
     final monday = DateTime(year, month, day);
     final sunday = monday.add(const Duration(days: 6));
@@ -413,7 +413,7 @@ class _VolumeLinePainter extends CustomPainter {
   String _xLabel(String isoWeek) {
     final parts = isoWeek.split('-');
     if (parts.length < 3) return '';
-    final month = int.tryParse(parts[1].replaceFirst('W', '')) ?? 0;
+    final month = int.tryParse(parts[1]) ?? 0;
     final day = int.tryParse(parts[2]) ?? 0;
     if (day > 7) return '';
     const months = [

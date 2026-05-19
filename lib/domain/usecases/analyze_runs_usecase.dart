@@ -16,6 +16,12 @@ class AnalyzeRunsUseCase {
     final actualRestingHr =
         _resolveRestingHr(activities, userValue: userRestingHr) ?? 65;
 
+    final loadHistory = _trainingLoadHistory(
+      sortedByDate,
+      maxHr: actualMaxHr,
+      restingHr: actualRestingHr,
+    );
+
     return RunningStats(
       totalRuns: activities.length,
       totalDistanceKm: _totalDistance(activities),
@@ -28,99 +34,18 @@ class AnalyzeRunsUseCase {
         maxHr: actualMaxHr,
         restingHr: actualRestingHr,
       ),
-      trainingLoadHistory: _trainingLoadHistory(
-        sortedByDate,
-        maxHr: actualMaxHr,
-        restingHr: actualRestingHr,
-      ),
+      trainingLoadHistory: loadHistory,
       vo2MaxEstimate: _estimateVo2Max(activities),
-      fitnessScore: _fitnessScore(
-        activities,
-        maxHr: actualMaxHr,
-        restingHr: actualRestingHr,
-      ),
-      fatigueScore: _fatigueScore(
-        activities,
-        maxHr: actualMaxHr,
-        restingHr: actualRestingHr,
-      ),
-      formScore: _formScore(
-        activities,
-        maxHr: actualMaxHr,
-        restingHr: actualRestingHr,
-      ),
+      fitnessScore: loadHistory.isNotEmpty ? loadHistory.last.fitness : 0.0,
+      fatigueScore: loadHistory.isNotEmpty ? loadHistory.last.fatigue : 0.0,
+      formScore: loadHistory.isNotEmpty ? loadHistory.last.form : 0.0,
     );
-  }
-
-  double _fitnessScore(
-    List<RunActivity> activities, {
-    int maxHr = 190,
-    int restingHr = 60,
-  }) {
-    return _exponentialMovingAverage(
-      activities,
-      decayDays: 42,
-      maxHr: maxHr,
-      restingHr: restingHr,
-    );
-  }
-
-  double _fatigueScore(
-    List<RunActivity> activities, {
-    int maxHr = 190,
-    int restingHr = 60,
-  }) {
-    return _exponentialMovingAverage(
-      activities,
-      decayDays: 7,
-      maxHr: maxHr,
-      restingHr: restingHr,
-    );
-  }
-
-  double _formScore(
-    List<RunActivity> activities, {
-    int maxHr = 190,
-    int restingHr = 60,
-  }) {
-    return _fitnessScore(activities, maxHr: maxHr, restingHr: restingHr) -
-        _fatigueScore(activities, maxHr: maxHr, restingHr: restingHr);
-  }
-
-  double _exponentialMovingAverage(
-    List<RunActivity> activities, {
-    required int decayDays,
-    int maxHr = 190,
-    int restingHr = 60,
-  }) {
-    if (activities.isEmpty) return 0;
-
-    final tssByDate = <DateTime, double>{};
-    for (final a in activities) {
-      final day = DateTime(a.date.year, a.date.month, a.date.day);
-      tssByDate[day] =
-          (tssByDate[day] ?? 0) +
-          _trainingStressScore(a, maxHr: maxHr, restingHr: restingHr);
-    }
-
-    final decay = 2 / (decayDays + 1);
-    double ema = 0;
-    final sortedByDate = tssByDate.keys.toList()..sort();
-    final first = sortedByDate.first;
-    final last = DateTime.now();
-
-    for (var d = first; !d.isAfter(last); d = d.add(const Duration(days: 1))) {
-      final tss = tssByDate[d] ?? 0;
-      ema = tss * decay + ema * (1 - decay);
-    }
-
-    return ema;
   }
 
   double _trainingStressScore(
     RunActivity activity, {
-    int maxHr = 190,
-    int restingHr = 60,
+    required int maxHr,
+    required int restingHr,
   }) {
     if (activity.avgHeartRate == null) {
       return activity.movingTime.inMinutes * 0.5;
@@ -146,8 +71,8 @@ class AnalyzeRunsUseCase {
 
   Map<int, double> _hrZoneDistribution(
     List<RunActivity> activities, {
-    int maxHr = 190,
-    int restingHr = 60,
+    required int maxHr,
+    required int restingHr,
   }) {
     final withHr = activities.where((a) => a.avgHeartRate != null);
     if (withHr.isEmpty) return {};
@@ -204,7 +129,7 @@ class AnalyzeRunsUseCase {
     return null;
   }
 
-  int _hrToZone(double hr, {required int maxHr, int restingHr = 60}) {
+  int _hrToZone(double hr, {required int maxHr, required int restingHr}) {
     final hrr = maxHr - restingHr;
     final hrAboveResting = hr - restingHr;
     final pct = hrr > 0 ? hrAboveResting / hrr : 0;
@@ -216,9 +141,8 @@ class AnalyzeRunsUseCase {
   }
 
   double? _estimateVo2Max(List<RunActivity> activities) {
-    final candidates = activities.where(
-      (a) => a.distanceKm >= 4.5 && a.distanceKm <= 5.5,
-    );
+    final candidates =
+        activities.where((a) => a.movingTime.inMinutes >= 12).toList();
     if (candidates.isEmpty) return null;
 
     final best = candidates.reduce(
@@ -234,7 +158,7 @@ class AnalyzeRunsUseCase {
   Map<String, double> _weeklyVolume(List<RunActivity> activities) {
     final weekly = <String, double>{};
     for (final activity in activities) {
-      final weekKey = _isoWeekKey(activity.date);
+      final weekKey = _weekCommencingKey(activity.date);
       weekly[weekKey] = (weekly[weekKey] ?? 0) + activity.distanceKm;
     }
     return weekly;
@@ -243,37 +167,38 @@ class AnalyzeRunsUseCase {
   Map<String, double> _weeklyMinutes(List<RunActivity> activities) {
     final weekly = <String, double>{};
     for (final activity in activities) {
-      final weekKey = _isoWeekKey(activity.date);
+      final weekKey = _weekCommencingKey(activity.date);
       weekly[weekKey] =
           (weekly[weekKey] ?? 0) + activity.movingTime.inMinutes.toDouble();
     }
     return weekly;
   }
 
-  String _isoWeekKey(DateTime date) {
+  String _weekCommencingKey(DateTime date) {
     final monday = date.subtract(Duration(days: date.weekday - 1));
-    return '${monday.year}-W${monday.month.toString().padLeft(2, '0')}-${monday.day.toString().padLeft(2, '0')}';
+    return '${monday.year}-${monday.month.toString().padLeft(2, '0')}-${monday.day.toString().padLeft(2, '0')}';
   }
 
   double _totalDistance(List<RunActivity> activities) =>
       activities.fold(0, (sum, a) => sum + a.distanceKm);
 
   Duration _averagePace(List<RunActivity> activities) {
-    final totalSeconds = activities.fold<int>(
-      0,
-      (sum, a) => sum + a.movingTime.inSeconds,
-    );
     final totalDistance = activities.fold<double>(
       0,
       (sum, a) => sum + a.distanceKm,
+    );
+    if (totalDistance == 0) return Duration.zero;
+    final totalSeconds = activities.fold<int>(
+      0,
+      (sum, a) => sum + a.movingTime.inSeconds,
     );
     return Duration(seconds: (totalSeconds / totalDistance).round());
   }
 
   List<TrainingLoadPoint> _trainingLoadHistory(
     List<RunActivity> sorted, {
-    int maxHr = 190,
-    int restingHr = 60,
+    required int maxHr,
+    required int restingHr,
   }) {
     if (sorted.isEmpty) return [];
 

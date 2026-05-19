@@ -12,6 +12,9 @@ import '../../domain/repositories/activity_repository.dart';
 import '../../domain/usecases/analyze_runs_usecase.dart';
 import '../../domain/usecases/generate_plan_usecase.dart';
 import '../../domain/usecases/get_activities_usecase.dart';
+import '../../domain/usecases/training_plan_config.dart';
+import '../../domain/usecases/workout_descriptions.dart';
+import '../../domain/usecases/workout_sequence_strategy.dart';
 import 'auth_provider.dart';
 
 final stravaApiClientProvider = Provider<StravaApiClient>((ref) {
@@ -54,8 +57,27 @@ final analyzeRunsUseCaseProvider = Provider<AnalyzeRunsUseCase>((ref) {
   return AnalyzeRunsUseCase();
 });
 
+final trainingPlanConfigProvider = Provider<TrainingPlanConfig>((ref) {
+  return TrainingPlanConfig.defaultConfig;
+});
+
+final workoutSequenceStrategyProvider = Provider<WorkoutSequenceStrategy>((
+  ref,
+) {
+  return const DynamicWorkoutSequenceStrategy();
+});
+
+final workoutDescriptionsProvider = Provider<WorkoutDescriptions>((ref) {
+  return const WorkoutDescriptions();
+});
+
 final generatePlanUseCaseProvider = Provider<GeneratePlanUseCase>((ref) {
-  return GeneratePlanUseCase(analyzeRuns: ref.read(analyzeRunsUseCaseProvider));
+  return GeneratePlanUseCase(
+    analyzeRuns: ref.read(analyzeRunsUseCaseProvider),
+    config: ref.read(trainingPlanConfigProvider),
+    sequenceStrategy: ref.read(workoutSequenceStrategyProvider),
+    descriptions: ref.read(workoutDescriptionsProvider),
+  );
 });
 
 final activitiesProvider =

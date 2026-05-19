@@ -24,8 +24,8 @@ class AppDateUtils {
     );
   }
 
-  static String isoWeekKey(DateTime date) {
+  static String weekCommencingKey(DateTime date) {
     final monday = date.subtract(Duration(days: date.weekday - 1));
-    return '${monday.year}-W${monday.month.toString().padLeft(2, '0')}-${monday.day.toString().padLeft(2, '0')}';
+    return '${monday.year}-${monday.month.toString().padLeft(2, '0')}-${monday.day.toString().padLeft(2, '0')}';
   }
 }
