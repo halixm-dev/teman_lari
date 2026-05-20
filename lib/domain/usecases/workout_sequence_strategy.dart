@@ -164,6 +164,13 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
       return last == WorkoutType.easy ? WorkoutType.rest : WorkoutType.easy;
     }
 
+    // Cap hard workouts to max 3 per week (80/20 rule)
+    final recentWeek = history.length > 7 ? history.sublist(0, 7) : history;
+    final hardCount = recentWeek.where((w) => isHard(w)).length;
+    if (hardCount >= 3) {
+      return last == WorkoutType.easy ? WorkoutType.rest : WorkoutType.easy;
+    }
+
     int getDaysSince(WorkoutType t) {
       final idx = history.indexOf(t);
       return idx == -1 ? 999 : idx;

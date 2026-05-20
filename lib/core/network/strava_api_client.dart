@@ -4,11 +4,14 @@ import 'dart:convert';
 import '../../data/datasources/strava_auth_datasource.dart';
 import '../../data/datasources/token_storage.dart';
 import '../errors/exceptions.dart';
+import 'rate_limiter.dart';
 
 class StravaApiClient {
   final TokenStorage _tokenStorage;
   final StravaAuthDataSource _authDataSource;
   final http.Client _httpClient;
+  final RateLimiter _rateLimiter = RateLimiter();
+  Future<void>? _refreshTokenFuture;
 
   StravaApiClient(this._tokenStorage, this._authDataSource, this._httpClient);
 
@@ -16,6 +19,7 @@ class StravaApiClient {
     String endpoint, {
     Map<String, String>? params,
   }) async {
+    await _rateLimiter.checkAndWait();
     final response = await _requestWithRetry(() async {
       final token = await _getValidToken();
       final uri = Uri.https('www.strava.com', '/api/v3/$endpoint', params);
@@ -35,6 +39,7 @@ class StravaApiClient {
     String endpoint, {
     Map<String, String>? params,
   }) async {
+    await _rateLimiter.checkAndWait();
     final response = await _requestWithRetry(() async {
       final token = await _getValidToken();
       final uri = Uri.https('www.strava.com', '/api/v3/$endpoint', params);
@@ -81,7 +86,15 @@ class StravaApiClient {
     throw StravaApiException(response.statusCode, response.body);
   }
 
-  Future<void> _forceRefreshToken() async {
+  Future<void> _forceRefreshToken() {
+    if (_refreshTokenFuture != null) return _refreshTokenFuture!;
+    _refreshTokenFuture = _performTokenRefresh().whenComplete(() {
+      _refreshTokenFuture = null;
+    });
+    return _refreshTokenFuture!;
+  }
+
+  Future<void> _performTokenRefresh() async {
     var tokens = await _tokenStorage.getTokens();
     if (tokens == null) throw UnauthenticatedException();
 

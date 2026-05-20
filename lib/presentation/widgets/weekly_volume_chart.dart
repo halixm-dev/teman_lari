@@ -386,7 +386,7 @@ class _VolumeLinePainter extends CustomPainter {
       if (i == selectedIdx) {
         // Full vertical white line marker
         final markerPaint = Paint()
-          ..color = Colors.white
+          ..color = isDark ? Colors.white : AppColors.gray700
           ..strokeWidth = 2.0
           ..style = PaintingStyle.stroke;
 

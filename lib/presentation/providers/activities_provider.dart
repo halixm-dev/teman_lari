@@ -92,7 +92,10 @@ class ActivitiesNotifier extends AsyncNotifier<List<RunActivity>> {
   }
 
   Future<void> refresh() async {
-    ref.invalidateSelf();
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(
+      () => ref.read(getActivitiesUseCaseProvider).execute(monthsBack: 12),
+    );
   }
 }
 

@@ -87,6 +87,8 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
 
   Future<void> _initSensors() async {
     _gpsPermissionGranted = await _gpsService.requestPermission();
+    if (!mounted) return;
+
     if (_gpsPermissionGranted) {
       _gpsSubscription = _gpsService.trackPosition().listen(
         _onGpsPosition,

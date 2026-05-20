@@ -32,7 +32,7 @@ class ReturnContextDetector {
 
     final preGapActivities = gapSplitIndex != null
         ? sortedDesc.sublist(gapSplitIndex)
-        : <RunActivity>[];
+        : sortedDesc;
 
     final bool isStale;
     final double preGapAvgKm;
