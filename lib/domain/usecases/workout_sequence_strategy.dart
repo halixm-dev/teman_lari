@@ -1,27 +1,22 @@
 import '../entities/return_context.dart';
 import '../entities/run_activity.dart';
 import '../entities/running_stats.dart';
-import '../entities/training_plan.dart';
+import '../entities/workout_type.dart';
+import 'training_plan_config.dart';
 
 abstract class WorkoutSequenceStrategy {
   List<WorkoutType> determineSequence({
+    required RunningStats stats,
+    required TrainingPlanConfig config,
     required List<RunActivity> recentActivities,
     required int thresholdPace,
     required int longRunMinDuration,
-    required int returnGapDays,
-    required int totalRuns,
-    required int continuousRunThreshold,
-    ReturnContext? returnContext,
-    int returnRampWeek = 0,
-    int weekInCycle = -1,
-    CyclePhase phase = CyclePhase.beginner,
+    required int weekInCycle,
   });
 }
 
 class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
-  /// Maximum consecutive days of running before forcing a rest day
   final int maxConsecutiveRunDays;
-  /// Number of easy runs required to rebuild base after a long break
   final int targetEasyRunsAfterBreak;
 
   const DynamicWorkoutSequenceStrategy({
@@ -31,35 +26,31 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
 
   @override
   List<WorkoutType> determineSequence({
+    required RunningStats stats,
+    required TrainingPlanConfig config,
     required List<RunActivity> recentActivities,
     required int thresholdPace,
     required int longRunMinDuration,
-    required int returnGapDays,
-    required int totalRuns,
-    required int continuousRunThreshold,
-    ReturnContext? returnContext,
-    int returnRampWeek = 0,
-    int weekInCycle = -1,
-    CyclePhase phase = CyclePhase.beginner,
+    required int weekInCycle,
   }) {
     final now = DateTime.now();
     final startDate = _hasRunToday(recentActivities)
         ? now.add(const Duration(days: 1))
         : now;
 
-    if (totalRuns < continuousRunThreshold) {
+    if (stats.totalRuns < config.continuousRunThreshold) {
       return _beginnerSequence();
     }
 
-    if (returnContext != null && returnContext.isReturning && returnRampWeek > 0) {
-      return _returnRampSequence(returnContext, returnRampWeek);
+    final returnCtx = stats.returnContext;
+    if (returnCtx != null && returnCtx.isReturning) {
+      return _returnRampSequence(returnCtx, 1);
     }
 
-    if (weekInCycle == 3 && phase == CyclePhase.advanced) {
+    if (weekInCycle == 3 && stats.recommendedPhase == CyclePhase.advanced) {
       return _easyOnlySequence();
     }
 
-    // 1. Build a continuous day-by-day history of the last 14 days
     List<WorkoutType> history = _buildContinuousHistory(
       recentActivities,
       startDate,
@@ -70,24 +61,20 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
     List<WorkoutType> nextWeek = [];
     int plannedEasyRunCount = 0;
 
-    // 2. Dynamically simulate and build the next 7 days
     for (int i = 0; i < 7; i++) {
       bool isReturning = _checkIfReturningFromBreak(
         history,
-        returnGapDays,
+        config.returnGapDays,
         plannedEasyRunCount: plannedEasyRunCount,
       );
       WorkoutType next = _pickNextWorkout(history, isReturning);
-      
+
       nextWeek.add(next);
       if (next == WorkoutType.easy) plannedEasyRunCount++;
 
-      // Insert the picked workout at the front of our simulated history 
-      // so the next iteration makes decisions based on it.
       history.insert(0, next);
     }
 
-    // 3. Shift rest day if the user hasn't run in 2+ days and today says "rest"
     final daysSinceLastRun = _daysSinceLastRun(recentActivities, startDate);
     if (daysSinceLastRun >= 2 && nextWeek.first == WorkoutType.rest) {
       nextWeek = [...nextWeek.sublist(1), WorkoutType.easy];
@@ -150,7 +137,6 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
     ];
   }
 
-  /// Evaluates the history to decide the absolute best next workout
   WorkoutType _pickNextWorkout(List<WorkoutType> history, bool isReturning) {
     final last = history.isNotEmpty ? history.first : WorkoutType.rest;
     final secondLast = history.length > 1 ? history[1] : WorkoutType.rest;
@@ -160,14 +146,11 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
         t == WorkoutType.tempo ||
         t == WorkoutType.longRun;
 
-    // RULE 1: Ensure recovery after a hard workout
     if (isHard(last)) {
-      // If they ran the day before the hard workout too, force a rest day.
       if (secondLast != WorkoutType.rest) return WorkoutType.rest;
       return WorkoutType.easy;
     }
 
-    // RULE 2: Prevent too many consecutive active days
     int consecutiveRuns = 0;
     for (var w in history) {
       if (w == WorkoutType.rest) break;
@@ -177,31 +160,26 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
       return WorkoutType.rest;
     }
 
-    // RULE 3: If returning from a break, gently alternate Easy and Rest
     if (isReturning) {
       return last == WorkoutType.easy ? WorkoutType.rest : WorkoutType.easy;
     }
 
-    // RULE 4: Pick the hard effort we haven't done in the longest time
     int getDaysSince(WorkoutType t) {
       final idx = history.indexOf(t);
       return idx == -1 ? 999 : idx;
     }
 
-    // Prioritized tie-breaker order (if all haven't been done in a long time)
     final candidates = [
       WorkoutType.tempo,
       WorkoutType.longRun,
       WorkoutType.intervals,
     ];
-    
-    // Sort descending by "days since last done"
+
     candidates.sort((a, b) => getDaysSince(b).compareTo(getDaysSince(a)));
 
     return candidates.first;
   }
 
-  /// Checks if a gap > returnGapDays exists recently without enough easy runs following it
   bool _checkIfReturningFromBreak(
     List<WorkoutType> history,
     int returnGapDays, {
@@ -223,14 +201,12 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
           if (history[i] == WorkoutType.easy) {
             easyRunsSinceGap++;
           } else {
-            // Doing a hard run means they are already out of the return phase
             easyRunsSinceGap += targetEasyRunsAfterBreak;
           }
         }
       }
     }
     if (!foundGap) {
-      // If completely new user (all rest history), treat as returning to ease them in
       return history.every((w) => w == WorkoutType.rest);
     }
     return (easyRunsSinceGap + plannedEasyRunCount) < targetEasyRunsAfterBreak;
@@ -254,7 +230,7 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
           longRunMinDuration: longRunMinDuration,
         ));
       } else {
-        history.add(WorkoutType.rest); // Fill gaps with rest days
+        history.add(WorkoutType.rest);
       }
       cursor = cursor.subtract(const Duration(days: 1));
     }
@@ -301,7 +277,7 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
 
     if (pace <= (thresholdPaceSecPerKm * 1.05).round()) {
       if (pace < (thresholdPaceSecPerKm * 0.98).round() ||
-          activity.trainingLoad == TrainingLoad.veryHard) { 
+          activity.trainingLoad == TrainingLoad.veryHard) {
         return WorkoutType.intervals;
       }
       return WorkoutType.tempo;

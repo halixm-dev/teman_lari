@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:teman_lari/domain/entities/return_context.dart';
 import 'package:teman_lari/domain/entities/run_activity.dart';
 import 'package:teman_lari/domain/entities/running_stats.dart';
 import 'package:teman_lari/domain/entities/training_plan.dart';
@@ -28,16 +27,12 @@ class _AllEasyStrategy implements WorkoutSequenceStrategy {
 
   @override
   List<WorkoutType> determineSequence({
+    required RunningStats stats,
+    required TrainingPlanConfig config,
     required List<RunActivity> recentActivities,
     required int thresholdPace,
     required int longRunMinDuration,
-    required int returnGapDays,
-    required int totalRuns,
-    required int continuousRunThreshold,
-    ReturnContext? returnContext,
-    int returnRampWeek = 0,
-    int weekInCycle = -1,
-    CyclePhase phase = CyclePhase.beginner,
+    required int weekInCycle,
   }) =>
       List.filled(7, WorkoutType.easy);
 }
@@ -378,7 +373,7 @@ void main() {
   group('sequence selection', () {
     test('return sequence when last run > 3 days ago', () {
       final activities = [_activity(daysAgo: 5, minutes: 40, paceSecPerKm: 340)];
-      mockAnalyze.stats = _stats(totalRuns: 1, formScore: 0);
+      mockAnalyze.stats = _stats(totalRuns: 20, formScore: 0);
       final plan = useCase.generate(activities);
       expect(plan.days.length, 7);
       expect(plan.days[0].type, WorkoutType.easy);

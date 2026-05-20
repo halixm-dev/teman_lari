@@ -88,21 +88,13 @@ class GeneratePlanUseCase {
         .where((a) => a.movingTime.inMinutes >= config.minRunDuration)
         .toList();
 
-    final returnRampWeek = stats.returnContext != null && stats.returnContext!.isReturning
-        ? 1
-        : 0;
-
     final sequence = sequenceStrategy.determineSequence(
+      stats: stats,
+      config: config,
       recentActivities: recentNonRest,
       thresholdPace: thresholdPace,
       longRunMinDuration: longRunMinDuration,
-      returnGapDays: config.returnGapDays,
-      totalRuns: stats.totalRuns,
-      continuousRunThreshold: config.continuousRunThreshold,
-      returnContext: stats.returnContext,
-      returnRampWeek: returnRampWeek,
       weekInCycle: weekInCycle,
-      phase: stats.recommendedPhase,
     );
 
     final longRunMin = (weeklyMinutes * config.longRunFraction).round();

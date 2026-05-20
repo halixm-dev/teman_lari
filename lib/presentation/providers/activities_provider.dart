@@ -164,10 +164,54 @@ final trainingPlanProvider = FutureProvider<TrainingPlan>((ref) async {
   );
 });
 
-final weekInCycleProvider = FutureProvider<int>((ref) async {
-  final prefs = ref.read(preferencesStorageProvider);
-  return prefs.getWeekInCycle();
-});
+final weekInCycleProvider =
+    AsyncNotifierProvider<WeekInCycleNotifier, int>(
+  () => WeekInCycleNotifier(),
+);
+
+class WeekInCycleNotifier extends AsyncNotifier<int> {
+  @override
+  Future<int> build() async {
+    final prefs = ref.read(preferencesStorageProvider);
+    final stored = await prefs.getWeekInCycle();
+    final cycleStart = await prefs.getCycleStartDate();
+    final daysSinceStart = DateTime.now().difference(cycleStart).inDays;
+
+    if (daysSinceStart >= 28) {
+      await prefs.setWeekInCycle(0);
+      await prefs.setCycleStartDate(DateTime.now());
+      return 0;
+    }
+
+    final expectedWeek = daysSinceStart ~/ 7;
+    if (expectedWeek > stored && expectedWeek < 4) {
+      await prefs.setWeekInCycle(expectedWeek);
+      return expectedWeek;
+    }
+
+    return stored;
+  }
+
+  Future<void> advanceWeek() async {
+    final current = await future;
+    final prefs = ref.read(preferencesStorageProvider);
+    if (current < 3) {
+      final next = current + 1;
+      await prefs.setWeekInCycle(next);
+    } else {
+      await prefs.setWeekInCycle(0);
+      await prefs.setCycleStartDate(DateTime.now());
+    }
+    ref.invalidateSelf();
+  }
+
+  Future<void> resetCycle() async {
+    final prefs = ref.read(preferencesStorageProvider);
+    await prefs.setWeekInCycle(0);
+    await prefs.setCycleStartDate(DateTime.now());
+    ref.invalidateSelf();
+  }
+}
 
 final cycleStartDateProvider = FutureProvider<DateTime>((ref) async {
   final prefs = ref.read(preferencesStorageProvider);
