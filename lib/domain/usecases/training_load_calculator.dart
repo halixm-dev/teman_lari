@@ -11,20 +11,23 @@ class TrainingLoadCalculator {
 
     final tssByDate = <DateTime, double>{};
     for (final a in sortedActivities) {
-      final day = DateTime(a.date.year, a.date.month, a.date.day);
+      final localDate = a.date.toLocal();
+      final day = DateTime(localDate.year, localDate.month, localDate.day);
       tssByDate[day] =
           (tssByDate[day] ?? 0) +
           _trainingStressScore(a, maxHr: maxHr, restingHr: restingHr);
     }
 
-    final first =
-        DateTime(sortedActivities.first.date.year, sortedActivities.first.date.month, sortedActivities.first.date.day);
-    final last = DateTime.now();
-    const fitnessDecay = 2 / 43, fatigueDecay = 2 / 8;
+    final firstLocal = sortedActivities.first.date.toLocal();
+    final first = DateTime(firstLocal.year, firstLocal.month, firstLocal.day);
+    final now = DateTime.now();
+    final last = DateTime(now.year, now.month, now.day);
+    
+    const fitnessDecay = 1 / 42, fatigueDecay = 1 / 7;
     double fitness = 0, fatigue = 0;
     final result = <TrainingLoadPoint>[];
 
-    for (var d = first; !d.isAfter(last); d = d.add(const Duration(days: 1))) {
+    for (var d = first; !d.isAfter(last); d = DateTime(d.year, d.month, d.day + 1)) {
       final tss = tssByDate[d] ?? 0;
       fitness = tss * fitnessDecay + fitness * (1 - fitnessDecay);
       fatigue = tss * fatigueDecay + fatigue * (1 - fatigueDecay);
