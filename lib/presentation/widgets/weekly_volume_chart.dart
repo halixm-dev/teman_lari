@@ -274,7 +274,7 @@ class _VolumeLinePainter extends CustomPainter {
 
     final maxVol =
         entries.map((e) => e.value).reduce((a, b) => a > b ? a : b);
-    final effectiveMax = maxVol > 0 ? maxVol : 1.0;
+    final effectiveMax = maxVol > 0 ? maxVol.ceilToDouble() : 1.0;
 
     final stepX = entries.length > 1
         ? chartWidth / (entries.length - 1)
@@ -293,7 +293,7 @@ class _VolumeLinePainter extends CustomPainter {
     for (int i = 0; i < 3; i++) {
       final yRatio = i / 2.0;
       final y = paddingTop + chartHeight * (1 - yRatio);
-      final value = (effectiveMax * (1 - yRatio)).toStringAsFixed(1);
+      final value = (effectiveMax * yRatio).toStringAsFixed(1);
 
       canvas.drawLine(
         Offset(paddingLeft, y),
