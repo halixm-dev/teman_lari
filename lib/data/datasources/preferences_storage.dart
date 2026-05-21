@@ -7,7 +7,7 @@ class HrPreferences {
 
   const HrPreferences({
     this.maxHr,
-    this.restingHr = 65,
+    this.restingHr = 60,
     this.age,
   });
 }
@@ -25,7 +25,7 @@ class PreferencesStorage {
   Future<HrPreferences> getPreferences() async {
     final prefs = await _prefs;
     return HrPreferences(
-      restingHr: prefs.getInt(_keyRestingHr) ?? 65,
+      restingHr: prefs.getInt(_keyRestingHr) ?? 60,
       maxHr: prefs.getInt(_keyMaxHr),
       age: _computeAge(prefs.getString(_keyDateOfBirth)),
     );
@@ -34,6 +34,11 @@ class PreferencesStorage {
   Future<void> saveRestingHr(int value) async {
     final prefs = await _prefs;
     await prefs.setInt(_keyRestingHr, value);
+  }
+
+  Future<void> clearRestingHr() async {
+    final prefs = await _prefs;
+    await prefs.remove(_keyRestingHr);
   }
 
   Future<void> saveMaxHr(int value) async {
@@ -51,13 +56,14 @@ class PreferencesStorage {
     await prefs.setString(_keyDateOfBirth, value);
   }
 
-  Future<void> updateFromStrava({
+  Future<bool> updateFromStrava({
     int? activityMaxHr,
     double? athleteMaxHr,
     String? athleteDateOfBirth,
     String? athleteName,
   }) async {
     final prefs = await _prefs;
+    bool changed = false;
 
     final candidateMaxHr = _pickBestMaxHr(
       stored: prefs.getInt(_keyMaxHr),
@@ -66,16 +72,21 @@ class PreferencesStorage {
     );
     if (candidateMaxHr != null && candidateMaxHr != prefs.getInt(_keyMaxHr)) {
       await prefs.setInt(_keyMaxHr, candidateMaxHr);
+      changed = true;
     }
 
     final storedDob = prefs.getString(_keyDateOfBirth);
     if (athleteDateOfBirth != null && storedDob != athleteDateOfBirth) {
       await prefs.setString(_keyDateOfBirth, athleteDateOfBirth);
+      changed = true;
     }
 
-    if (athleteName != null) {
+    if (athleteName != null && prefs.getString(_keyAthleteName) != athleteName) {
       await prefs.setString(_keyAthleteName, athleteName);
+      changed = true;
     }
+
+    return changed;
   }
 
   Future<String?> getAthleteName() async {

@@ -17,9 +17,9 @@ class HrZoneCalculator {
     'Zone 5 - VO2max',
   ];
 
-  static List<HrZone> fromActivities(List<RunActivity> activities, {int? restingHr}) {
-    final maxHr = _observedMaxHr(activities);
-    final actualMax = maxHr.clamp(_minHr, _maxHrCap);
+  static List<HrZone> fromActivities(List<RunActivity> activities, {int? restingHr, int? maxHr}) {
+    final observedMax = maxHr ?? _observedMaxHr(activities);
+    final actualMax = observedMax.clamp(_minHr, _maxHrCap);
     final actualResting = (restingHr ?? _defaultRestingHr).clamp(_minRestingHr, actualMax - 20);
     final hrr = actualMax - actualResting;
 

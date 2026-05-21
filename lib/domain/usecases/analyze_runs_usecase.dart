@@ -28,7 +28,7 @@ class AnalyzeRunsUseCase {
 
     final actualMaxHr = _resolveMaxHr(activities, userValue: userMaxHr) ?? 190;
     final actualRestingHr =
-        _resolveRestingHr(activities, userValue: userRestingHr) ?? 65;
+        _resolveRestingHr(activities, userValue: userRestingHr) ?? 60;
 
     final loadHistory = _loadCalculator.computeLoadHistory(
       sortedByDate,

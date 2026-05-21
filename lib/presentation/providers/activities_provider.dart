@@ -41,6 +41,67 @@ final preferencesStorageProvider = Provider<PreferencesStorage>((ref) {
   return PreferencesStorage();
 });
 
+final hrPreferencesProvider =
+    AsyncNotifierProvider<HrPreferencesNotifier, HrPreferences>(
+  () => HrPreferencesNotifier(),
+);
+
+class HrPreferencesNotifier extends AsyncNotifier<HrPreferences> {
+  @override
+  Future<HrPreferences> build() async {
+    return ref.read(preferencesStorageProvider).getPreferences();
+  }
+
+  Future<void> saveRestingHr(int value) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      await ref.read(preferencesStorageProvider).saveRestingHr(value);
+      return ref.read(preferencesStorageProvider).getPreferences();
+    });
+  }
+
+  Future<void> clearRestingHr() async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      await ref.read(preferencesStorageProvider).clearRestingHr();
+      return ref.read(preferencesStorageProvider).getPreferences();
+    });
+  }
+
+  Future<void> saveMaxHr(int value) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      await ref.read(preferencesStorageProvider).saveMaxHr(value);
+      return ref.read(preferencesStorageProvider).getPreferences();
+    });
+  }
+
+  Future<void> clearMaxHr() async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      await ref.read(preferencesStorageProvider).clearMaxHr();
+      return ref.read(preferencesStorageProvider).getPreferences();
+    });
+  }
+
+  Future<void> updateFromStrava({
+    int? activityMaxHr,
+    double? athleteMaxHr,
+    String? athleteDateOfBirth,
+    String? athleteName,
+  }) async {
+    final changed = await ref.read(preferencesStorageProvider).updateFromStrava(
+      activityMaxHr: activityMaxHr,
+      athleteMaxHr: athleteMaxHr,
+      athleteDateOfBirth: athleteDateOfBirth,
+      athleteName: athleteName,
+    );
+    if (changed) {
+      ref.invalidateSelf();
+    }
+  }
+}
+
 final activityRepositoryProvider = Provider<ActivityRepository>((ref) {
   return ActivityRepositoryImpl(
     remoteDataSource: ref.read(stravaActivityDataSourceProvider),
@@ -101,7 +162,7 @@ class ActivitiesNotifier extends AsyncNotifier<List<RunActivity>> {
 
 final runningStatsProvider = FutureProvider<RunningStats?>((ref) async {
   final activities = await ref.watch(activitiesProvider.future);
-  final prefs = await ref.read(preferencesStorageProvider).getPreferences();
+  final prefs = await ref.watch(hrPreferencesProvider.future);
   final repo = ref.read(activityRepositoryProvider);
   final sortedActivities = [...activities]..sort((a, b) => b.date.compareTo(a.date));
   final withHrIds = sortedActivities
@@ -150,7 +211,7 @@ final runningStatsProvider = FutureProvider<RunningStats?>((ref) async {
       .fold<double?>(null, (max, hr) => max == null ? hr : (hr > max ? hr : max));
 
   if (activityMaxHr != null) {
-    await ref.read(preferencesStorageProvider).updateFromStrava(
+    await ref.read(hrPreferencesProvider.notifier).updateFromStrava(
       activityMaxHr: activityMaxHr.round(),
     );
   }
@@ -161,9 +222,12 @@ final runningStatsProvider = FutureProvider<RunningStats?>((ref) async {
 final trainingPlanProvider = FutureProvider<TrainingPlan>((ref) async {
   final activities = await ref.watch(activitiesProvider.future);
   final weekInCycle = await ref.watch(weekInCycleProvider.future);
+  final prefs = await ref.watch(hrPreferencesProvider.future);
   return ref.read(generatePlanUseCaseProvider).generate(
     activities,
     weekInCycle: weekInCycle,
+    userMaxHr: prefs.maxHr,
+    userRestingHr: prefs.restingHr,
   );
 });
 

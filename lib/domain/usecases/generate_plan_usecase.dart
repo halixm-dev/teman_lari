@@ -27,13 +27,27 @@ class GeneratePlanUseCase {
             sequenceStrategy ?? const DynamicWorkoutSequenceStrategy(),
         descriptions = descriptions ?? const WorkoutDescriptions();
 
-  TrainingPlan generate(List<RunActivity> activities, {int weekInCycle = -1}) {
+  TrainingPlan generate(
+    List<RunActivity> activities, {
+    int weekInCycle = -1,
+    int? userMaxHr,
+    int? userRestingHr,
+  }) {
     if (activities.isEmpty) return TrainingPlan.empty();
 
-    final stats = _analyzeRuns.compute(activities, config: config);
+    final stats = _analyzeRuns.compute(
+      activities,
+      userMaxHr: userMaxHr,
+      userRestingHr: userRestingHr,
+      config: config,
+    );
     final thresholdPace = PaceZoneCalculator.estimateThresholdPace(activities);
     final paceZones = PaceZoneCalculator.fromThresholdPace(thresholdPace);
-    final hrZones = HrZoneCalculator.fromActivities(activities);
+    final hrZones = HrZoneCalculator.fromActivities(
+      activities,
+      restingHr: userRestingHr,
+      maxHr: userMaxHr,
+    );
     final weeklyMinutes = _targetWeeklyMinutes(stats, weekInCycle: weekInCycle);
     final startDate = _startDate(activities);
 
