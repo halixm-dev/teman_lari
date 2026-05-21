@@ -1,88 +1,59 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import '../models/activity_model.dart';
 
 class LocalActivityDataSource {
-  Database? _database;
-  bool _webUnsupported = false;
+  static const _activitiesBoxName = 'activities';
+  static const _hrStreamsBoxName = 'hr_streams';
 
-  Future<Database> get database async {
-    if (kIsWeb) {
-      _webUnsupported = true;
-      throw UnsupportedError('sqflite not available on web');
-    }
-    _database ??= await _initDatabase();
-    return _database!;
+  Box? _activitiesBox;
+  Box? _hrStreamsBox;
+
+  Future<Box> get activitiesBox async {
+    _activitiesBox ??= await Hive.openBox(_activitiesBoxName);
+    return _activitiesBox!;
   }
 
-  Future<Database> _initDatabase() async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'strava_activities.db');
-    return openDatabase(
-      path,
-      version: 2,
-      onCreate: (db, version) async {
-        await db.execute('''
-          CREATE TABLE activities (
-            id INTEGER PRIMARY KEY,
-            data TEXT NOT NULL,
-            synced_at INTEGER NOT NULL
-          )
-        ''');
-        await db.execute('''
-          CREATE TABLE hr_streams (
-            activity_id INTEGER PRIMARY KEY,
-            data TEXT NOT NULL,
-            synced_at INTEGER NOT NULL
-          )
-        ''');
-      },
-      onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 2) {
-          await db.execute('''
-            CREATE TABLE IF NOT EXISTS hr_streams (
-              activity_id INTEGER PRIMARY KEY,
-              data TEXT NOT NULL,
-              synced_at INTEGER NOT NULL
-            )
-          ''');
-        }
-      },
-    );
+  Future<Box> get hrStreamsBox async {
+    _hrStreamsBox ??= await Hive.openBox(_hrStreamsBoxName);
+    return _hrStreamsBox!;
   }
 
   Future<void> saveActivities(List<ActivityModel> activities) async {
-    if (_webUnsupported) return;
     try {
-      final db = await database;
-      final batch = db.batch();
+      final box = await activitiesBox;
+      final Map<int, Map<String, dynamic>> entries = {};
       for (final activity in activities) {
-        batch.insert('activities', {
+        entries[activity.id] = {
           'id': activity.id,
           'data': jsonEncode(activity.toJson()),
           'synced_at': DateTime.now().millisecondsSinceEpoch,
-        }, conflictAlgorithm: ConflictAlgorithm.replace);
+        };
       }
-      await batch.commit(noResult: true);
+      await box.putAll(entries);
     } catch (_) {}
   }
 
   Future<List<ActivityModel>?> getCachedActivities() async {
-    if (_webUnsupported) return null;
     try {
-      final db = await database;
-      final rows = await db.query('activities', orderBy: 'id DESC');
-      if (rows.isEmpty) return null;
+      final box = await activitiesBox;
+      if (box.isEmpty) return null;
 
-      final oldest = rows.last['synced_at'] as int;
+      final values = box.values.cast<Map>();
+      final sortedList = values.toList()
+        ..sort((a, b) {
+          final idA = a['id'] as int;
+          final idB = b['id'] as int;
+          return idB.compareTo(idA);
+        });
+
+      final oldest = sortedList.last['synced_at'] as int;
       final age = DateTime.now().millisecondsSinceEpoch - oldest;
       if (age > 3600 * 1000) return null;
 
-      return rows
+      return sortedList
           .map((r) => ActivityModel.fromJson(jsonDecode(r['data'] as String)))
           .toList();
     } catch (_) {
@@ -91,27 +62,25 @@ class LocalActivityDataSource {
   }
 
   Future<void> saveHeartRateStream(int activityId, List<double> data) async {
-    if (_webUnsupported) return;
     try {
-      final db = await database;
-      await db.insert('hr_streams', {
+      final box = await hrStreamsBox;
+      await box.put(activityId, {
         'activity_id': activityId,
         'data': jsonEncode(data),
         'synced_at': DateTime.now().millisecondsSinceEpoch,
-      }, conflictAlgorithm: ConflictAlgorithm.replace);
+      });
     } catch (_) {}
   }
 
   Future<Map<int, List<double>>> getCachedHeartRateStreams() async {
-    if (_webUnsupported) return {};
     try {
-      final db = await database;
-      final rows = await db.query('hr_streams');
-      if (rows.isEmpty) return {};
+      final box = await hrStreamsBox;
+      if (box.isEmpty) return {};
 
       final result = <int, List<double>>{};
       final now = DateTime.now().millisecondsSinceEpoch;
-      for (final row in rows) {
+      for (final value in box.values) {
+        final row = value as Map;
         final age = now - (row['synced_at'] as int);
         if (age > 3600 * 1000) continue;
 
@@ -126,11 +95,11 @@ class LocalActivityDataSource {
   }
 
   Future<void> clearCache() async {
-    if (_webUnsupported) return;
     try {
-      final db = await database;
-      await db.delete('activities');
-      await db.delete('hr_streams');
+      final boxAct = await activitiesBox;
+      final boxHr = await hrStreamsBox;
+      await boxAct.clear();
+      await boxHr.clear();
     } catch (_) {}
   }
 }

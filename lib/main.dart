@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import 'core/utils/responsive.dart';
 import 'domain/entities/training_plan.dart';
@@ -38,7 +39,9 @@ final _router = GoRouter(
   ],
 );
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
   runApp(const ProviderScope(child: TemanLariApp()));
 }
 

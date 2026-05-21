@@ -1500,65 +1500,61 @@ class HrZoneDistributionChart extends StatelessWidget {
 
 ## 11. Local Storage & Caching
 
-Cache fetched activities locally with `sqflite` to reduce API calls and enable offline viewing.
+Cache fetched activities locally with `hive_flutter` to reduce API calls, enable offline viewing, and support cross-platform caching (including Flutter Web).
 
 ```dart
 // lib/data/datasources/local_activity_datasource.dart
 class LocalActivityDataSource {
-  Database? _database;
+  static const _activitiesBoxName = 'activities';
+  static const _hrStreamsBoxName = 'hr_streams';
 
-  Future<Database> get database async {
-    _database ??= await _initDatabase();
-    return _database!;
-  }
+  Box? _activitiesBox;
+  Box? _hrStreamsBox;
 
-  Future<Database> _initDatabase() async {
-    final path = join(await getDatabasesPath(), 'strava_activities.db');
-    return openDatabase(
-      path,
-      version: 1,
-      onCreate: (db, version) async {
-        await db.execute('''
-          CREATE TABLE activities (
-            id INTEGER PRIMARY KEY,
-            data TEXT NOT NULL,
-            synced_at INTEGER NOT NULL
-          )
-        ''');
-      },
-    );
+  Future<Box> get activitiesBox async {
+    _activitiesBox ??= await Hive.openBox(_activitiesBoxName);
+    return _activitiesBox!;
   }
 
   Future<void> saveActivities(List<ActivityModel> activities) async {
-    final db = await database;
-    final batch = db.batch();
-    for (final activity in activities) {
-      batch.insert(
-        'activities',
-        {
+    try {
+      final box = await activitiesBox;
+      final Map<int, Map<String, dynamic>> entries = {};
+      for (final activity in activities) {
+        entries[activity.id] = {
           'id': activity.id,
           'data': jsonEncode(activity.toJson()),
           'synced_at': DateTime.now().millisecondsSinceEpoch,
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-    }
-    await batch.commit(noResult: true);
+        };
+      }
+      await box.putAll(entries);
+    } catch (_) {}
   }
 
   Future<List<ActivityModel>?> getCachedActivities() async {
-    final db = await database;
-    final rows = await db.query('activities', orderBy: 'id DESC');
-    if (rows.isEmpty) return null;
+    try {
+      final box = await activitiesBox;
+      if (box.isEmpty) return null;
 
-    // Invalidate cache after 1 hour
-    final oldest = rows.last['synced_at'] as int;
-    final age = DateTime.now().millisecondsSinceEpoch - oldest;
-    if (age > 3600 * 1000) return null;
+      final values = box.values.cast<Map>();
+      final sortedList = values.toList()
+        ..sort((a, b) {
+          final idA = a['id'] as int;
+          final idB = b['id'] as int;
+          return idB.compareTo(idA);
+        });
 
-    return rows
-        .map((r) => ActivityModel.fromJson(jsonDecode(r['data'] as String)))
-        .toList();
+      // Invalidate cache after 1 hour
+      final oldest = sortedList.last['synced_at'] as int;
+      final age = DateTime.now().millisecondsSinceEpoch - oldest;
+      if (age > 3600 * 1000) return null;
+
+      return sortedList
+          .map((r) => ActivityModel.fromJson(jsonDecode(r['data'] as String)))
+          .toList();
+    } catch (_) {
+      return null;
+    }
   }
 }
 ```
@@ -1657,9 +1653,7 @@ dependencies:
   json_annotation: ^4.8.0
 
   # Local Storage
-  sqflite: ^2.3.0
-  path: ^1.9.0
-  hive_flutter: ^1.1.0   # for fast key-value data
+  hive_flutter: ^1.1.0   # for platform-agnostic key-value data & caching
 
   # Charts
   fl_chart: ^0.67.0
