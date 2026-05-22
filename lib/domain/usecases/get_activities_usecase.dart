@@ -1,4 +1,4 @@
-import '../entities/run_activity.dart';
+import '../entities/activity.dart';
 import '../repositories/activity_repository.dart';
 
 class GetActivitiesUseCase {
@@ -6,7 +6,7 @@ class GetActivitiesUseCase {
 
   GetActivitiesUseCase(this.repository);
 
-  Future<List<RunActivity>> execute({int monthsBack = 12}) {
-    return repository.getAllRunningActivities(monthsBack: monthsBack);
+  Future<List<Activity>> execute({int monthsBack = 12}) {
+    return repository.getAllActivities(monthsBack: monthsBack);
   }
 }

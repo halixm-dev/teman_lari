@@ -8,9 +8,7 @@ class StravaActivityDataSource {
 
   StravaActivityDataSource(this._client);
 
-  Future<List<ActivityModel>> getAllRunningActivities({
-    int monthsBack = 12,
-  }) async {
+  Future<List<ActivityModel>> getAllActivities({int monthsBack = 12}) async {
     final allActivities = <ActivityModel>[];
     final after =
         DateTime.now()
@@ -33,7 +31,6 @@ class StravaActivityDataSource {
 
       final runningActivities = data
           .map((a) => ActivityModel.fromJson(a as Map<String, dynamic>))
-          .where((a) => a.type == 'Run')
           .toList();
 
       allActivities.addAll(runningActivities);

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../domain/entities/running_stats.dart';
 
@@ -112,42 +113,46 @@ class StatsGrid extends StatelessWidget {
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,
       childAspectRatio: 1.5,
-      children: [
-        _StatCard(
-          icon: Icons.run_circle,
-          label: 'Total Runs',
-          value: '${stats.totalRuns}',
-          color: Colors.blue,
-        ),
-        _StatCard(
-          icon: Icons.straighten,
-          label: 'Total Distance',
-          value: '${stats.totalDistanceKm.toStringAsFixed(1)} km',
-          color: Colors.green,
-        ),
-        _StatCard(
-          icon: Icons.speed,
-          label: 'Avg Pace',
-          value:
-              '${stats.averagePace.inMinutes}:${(stats.averagePace.inSeconds % 60).toString().padLeft(2, '0')}',
-          color: Colors.orange,
-        ),
-        if (showVo2Max)
-          _StatCard(
-            icon: Icons.favorite,
-            label: 'VO2 Max',
-            value: stats.vo2MaxEstimate?.toStringAsFixed(1) ?? 'N/A',
-            color: Colors.purple,
-            onTap: () => _showVo2MaxInfo(context),
-          )
-        else
-          _StatCard(
-            icon: Icons.show_chart,
-            label: 'Weekly Avg',
-            value: '${stats.recentWeeklyAvgKm.toStringAsFixed(1)} km',
-            color: Colors.purple,
-          ),
-      ],
+      children:
+          [
+                _StatCard(
+                  icon: Icons.run_circle,
+                  label: 'Total Runs',
+                  value: '${stats.totalRuns}',
+                  color: Colors.blue,
+                ),
+                _StatCard(
+                  icon: Icons.straighten,
+                  label: 'Total Distance',
+                  value: '${stats.totalDistanceKm.toStringAsFixed(1)} km',
+                  color: Colors.green,
+                ),
+                _StatCard(
+                  icon: Icons.speed,
+                  label: 'Avg Pace',
+                  value:
+                      '${stats.averagePace.inMinutes}:${(stats.averagePace.inSeconds % 60).toString().padLeft(2, '0')}',
+                  color: Colors.orange,
+                ),
+                if (showVo2Max)
+                  _StatCard(
+                    icon: Icons.favorite,
+                    label: 'VO2 Max',
+                    value: stats.vo2MaxEstimate?.toStringAsFixed(1) ?? 'N/A',
+                    color: Colors.purple,
+                    onTap: () => _showVo2MaxInfo(context),
+                  )
+                else
+                  _StatCard(
+                    icon: Icons.show_chart,
+                    label: 'Weekly Avg',
+                    value: '${stats.recentWeeklyAvgKm.toStringAsFixed(1)} km',
+                    color: Colors.purple,
+                  ),
+              ]
+              .animate(interval: 50.ms)
+              .fade(duration: 300.ms)
+              .scale(curve: Curves.easeOutBack),
     );
   }
 }
@@ -186,15 +191,24 @@ class _StatCard extends StatelessWidget {
                 Text(
                   value,
                   style: TextStyle(
+                    fontFamily: 'JetBrains Mono',
                     fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w800,
                     color: color,
+                    letterSpacing: -0.5,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  label,
-                  style: Theme.of(context).textTheme.bodySmall,
+                  label.toUpperCase(),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],

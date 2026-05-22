@@ -1,5 +1,6 @@
+import '../entities/analyzed_activity.dart';
 import '../entities/return_context.dart';
-import '../entities/run_activity.dart';
+import '../entities/activity.dart';
 import '../entities/running_stats.dart';
 import '../entities/workout_type.dart';
 import 'schedule_constraints.dart';
@@ -9,9 +10,7 @@ abstract class WorkoutSequenceStrategy {
   List<WorkoutType> determineSequence({
     required RunningStats stats,
     required TrainingPlanConfig config,
-    required List<RunActivity> recentActivities,
-    required int thresholdPace,
-    required int longRunMinDuration,
+    required List<Activity> recentActivities,
     required int weekInCycle,
   });
 }
@@ -23,9 +22,7 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
   List<WorkoutType> determineSequence({
     required RunningStats stats,
     required TrainingPlanConfig config,
-    required List<RunActivity> recentActivities,
-    required int thresholdPace,
-    required int longRunMinDuration,
+    required List<Activity> recentActivities,
     required int weekInCycle,
   }) {
     final now = DateTime.now();
@@ -35,21 +32,15 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
 
     final constraints = _resolveConstraints(stats, config, weekInCycle);
 
-    final sorted = [...recentActivities]
-      ..sort((a, b) => b.date.compareTo(a.date));
-    final recentNonRest = sorted
-        .where((a) => a.movingTime.inMinutes >= config.minRunDuration)
-        .toList();
-
+    // Load recent classification history
     List<WorkoutType> history = _buildContinuousHistory(
-      recentNonRest,
+      stats.analyzedActivities,
       startDate,
-      thresholdPace,
-      longRunMinDuration,
     );
 
     List<WorkoutType> nextWeek = [];
     int plannedRunCount = 0;
+    int crossTrainingCount = 0;
 
     for (int i = 0; i < 7; i++) {
       WorkoutType next = _pickNextWorkout(
@@ -57,6 +48,15 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
         constraints,
         plannedRunCount,
       );
+
+      // Active recovery substitution
+      if ((next == WorkoutType.rest || next == WorkoutType.easy) &&
+          stats.formScore < config.fatiguedThreshold &&
+          crossTrainingCount < 1 &&
+          constraints.allows(WorkoutType.crossTraining)) {
+        next = WorkoutType.crossTraining;
+        crossTrainingCount++;
+      }
 
       nextWeek.add(next);
       if (ScheduleConstraints.isRunning(next)) plannedRunCount++;
@@ -193,24 +193,16 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
   }
 
   List<WorkoutType> _buildContinuousHistory(
-    List<RunActivity> activities,
+    List<AnalyzedActivity> analyzedActivities,
     DateTime startDate,
-    int thresholdPace,
-    int longRunMinDuration,
   ) {
     List<WorkoutType> history = [];
     DateTime cursor = startDate.subtract(const Duration(days: 1));
 
     for (int i = 0; i < 14; i++) {
-      final act = _getActivityOn(activities, cursor);
-      if (act != null) {
-        history.add(
-          classifyWorkoutType(
-            act,
-            thresholdPace,
-            longRunMinDuration: longRunMinDuration,
-          ),
-        );
+      final analyzed = _getAnalyzedActivityOn(analyzedActivities, cursor);
+      if (analyzed != null) {
+        history.add(analyzed.type);
       } else {
         history.add(WorkoutType.rest);
       }
@@ -219,18 +211,21 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
     return history;
   }
 
-  RunActivity? _getActivityOn(List<RunActivity> activities, DateTime date) {
-    for (var a in activities) {
-      if (a.date.year == date.year &&
-          a.date.month == date.month &&
-          a.date.day == date.day) {
+  AnalyzedActivity? _getAnalyzedActivityOn(
+    List<AnalyzedActivity> analyzedActivities,
+    DateTime date,
+  ) {
+    for (var a in analyzedActivities) {
+      if (a.activity.date.year == date.year &&
+          a.activity.date.month == date.month &&
+          a.activity.date.day == date.day) {
         return a;
       }
     }
     return null;
   }
 
-  bool _hasRunToday(List<RunActivity> activities) {
+  bool _hasRunToday(List<Activity> activities) {
     final today = DateTime.now();
     return activities.any(
       (a) =>
@@ -240,34 +235,10 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
     );
   }
 
-  int _daysSinceLastRun(List<RunActivity> activities, DateTime startDate) {
+  int _daysSinceLastRun(List<Activity> activities, DateTime startDate) {
     if (activities.isEmpty) return 999;
     final sorted = List.of(activities)
       ..sort((a, b) => b.date.compareTo(a.date));
     return startDate.difference(sorted.first.date).inDays;
-  }
-
-  static WorkoutType classifyWorkoutType(
-    RunActivity activity,
-    int thresholdPaceSecPerKm, {
-    int longRunMinDuration = 55,
-  }) {
-    final pace = activity.pace.inSeconds;
-    final durationMin = activity.movingTime.inMinutes;
-
-    if (durationMin >= longRunMinDuration &&
-        pace > (thresholdPaceSecPerKm * 1.05).round()) {
-      return WorkoutType.longRun;
-    }
-
-    if (pace <= (thresholdPaceSecPerKm * 1.05).round()) {
-      if (pace < (thresholdPaceSecPerKm * 0.98).round() ||
-          activity.trainingLoad == TrainingLoad.veryHard) {
-        return WorkoutType.intervals;
-      }
-      return WorkoutType.tempo;
-    }
-
-    return WorkoutType.easy;
   }
 }

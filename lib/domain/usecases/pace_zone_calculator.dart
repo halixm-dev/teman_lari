@@ -1,4 +1,4 @@
-import '../entities/run_activity.dart';
+import '../entities/activity.dart';
 import '../entities/training_plan.dart';
 
 class PaceZoneCalculator {
@@ -32,18 +32,18 @@ class PaceZoneCalculator {
     ];
   }
 
-  static int estimateThresholdPace(List<RunActivity> activities) {
+  static int estimateThresholdPace(List<Activity> activities) {
     final candidates =
         activities
             .where(
               (a) =>
-                  a.movingTime.inMinutes >= 20 && a.movingTime.inMinutes <= 35,
+                  a.movingTime.inMinutes >= 25 && a.movingTime.inMinutes <= 50,
             )
             .toList()
           ..sort((a, b) => a.pace.inSeconds.compareTo(b.pace.inSeconds));
 
     if (candidates.isNotEmpty) {
-      return (candidates.first.pace.inSeconds * 1.05).round();
+      return (candidates.first.pace.inSeconds * 1.03).round();
     }
 
     final totalSeconds = activities.fold<int>(
@@ -56,6 +56,6 @@ class PaceZoneCalculator {
     );
     if (totalDistanceKm == 0) return 360; // Safe default: 6:00 min/km
     final avgPaceSecondsPerKm = (totalSeconds / totalDistanceKm).round();
-    return (avgPaceSecondsPerKm * 0.90).round();
+    return (avgPaceSecondsPerKm * 0.85).round();
   }
 }

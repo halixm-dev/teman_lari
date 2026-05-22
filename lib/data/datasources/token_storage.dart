@@ -39,8 +39,9 @@ class TokenStorage {
       expiresAt = await storage.read(key: 'expires_at');
     }
 
-    if (accessToken == null || refreshToken == null || expiresAt == null)
+    if (accessToken == null || refreshToken == null || expiresAt == null) {
       return null;
+    }
     return StravaTokens(
       accessToken: accessToken,
       refreshToken: refreshToken,

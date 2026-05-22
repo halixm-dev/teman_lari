@@ -7,7 +7,7 @@ import '../../data/datasources/local_activity_datasource.dart';
 import '../../data/datasources/preferences_storage.dart';
 import '../../data/datasources/strava_activity_datasource.dart';
 import '../../data/repositories/activity_repository_impl.dart';
-import '../../domain/entities/run_activity.dart';
+import '../../domain/entities/activity.dart';
 import '../../domain/entities/running_stats.dart';
 import '../../domain/entities/training_plan.dart';
 import '../../domain/repositories/activity_repository.dart';
@@ -86,6 +86,22 @@ class HrPreferencesNotifier extends AsyncNotifier<HrPreferences> {
     });
   }
 
+  Future<void> saveThresholdPace(int seconds) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      await ref.read(preferencesStorageProvider).saveThresholdPace(seconds);
+      return ref.read(preferencesStorageProvider).getPreferences();
+    });
+  }
+
+  Future<void> clearThresholdPace() async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      await ref.read(preferencesStorageProvider).clearThresholdPace();
+      return ref.read(preferencesStorageProvider).getPreferences();
+    });
+  }
+
   Future<void> updateFromStrava({
     int? activityMaxHr,
     double? athleteMaxHr,
@@ -146,13 +162,13 @@ final generatePlanUseCaseProvider = Provider<GeneratePlanUseCase>((ref) {
 });
 
 final activitiesProvider =
-    AsyncNotifierProvider<ActivitiesNotifier, List<RunActivity>>(
+    AsyncNotifierProvider<ActivitiesNotifier, List<Activity>>(
       () => ActivitiesNotifier(),
     );
 
-class ActivitiesNotifier extends AsyncNotifier<List<RunActivity>> {
+class ActivitiesNotifier extends AsyncNotifier<List<Activity>> {
   @override
-  Future<List<RunActivity>> build() async {
+  Future<List<Activity>> build() async {
     return ref.read(getActivitiesUseCaseProvider).execute(monthsBack: 12);
   }
 
@@ -176,17 +192,18 @@ final runningStatsProvider = FutureProvider<RunningStats?>((ref) async {
       .take(50)
       .toList();
 
-  List<RunActivity> target;
+  List<Activity> target;
   if (withHrIds.isNotEmpty) {
     final streams = await repo.getHeartRateStreams(withHrIds);
-    target = activities.map((a) {
+    target = activities.map<Activity>((a) {
       if (a.avgHeartRate == null) return a;
       final hrData = streams[a.id];
       if (hrData == null) return a;
-      return RunActivity(
+      return Activity(
         id: a.id,
         name: a.name,
         date: a.date,
+        type: a.type,
         distanceKm: a.distanceKm,
         movingTime: a.movingTime,
         pace: a.pace,
@@ -204,17 +221,23 @@ final runningStatsProvider = FutureProvider<RunningStats?>((ref) async {
   }
 
   final useCase = ref.read(analyzeRunsUseCaseProvider);
+  final userThresholdPace = prefs.thresholdPaceSeconds != null 
+      ? Duration(seconds: prefs.thresholdPaceSeconds!) 
+      : null;
+
   final stats = kIsWeb
       ? useCase.compute(
           target,
           userMaxHr: prefs.maxHr,
           userRestingHr: prefs.restingHr,
+          userThresholdPace: userThresholdPace,
         )
       : await Isolate.run(
           () => useCase.compute(
             target,
             userMaxHr: prefs.maxHr,
             userRestingHr: prefs.restingHr,
+            userThresholdPace: userThresholdPace,
           ),
         );
 

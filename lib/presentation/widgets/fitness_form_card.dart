@@ -13,9 +13,13 @@ class FitnessFormCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final formColor = stats.formScore > 5
+    final displayFitness = stats.fitnessScore.round();
+    final displayFatigue = stats.fatigueScore.round();
+    final displayForm = displayFitness - displayFatigue;
+
+    final formColor = displayForm > 5
         ? AppColors.success
-        : stats.formScore < -5
+        : displayForm < -5
         ? AppColors.danger
         : AppColors.warning;
 
@@ -53,17 +57,17 @@ class FitnessFormCard extends StatelessWidget {
                   children: [
                     _MetricChip(
                       label: 'Fitness',
-                      value: stats.fitnessScore.toStringAsFixed(0),
+                      value: displayFitness.toString(),
                       color: AppColors.info,
                     ),
                     _MetricChip(
                       label: 'Fatigue',
-                      value: stats.fatigueScore.toStringAsFixed(0),
+                      value: displayFatigue.toString(),
                       color: AppColors.danger,
                     ),
                     _MetricChip(
                       label: 'Form',
-                      value: stats.formScore.toStringAsFixed(0),
+                      value: displayForm.toString(),
                       color: formColor,
                     ),
                   ],
@@ -106,6 +110,10 @@ class _TrainingStatusDetails extends StatelessWidget {
         ? AppColors.textSecondaryDark
         : AppColors.gray500;
 
+    final displayFitness = stats.fitnessScore.round();
+    final displayFatigue = stats.fatigueScore.round();
+    final displayForm = displayFitness - displayFatigue;
+
     return Padding(
       padding: EdgeInsets.only(
         left: AppSpacing.space6,
@@ -143,36 +151,36 @@ class _TrainingStatusDetails extends StatelessWidget {
           const SizedBox(height: AppSpacing.space6),
           _MetricExplanation(
             label: 'Fitness (CTL)',
-            value: stats.fitnessScore.toStringAsFixed(0),
+            value: displayFitness.toString(),
             color: AppColors.info,
             description:
                 'Your long-term fitness level based on training load over the '
                 'last 42 days. A higher number means better aerobic conditioning.',
-            advice: _fitnessAdvice(stats.fitnessScore),
+            advice: _fitnessAdvice(displayFitness.toDouble()),
           ),
           const SizedBox(height: AppSpacing.space4),
           _MetricExplanation(
             label: 'Fatigue (ATL)',
-            value: stats.fatigueScore.toStringAsFixed(0),
+            value: displayFatigue.toString(),
             color: AppColors.danger,
             description:
                 'Your short-term training load from the last 7 days. '
                 'This reflects how tired your body currently is.',
-            advice: _fatigueAdvice(stats.fatigueScore),
+            advice: _fatigueAdvice(displayFatigue.toDouble()),
           ),
           const SizedBox(height: AppSpacing.space4),
           _MetricExplanation(
             label: 'Form (TSB)',
-            value: stats.formScore.toStringAsFixed(0),
-            color: stats.formScore > 5
+            value: displayForm.toString(),
+            color: displayForm > 5
                 ? AppColors.success
-                : stats.formScore < -5
-                    ? AppColors.danger
-                    : AppColors.warning,
+                : displayForm < -5
+                ? AppColors.danger
+                : AppColors.warning,
             description:
                 'The balance between Fitness and Fatigue (Fitness − Fatigue). '
                 'Positive means fresh, negative means fatigued.',
-            advice: _formAdvice(stats.formScore),
+            advice: _formAdvice(displayForm.toDouble()),
           ),
         ],
       ),
@@ -324,7 +332,10 @@ class _MetricChip extends StatelessWidget {
     final typoExt = Theme.of(context).extension<AppTypographyExtension>();
     return Column(
       children: [
-        Text(label, style: typoExt?.statLabel ?? Theme.of(context).textTheme.bodySmall),
+        Text(
+          label,
+          style: typoExt?.statLabel ?? Theme.of(context).textTheme.bodySmall,
+        ),
         const SizedBox(height: 4),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -334,11 +345,13 @@ class _MetricChip extends StatelessWidget {
           ),
           child: Text(
             value,
-            style: typoExt?.statValue.copyWith(color: color) ?? TextStyle(
-              color: color,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style:
+                typoExt?.statValue.copyWith(color: color) ??
+                TextStyle(
+                  color: color,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
           ),
         ),
       ],

@@ -1,4 +1,4 @@
-import '../entities/run_activity.dart';
+import '../entities/activity.dart';
 import '../entities/training_plan.dart';
 
 class HrZoneCalculator {
@@ -18,7 +18,7 @@ class HrZoneCalculator {
   ];
 
   static List<HrZone> fromActivities(
-    List<RunActivity> activities, {
+    List<Activity> activities, {
     int? restingHr,
     int? maxHr,
   }) {
@@ -46,7 +46,7 @@ class HrZoneCalculator {
     });
   }
 
-  static int _observedMaxHr(List<RunActivity> activities) {
+  static int _observedMaxHr(List<Activity> activities) {
     return activities
             .map((a) => a.maxHeartRate)
             .whereType<double>()

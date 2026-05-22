@@ -182,16 +182,20 @@ class _SummaryItem extends StatelessWidget {
       children: [
         Text(
           label,
-          style: typoExt?.statLabel ?? Theme.of(context).textTheme.bodySmall?.copyWith(
+          style:
+              typoExt?.statLabel ??
+              Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
         ),
         const SizedBox(height: 2),
         Text(
           value,
-          style: typoExt?.statValue ?? Theme.of(context).textTheme.bodyLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style:
+              typoExt?.statValue ??
+              Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
       ],
     );

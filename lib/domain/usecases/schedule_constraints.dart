@@ -70,5 +70,6 @@ class ScheduleConstraints {
   bool allows(WorkoutType type) => allowedTypes.contains(type);
 
   /// Whether [type] is a running (non-rest) workout.
-  static bool isRunning(WorkoutType type) => type != WorkoutType.rest;
+  static bool isRunning(WorkoutType type) =>
+      type != WorkoutType.rest && type != WorkoutType.crossTraining;
 }

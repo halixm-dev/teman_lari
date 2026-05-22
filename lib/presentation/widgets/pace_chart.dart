@@ -30,6 +30,8 @@ class PaceProgressionChart extends StatelessWidget {
     return SizedBox(
       height: 200,
       child: LineChart(
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
         LineChartData(
           minY: minY,
           maxY: maxY,
@@ -105,14 +107,28 @@ class PaceProgressionChart extends StatelessWidget {
             LineChartBarData(
               spots: spots,
               isCurved: true,
-              color: Theme.of(context).colorScheme.primary,
-              barWidth: 2,
+              gradient: const LinearGradient(
+                colors: [
+                  AppColors.success,
+                  AppColors.warning,
+                  AppColors.danger,
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+              barWidth: 3,
               dotData: const FlDotData(show: false),
               belowBarData: BarAreaData(
                 show: true,
-                color: Theme.of(
-                  context,
-                ).colorScheme.primary.withValues(alpha: 0.1),
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.success.withValues(alpha: 0.2),
+                    AppColors.warning.withValues(alpha: 0.1),
+                    AppColors.danger.withValues(alpha: 0.0),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
               ),
             ),
           ],

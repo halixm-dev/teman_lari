@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:teman_lari/domain/entities/return_context.dart';
-import 'package:teman_lari/domain/entities/run_activity.dart';
+import 'package:teman_lari/domain/entities/analyzed_activity.dart';
+import 'package:teman_lari/domain/entities/activity.dart';
 import 'package:teman_lari/domain/entities/running_stats.dart';
 import 'package:teman_lari/domain/entities/workout_type.dart';
 import 'package:teman_lari/domain/usecases/training_plan_config.dart';
@@ -10,13 +11,14 @@ void main() {
   const config = TrainingPlanConfig();
   const strategy = DynamicWorkoutSequenceStrategy();
 
-  RunActivity _activity({
+  Activity activity({
     required DateTime date,
     double distanceKm = 3.0,
     Duration movingTime = const Duration(minutes: 20),
     Duration pace = const Duration(seconds: 450),
   }) {
-    return RunActivity(
+    return Activity(
+      type: ActivityType.run,
       id: date.millisecondsSinceEpoch,
       name: 'Run',
       date: date,
@@ -28,7 +30,11 @@ void main() {
     );
   }
 
-  RunningStats _beginnerStats({int totalRuns = 5, ReturnContext? returnCtx}) {
+  RunningStats beginnerStats({
+    int totalRuns = 5,
+    ReturnContext? returnCtx,
+    List<Activity>? activities,
+  }) {
     return RunningStats(
       totalRuns: totalRuns,
       totalDistanceKm: totalRuns * 3.0,
@@ -44,10 +50,21 @@ void main() {
       formScore: 0,
       returnContext: returnCtx,
       recommendedPhase: CyclePhase.beginner,
+      analyzedActivities:
+          activities
+              ?.map<AnalyzedActivity>(
+                (a) => AnalyzedActivity(activity: a, type: WorkoutType.easy),
+              )
+              .toList() ??
+          [],
     );
   }
 
-  RunningStats _advancedStats({int totalRuns = 60, ReturnContext? returnCtx}) {
+  RunningStats advancedStats({
+    int totalRuns = 60,
+    ReturnContext? returnCtx,
+    List<Activity>? activities,
+  }) {
     return RunningStats(
       totalRuns: totalRuns,
       totalDistanceKm: totalRuns * 8.0,
@@ -63,6 +80,13 @@ void main() {
       formScore: 20,
       returnContext: returnCtx,
       recommendedPhase: CyclePhase.advanced,
+      analyzedActivities:
+          activities
+              ?.map<AnalyzedActivity>(
+                (a) => AnalyzedActivity(activity: a, type: WorkoutType.easy),
+              )
+              .toList() ??
+          [],
     );
   }
 
@@ -71,17 +95,16 @@ void main() {
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
       final activities = [
-        _activity(date: today),
-        _activity(date: today.subtract(const Duration(days: 2))),
-        _activity(date: today.subtract(const Duration(days: 4))),
+        activity(date: today),
+        activity(date: today.subtract(const Duration(days: 2))),
+        activity(date: today.subtract(const Duration(days: 4))),
       ];
 
       final sequence = strategy.determineSequence(
-        stats: _beginnerStats(totalRuns: 5),
+        stats: beginnerStats(totalRuns: 5, activities: activities),
         config: config,
         recentActivities: activities,
-        thresholdPace: 420,
-        longRunMinDuration: 55,
+
         weekInCycle: -1,
       );
 
@@ -97,17 +120,16 @@ void main() {
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
       final activities = [
-        _activity(date: today.subtract(const Duration(days: 3))),
-        _activity(date: today.subtract(const Duration(days: 5))),
-        _activity(date: today.subtract(const Duration(days: 7))),
+        activity(date: today.subtract(const Duration(days: 3))),
+        activity(date: today.subtract(const Duration(days: 5))),
+        activity(date: today.subtract(const Duration(days: 7))),
       ];
 
       final sequence = strategy.determineSequence(
-        stats: _beginnerStats(totalRuns: 5),
+        stats: beginnerStats(totalRuns: 5, activities: activities),
         config: config,
         recentActivities: activities,
-        thresholdPace: 420,
-        longRunMinDuration: 55,
+
         weekInCycle: -1,
       );
 
@@ -123,16 +145,15 @@ void main() {
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
       final activities = [
-        _activity(date: today.subtract(const Duration(days: 1))),
-        _activity(date: today.subtract(const Duration(days: 3))),
+        activity(date: today.subtract(const Duration(days: 1))),
+        activity(date: today.subtract(const Duration(days: 3))),
       ];
 
       final sequence = strategy.determineSequence(
-        stats: _beginnerStats(totalRuns: 5),
+        stats: beginnerStats(totalRuns: 5, activities: activities),
         config: config,
         recentActivities: activities,
-        thresholdPace: 420,
-        longRunMinDuration: 55,
+
         weekInCycle: -1,
       );
 
@@ -152,15 +173,14 @@ void main() {
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
       final activities = [
-        _activity(date: today.subtract(const Duration(days: 7))),
+        activity(date: today.subtract(const Duration(days: 7))),
       ];
 
       final sequence = strategy.determineSequence(
-        stats: _beginnerStats(totalRuns: 5),
+        stats: beginnerStats(totalRuns: 5, activities: activities),
         config: config,
         recentActivities: activities,
-        thresholdPace: 420,
-        longRunMinDuration: 55,
+
         weekInCycle: -1,
       );
 
@@ -184,14 +204,17 @@ void main() {
         preGapAvgMin: 180,
         lastActivityDate: today.subtract(const Duration(days: 10)),
       );
-      final activities = [_activity(date: today)];
+      final activities = [activity(date: today)];
 
       final sequence = strategy.determineSequence(
-        stats: _beginnerStats(totalRuns: 20, returnCtx: returnCtx),
+        stats: beginnerStats(
+          totalRuns: 20,
+          returnCtx: returnCtx,
+          activities: activities,
+        ),
         config: config,
         recentActivities: activities,
-        thresholdPace: 420,
-        longRunMinDuration: 55,
+
         weekInCycle: -1,
       );
 
@@ -208,17 +231,16 @@ void main() {
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
       final activities = [
-        _activity(date: today),
-        _activity(date: today.subtract(const Duration(days: 2))),
-        _activity(date: today.subtract(const Duration(days: 4))),
+        activity(date: today),
+        activity(date: today.subtract(const Duration(days: 2))),
+        activity(date: today.subtract(const Duration(days: 4))),
       ];
 
       final sequence = strategy.determineSequence(
-        stats: _advancedStats(),
+        stats: advancedStats(activities: activities),
         config: config,
         recentActivities: activities,
-        thresholdPace: 330,
-        longRunMinDuration: 55,
+
         weekInCycle: 3,
       );
 

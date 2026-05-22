@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
+import '../theme/app_colors.dart';
+
 class HrZoneDistributionChart extends StatelessWidget {
   final Map<int, double> zoneDistribution;
 
   const HrZoneDistributionChart({super.key, required this.zoneDistribution});
 
   static const zoneColors = [
-    Colors.blue,
-    Colors.green,
-    Colors.yellow,
-    Colors.orange,
-    Colors.red,
+    AppColors.info,
+    AppColors.success,
+    AppColors.warning,
+    AppColors.brandOrange,
+    AppColors.danger,
   ];
 
   @override
@@ -38,6 +40,8 @@ class HrZoneDistributionChart extends StatelessWidget {
     return SizedBox(
       height: 200,
       child: PieChart(
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeOutCirc,
         PieChartData(
           sections: sections,
           sectionsSpace: 2,

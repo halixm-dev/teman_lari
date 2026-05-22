@@ -1,3 +1,4 @@
+import 'analyzed_activity.dart';
 import 'return_context.dart';
 
 enum CyclePhase { beginner, baseBuilding, intermediate, advanced, returning }
@@ -43,6 +44,7 @@ class RunningStats {
   final double formScore;
   final ReturnContext? returnContext;
   final CyclePhase recommendedPhase;
+  final List<AnalyzedActivity> analyzedActivities;
 
   const RunningStats({
     required this.totalRuns,
@@ -59,6 +61,7 @@ class RunningStats {
     required this.formScore,
     this.returnContext,
     this.recommendedPhase = CyclePhase.beginner,
+    this.analyzedActivities = const [],
   });
 
   factory RunningStats.empty() {
@@ -77,6 +80,7 @@ class RunningStats {
       formScore: 0,
       returnContext: null,
       recommendedPhase: CyclePhase.beginner,
+      analyzedActivities: const [],
     );
   }
 

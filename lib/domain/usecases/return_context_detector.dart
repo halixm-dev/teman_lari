@@ -1,14 +1,11 @@
 import '../entities/return_context.dart';
-import '../entities/run_activity.dart';
+import '../entities/activity.dart';
 import 'training_plan_config.dart';
 
 class ReturnContextDetector {
   static const int _extendedGapDays = 30;
 
-  ReturnContext detect(
-    List<RunActivity> activities,
-    TrainingPlanConfig config,
-  ) {
+  ReturnContext detect(List<Activity> activities, TrainingPlanConfig config) {
     if (activities.isEmpty) return ReturnContext.empty();
 
     final sortedDesc = [...activities]
@@ -79,7 +76,7 @@ class ReturnContextDetector {
   }
 
   double _recentWeeklyAvg(
-    List<RunActivity> activities, {
+    List<Activity> activities, {
     required bool byDistance,
   }) {
     if (activities.isEmpty) return 0;

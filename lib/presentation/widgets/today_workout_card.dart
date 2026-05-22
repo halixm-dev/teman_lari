@@ -7,6 +7,7 @@ import '../providers/activities_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
+import 'workout_type_badge.dart';
 
 class TodayWorkoutCard extends ConsumerWidget {
   const TodayWorkoutCard({super.key});
@@ -38,7 +39,7 @@ class TodayWorkoutCard extends ConsumerWidget {
             button: !isRest,
             label: isRest
                 ? 'Rest day. No workout today.'
-                : 'Start today\'s workout: ${_typeLabel(day.type)}',
+                : 'Start today\'s workout: ${workoutTypeLabel(day.type)}',
             child: InkWell(
               borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
               onTap: isRest
@@ -52,8 +53,8 @@ class TodayWorkoutCard extends ConsumerWidget {
                     Row(
                       children: [
                         Icon(
-                          _typeIcon(day.type),
-                          color: _typeColor(day.type),
+                          workoutTypeIcon(day.type),
+                          color: workoutTypeColor(day.type),
                           size: 20,
                         ),
                         const SizedBox(width: AppSpacing.space2),
@@ -66,14 +67,14 @@ class TodayWorkoutCard extends ConsumerWidget {
                     const SizedBox(height: AppSpacing.space3),
                     Row(
                       children: [
-                        _WorkoutTypeBadge(type: day.type),
+                        WorkoutTypeBadge(type: day.type),
                         if (!isRest && day.targetMinutes != null) ...[
                           const SizedBox(width: AppSpacing.space2),
                           Text(
                             '${day.targetMinutes} min',
                             style: AppTypography.statValue.copyWith(
                               fontSize: 18,
-                              color: _typeColor(day.type),
+                              color: workoutTypeColor(day.type),
                             ),
                           ),
                         ],
@@ -112,64 +113,6 @@ class TodayWorkoutCard extends ConsumerWidget {
           ),
         );
       },
-    );
-  }
-}
-
-Color _typeColor(WorkoutType type) {
-  return switch (type) {
-    WorkoutType.easy => Colors.green,
-    WorkoutType.tempo => Colors.orange,
-    WorkoutType.intervals => Colors.red,
-    WorkoutType.longRun => Colors.blue,
-    WorkoutType.rest => AppColors.gray500,
-    WorkoutType.crossTraining => Colors.purple,
-  };
-}
-
-IconData _typeIcon(WorkoutType type) {
-  return switch (type) {
-    WorkoutType.easy => Icons.directions_walk,
-    WorkoutType.tempo => Icons.speed,
-    WorkoutType.intervals => Icons.timer,
-    WorkoutType.longRun => Icons.map,
-    WorkoutType.rest => Icons.hotel,
-    WorkoutType.crossTraining => Icons.fitness_center,
-  };
-}
-
-String _typeLabel(WorkoutType type) {
-  return switch (type) {
-    WorkoutType.easy => 'Easy',
-    WorkoutType.tempo => 'Tempo',
-    WorkoutType.intervals => 'Intervals',
-    WorkoutType.longRun => 'Long Run',
-    WorkoutType.rest => 'Rest',
-    WorkoutType.crossTraining => 'Cross Train',
-  };
-}
-
-class _WorkoutTypeBadge extends StatelessWidget {
-  final WorkoutType type;
-
-  const _WorkoutTypeBadge({required this.type});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: _typeColor(type).withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        _typeLabel(type),
-        style: TextStyle(
-          color: _typeColor(type),
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
     );
   }
 }

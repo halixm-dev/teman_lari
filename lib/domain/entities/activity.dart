@@ -1,9 +1,12 @@
+enum ActivityType { run, ride, swim, workout, walk, other }
+
 enum TrainingLoad { easy, moderate, hard, veryHard }
 
-class RunActivity {
+class Activity {
   final int id;
   final String name;
   final DateTime date;
+  final ActivityType type;
   final double distanceKm;
   final Duration movingTime;
   final Duration pace;
@@ -15,10 +18,11 @@ class RunActivity {
   final TrainingLoad trainingLoad;
   final List<double>? heartRateData;
 
-  const RunActivity({
+  const Activity({
     required this.id,
     required this.name,
     required this.date,
+    required this.type,
     required this.distanceKm,
     required this.movingTime,
     required this.pace,

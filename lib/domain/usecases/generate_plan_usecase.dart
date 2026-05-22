@@ -1,5 +1,5 @@
 import '../entities/return_context.dart';
-import '../entities/run_activity.dart';
+import '../entities/activity.dart';
 import '../entities/run_walk_phase.dart';
 import '../entities/running_stats.dart';
 import '../entities/training_plan.dart';
@@ -28,7 +28,7 @@ class GeneratePlanUseCase {
        descriptions = descriptions ?? const WorkoutDescriptions();
 
   TrainingPlan generate(
-    List<RunActivity> activities, {
+    List<Activity> activities, {
     int weekInCycle = -1,
     int? userMaxHr,
     int? userRestingHr,
@@ -79,29 +79,11 @@ class GeneratePlanUseCase {
     required List<PaceZone> paceZones,
     required List<HrZone> hrZones,
     required RunningStats stats,
-    required List<RunActivity> activities,
+    required List<Activity> activities,
     required int thresholdPace,
     int weekInCycle = -1,
   }) {
     final sorted = [...activities]..sort((a, b) => b.date.compareTo(a.date));
-
-    final easyLike =
-        sorted
-            .where(
-              (a) =>
-                  a.trainingLoad != TrainingLoad.hard &&
-                  a.trainingLoad != TrainingLoad.veryHard &&
-                  a.movingTime.inMinutes >= config.minRunDuration,
-            )
-            .map((a) => a.movingTime.inMinutes)
-            .toList()
-          ..sort();
-    final easyMedian = easyLike.isNotEmpty
-        ? easyLike[easyLike.length ~/ 2]
-        : 30;
-    final longRunMinDuration = (easyMedian * config.longRunMultiplier)
-        .round()
-        .clamp(config.longRunMinCap, config.longRunMaxCap);
 
     final recentNonRest = sorted
         .where((a) => a.movingTime.inMinutes >= config.minRunDuration)
@@ -111,8 +93,6 @@ class GeneratePlanUseCase {
       stats: stats,
       config: config,
       recentActivities: recentNonRest,
-      thresholdPace: thresholdPace,
-      longRunMinDuration: longRunMinDuration,
       weekInCycle: weekInCycle,
     );
 
@@ -308,7 +288,7 @@ class GeneratePlanUseCase {
     );
   }
 
-  DateTime _startDate(List<RunActivity> activities) {
+  DateTime _startDate(List<Activity> activities) {
     final today = DateTime.now();
     final hasRunToday = activities.any(
       (a) =>

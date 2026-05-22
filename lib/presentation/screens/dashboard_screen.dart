@@ -5,7 +5,7 @@ import '../../core/utils/responsive.dart';
 import '../../domain/entities/running_stats.dart';
 import '../providers/activities_provider.dart';
 import '../widgets/fitness_form_card.dart';
-import '../widgets/recent_runs_list.dart';
+import '../widgets/recent_activities_list.dart';
 import '../widgets/today_workout_card.dart';
 import '../widgets/weekly_volume_chart.dart';
 
@@ -96,7 +96,7 @@ class _DashboardData extends ConsumerWidget {
             const SizedBox(height: 16),
             WeeklyVolumeChart(stats: stats),
             const SizedBox(height: 16),
-            const RecentRunsList(),
+            const RecentActivitiesList(),
           ],
         ),
       ),

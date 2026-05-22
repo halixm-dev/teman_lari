@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:teman_lari/domain/entities/run_activity.dart';
+import 'package:teman_lari/domain/entities/activity.dart';
 import 'package:teman_lari/domain/usecases/training_load_calculator.dart';
 
 void main() {
@@ -30,7 +30,8 @@ void main() {
           now.day,
         ).subtract(const Duration(days: 3));
 
-        final activity = RunActivity(
+        final activity = Activity(
+          type: ActivityType.run,
           id: 1,
           name: 'Monday Run',
           date: monday,

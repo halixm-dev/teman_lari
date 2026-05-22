@@ -1,27 +1,39 @@
 import 'package:flutter/material.dart';
-import 'package:teman_lari/domain/entities/run_activity.dart';
+import 'package:teman_lari/domain/entities/analyzed_activity.dart';
 import 'package:teman_lari/presentation/theme/app_theme_extensions.dart';
 import 'package:teman_lari/core/utils/date_utils.dart';
+import 'package:teman_lari/domain/entities/activity.dart';
+import 'package:teman_lari/presentation/widgets/workout_type_badge.dart';
 
 class CompactActivityCard extends StatelessWidget {
-  final RunActivity run;
+  final AnalyzedActivity analyzedRun;
 
-  const CompactActivityCard({super.key, required this.run});
+  const CompactActivityCard({super.key, required this.analyzedRun});
 
   @override
   Widget build(BuildContext context) {
     final typoExt = Theme.of(context).extension<AppTypographyExtension>();
-    
+
+    final run = analyzedRun.activity;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            run.name,
-            style: Theme.of(context).textTheme.titleSmall,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  run.name,
+                  style: Theme.of(context).textTheme.titleSmall,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              WorkoutTypeBadge(type: analyzedRun.type),
+            ],
           ),
           const SizedBox(height: 2),
           Text(
@@ -43,7 +55,11 @@ class CompactActivityCard extends StatelessWidget {
               Expanded(
                 child: _StatColumn(
                   label: 'PACE',
-                  value: run.paceString,
+                  value:
+                      (run.type == ActivityType.run ||
+                          run.type == ActivityType.walk)
+                      ? run.paceString
+                      : '--',
                   typoExt: typoExt,
                 ),
               ),
@@ -78,11 +94,7 @@ class _StatColumn extends StatelessWidget {
   final String value;
   final AppTypographyExtension? typoExt;
 
-  const _StatColumn({
-    required this.label,
-    required this.value,
-    this.typoExt,
-  });
+  const _StatColumn({required this.label, required this.value, this.typoExt});
 
   @override
   Widget build(BuildContext context) {
@@ -91,14 +103,20 @@ class _StatColumn extends StatelessWidget {
       children: [
         Text(
           label,
-          style: typoExt?.statLabel ??
-              Theme.of(context).textTheme.labelSmall?.copyWith(letterSpacing: 0.05),
+          style:
+              typoExt?.statLabel ??
+              Theme.of(
+                context,
+              ).textTheme.labelSmall?.copyWith(letterSpacing: 0.05),
         ),
         const SizedBox(height: 2),
         Text(
           value,
-          style: typoExt?.statValue ??
-              Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+          style:
+              typoExt?.statValue ??
+              Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
       ],
     );

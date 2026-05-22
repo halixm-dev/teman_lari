@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../core/utils/responsive.dart';
 import '../../domain/entities/running_stats.dart';
@@ -25,12 +26,19 @@ class AnalysisScreen extends ConsumerWidget {
         ],
       ),
       body: ConstrainedContent(
-        child: statsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (err, _) => Center(child: Text('Error: $err')),
-          data: (stats) => stats == null
-              ? const Center(child: Text('No data'))
-              : _AnalysisData(stats: stats),
+        child: RefreshIndicator(
+          onRefresh: () => ref.read(activitiesProvider.notifier).refresh(),
+          child: statsAsync.when(
+            loading: () => const Center(
+              child: CircularProgressIndicator(),
+            ).animate().fade().scale(),
+            error: (err, _) => Center(
+              child: Text('Error: $err'),
+            ).animate().fade().slideY(begin: 0.1),
+            data: (stats) => stats == null
+                ? const Center(child: Text('No data')).animate().fade()
+                : _AnalysisData(stats: stats),
+          ),
         ),
       ),
     );
@@ -43,17 +51,22 @@ class _AnalysisData extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 16),
-          StatsGrid(stats: stats, showVo2Max: true),
-          const SizedBox(height: 16),
-          _PaceCard(stats: stats),
-          const SizedBox(height: 16),
-          _HrZoneCard(stats: stats),
-        ],
+        children:
+            [
+                  const SizedBox(height: 16),
+                  StatsGrid(stats: stats, showVo2Max: true),
+                  const SizedBox(height: 16),
+                  _PaceCard(stats: stats),
+                  const SizedBox(height: 16),
+                  _HrZoneCard(stats: stats),
+                ]
+                .animate(interval: 100.ms)
+                .fade(duration: 400.ms)
+                .slideY(begin: 0.05, curve: Curves.easeOutQuad),
       ),
     );
   }
@@ -66,15 +79,18 @@ class _PaceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Pace Progression',
-              style: Theme.of(context).textTheme.headlineSmall,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.5,
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             PaceProgressionChart(dataPoints: stats.paceProgression),
           ],
         ),
@@ -90,15 +106,18 @@ class _HrZoneCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Heart Rate Zones',
-              style: Theme.of(context).textTheme.headlineSmall,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.5,
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             HrZoneDistributionChart(zoneDistribution: stats.heartRateZones),
           ],
         ),

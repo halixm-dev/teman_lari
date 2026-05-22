@@ -1,11 +1,15 @@
-import '../entities/run_activity.dart';
+import '../entities/activity.dart';
 import '../entities/running_stats.dart';
 
 class TrainingLoadCalculator {
+  /// Note: Running EMA from "first activity" means Fitness and Fatigue will be 
+  /// heavily suppressed for the first 6-8 weeks of a user's data (cold start problem).
+  /// A seed value option could be implemented in the future for users importing historical data.
   List<TrainingLoadPoint> computeLoadHistory(
-    List<RunActivity> sortedActivities, {
+    List<Activity> sortedActivities, {
     required int maxHr,
     required int restingHr,
+    Duration? thresholdPace,
   }) {
     if (sortedActivities.isEmpty) return [];
 
@@ -13,9 +17,9 @@ class TrainingLoadCalculator {
     for (final a in sortedActivities) {
       final localDate = a.date.toLocal();
       final day = DateTime(localDate.year, localDate.month, localDate.day);
-      tssByDate[day] =
-          (tssByDate[day] ?? 0) +
-          _trainingStressScore(a, maxHr: maxHr, restingHr: restingHr);
+      final double dailyTss = (tssByDate[day] ?? 0) +
+          _trainingStressScore(a, maxHr: maxHr, restingHr: restingHr, thresholdPace: thresholdPace);
+      tssByDate[day] = dailyTss > 500.0 ? 500.0 : dailyTss;
     }
 
     final firstLocal = sortedActivities.first.date.toLocal();
@@ -49,17 +53,29 @@ class TrainingLoadCalculator {
   }
 
   double _trainingStressScore(
-    RunActivity activity, {
+    Activity activity, {
     required int maxHr,
     required int restingHr,
+    Duration? thresholdPace,
   }) {
     final hr = activity.avgHeartRate;
-    if (hr == null) {
-      return activity.movingTime.inMinutes * 0.5;
-    }
-    final hrReserve = (hr - restingHr) / (maxHr - restingHr);
     final durationHours = activity.movingTime.inMinutes / 60.0;
-    return hrReserve * hrReserve * durationHours * 100;
+    double tss = 0.0;
+    
+    if (hr != null) {
+      final hrReserve = (hr - restingHr) / (maxHr - restingHr);
+      final thresholdHrReserve = 0.85;
+      final intensityFactor = hrReserve / thresholdHrReserve;
+      tss = intensityFactor * intensityFactor * durationHours * 100;
+    } else if (thresholdPace != null && activity.pace.inSeconds > 0) {
+      double ifPace = thresholdPace.inSeconds / activity.pace.inSeconds;
+      if (ifPace > 1.5) ifPace = 1.5;
+      tss = ifPace * ifPace * durationHours * 100;
+    } else {
+      tss = activity.movingTime.inMinutes * 0.83;
+    }
+
+    return tss > 400.0 ? 400.0 : tss;
   }
 
   int hrToZone(double hr, {required int maxHr, required int restingHr}) {

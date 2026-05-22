@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import '../../core/errors/exceptions.dart';
 import '../../core/errors/failures.dart';
-import '../../domain/entities/run_activity.dart';
+import '../../domain/entities/activity.dart';
 import '../../domain/repositories/activity_repository.dart';
 import '../datasources/local_activity_datasource.dart';
 import '../datasources/preferences_storage.dart';
@@ -21,9 +21,7 @@ class ActivityRepositoryImpl implements ActivityRepository {
   });
 
   @override
-  Future<List<RunActivity>> getAllRunningActivities({
-    int monthsBack = 12,
-  }) async {
+  Future<List<Activity>> getAllActivities({int monthsBack = 12}) async {
     final prefs = await preferencesStorage.getPreferences();
     final maxHr = prefs.maxHr ?? 190;
 
@@ -39,7 +37,7 @@ class ActivityRepositoryImpl implements ActivityRepository {
     } catch (_) {}
 
     try {
-      final remoteActivities = await remoteDataSource.getAllRunningActivities(
+      final remoteActivities = await remoteDataSource.getAllActivities(
         monthsBack: monthsBack,
       );
       log(
@@ -61,7 +59,7 @@ class ActivityRepositoryImpl implements ActivityRepository {
 
   @override
   Future<void> refreshActivities({int monthsBack = 12}) async {
-    final remoteActivities = await remoteDataSource.getAllRunningActivities(
+    final remoteActivities = await remoteDataSource.getAllActivities(
       monthsBack: monthsBack,
     );
     await localDataSource.saveActivities(remoteActivities);
@@ -109,7 +107,7 @@ class ActivityRepositoryImpl implements ActivityRepository {
     return result;
   }
 
-  List<RunActivity> _mapModelsToEntities(
+  List<Activity> _mapModelsToEntities(
     List<ActivityModel> models, {
     int maxHr = 190,
   }) {
@@ -136,10 +134,35 @@ class ActivityRepositoryImpl implements ActivityRepository {
         load = TrainingLoad.moderate;
       }
 
-      return RunActivity(
+      ActivityType parsedType;
+      switch (model.type) {
+        case 'Run':
+          parsedType = ActivityType.run;
+          break;
+        case 'Ride':
+        case 'VirtualRide':
+          parsedType = ActivityType.ride;
+          break;
+        case 'Swim':
+          parsedType = ActivityType.swim;
+          break;
+        case 'WeightTraining':
+        case 'Workout':
+        case 'Crossfit':
+          parsedType = ActivityType.workout;
+          break;
+        case 'Walk':
+          parsedType = ActivityType.walk;
+          break;
+        default:
+          parsedType = ActivityType.other;
+      }
+
+      return Activity(
         id: model.id,
         name: model.name,
         date: date,
+        type: parsedType,
         distanceKm: distanceKm,
         movingTime: Duration(seconds: movingTimeSeconds),
         pace: Duration(seconds: paceSecondsPerKm.round()),

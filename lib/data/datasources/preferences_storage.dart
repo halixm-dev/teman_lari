@@ -4,13 +4,20 @@ class HrPreferences {
   final int? maxHr;
   final int restingHr;
   final int? age;
+  final int? thresholdPaceSeconds;
 
-  const HrPreferences({this.maxHr, this.restingHr = 60, this.age});
+  const HrPreferences({
+    this.maxHr,
+    this.restingHr = 60,
+    this.age,
+    this.thresholdPaceSeconds,
+  });
 }
 
 class PreferencesStorage {
   static const _keyRestingHr = 'resting_hr';
   static const _keyMaxHr = 'max_hr';
+  static const _keyThresholdPace = 'threshold_pace_sec';
   static const _keyDateOfBirth = 'date_of_birth';
   static const _keyAthleteName = 'athlete_name';
   static const _keyWeekInCycle = 'week_in_cycle';
@@ -24,6 +31,7 @@ class PreferencesStorage {
       restingHr: prefs.getInt(_keyRestingHr) ?? 60,
       maxHr: prefs.getInt(_keyMaxHr),
       age: _computeAge(prefs.getString(_keyDateOfBirth)),
+      thresholdPaceSeconds: prefs.getInt(_keyThresholdPace),
     );
   }
 
@@ -45,6 +53,16 @@ class PreferencesStorage {
   Future<void> clearMaxHr() async {
     final prefs = await _prefs;
     await prefs.remove(_keyMaxHr);
+  }
+
+  Future<void> saveThresholdPace(int seconds) async {
+    final prefs = await _prefs;
+    await prefs.setInt(_keyThresholdPace, seconds);
+  }
+
+  Future<void> clearThresholdPace() async {
+    final prefs = await _prefs;
+    await prefs.remove(_keyThresholdPace);
   }
 
   Future<void> saveDateOfBirth(String value) async {

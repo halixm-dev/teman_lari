@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:teman_lari/domain/entities/run_activity.dart';
+import 'package:teman_lari/domain/entities/activity.dart';
 import 'package:teman_lari/domain/entities/running_stats.dart';
 import 'package:teman_lari/domain/entities/training_plan.dart';
 import 'package:teman_lari/domain/usecases/analyze_runs_usecase.dart';
@@ -29,9 +29,7 @@ class _AllEasyStrategy implements WorkoutSequenceStrategy {
   List<WorkoutType> determineSequence({
     required RunningStats stats,
     required TrainingPlanConfig config,
-    required List<RunActivity> recentActivities,
-    required int thresholdPace,
-    required int longRunMinDuration,
+    required List<Activity> recentActivities,
     required int weekInCycle,
   }) => List.filled(7, WorkoutType.easy);
 }
@@ -41,9 +39,10 @@ class _MockAnalyzeRuns extends AnalyzeRunsUseCase {
 
   @override
   RunningStats compute(
-    List<RunActivity> activities, {
+    List<Activity> activities, {
     int? userMaxHr,
     int? userRestingHr,
+    Duration? userThresholdPace,
     TrainingPlanConfig? config,
   }) {
     return stats ?? super.compute(activities);
@@ -58,6 +57,7 @@ RunningStats _stats({
   double fitnessScore = 0,
   double fatigueScore = 0,
   double formScore = 0,
+  CyclePhase recommendedPhase = CyclePhase.intermediate,
 }) {
   return RunningStats(
     totalRuns: totalRuns,
@@ -72,10 +72,11 @@ RunningStats _stats({
     fitnessScore: fitnessScore,
     fatigueScore: fatigueScore,
     formScore: formScore,
+    recommendedPhase: recommendedPhase,
   );
 }
 
-RunActivity _activity({
+Activity _activity({
   int daysAgo = 1,
   int minutes = 30,
   int paceSecPerKm = 300,
@@ -84,7 +85,8 @@ RunActivity _activity({
   int id = 0,
   TrainingLoad load = TrainingLoad.easy,
 }) {
-  return RunActivity(
+  return Activity(
+    type: ActivityType.run,
     id: id,
     name: 'Run $id',
     date: DateTime.now().subtract(Duration(days: daysAgo)),
@@ -185,9 +187,13 @@ void main() {
     });
 
     test('"Develop aerobic fitness" when fitnessScore < 30 and runs >= 10', () {
-      mockAnalyze.stats = _stats(totalRuns: 10, fitnessScore: 25);
+      mockAnalyze.stats = _stats(
+        totalRuns: 10,
+        fitnessScore: 25,
+        recommendedPhase: CyclePhase.baseBuilding,
+      );
       final plan = useCase.generate([_activity()]);
-      expect(plan.goal, 'Develop aerobic fitness');
+      expect(plan.goal, 'Increase aerobic capacity & volume');
     });
 
     test('"Recovery & consolidation week" when formScore < -10', () {
@@ -203,7 +209,7 @@ void main() {
     test('"Improve threshold pace" when fit and fresh', () {
       mockAnalyze.stats = _stats(totalRuns: 15, fitnessScore: 35, formScore: 0);
       final plan = useCase.generate([_activity()]);
-      expect(plan.goal, 'Improve threshold pace & race readiness');
+      expect(plan.goal, 'Improve threshold pace & endurance');
     });
   });
 
@@ -211,12 +217,12 @@ void main() {
     test('fatigue description when formScore < -10', () {
       mockAnalyze.stats = _stats(
         totalRuns: 10,
-        formScore: -15,
+        formScore: -20,
         weeklyVolume: {'W1': 20},
         weeklyMinutes: {'W1': 160},
       );
       final plan = useCase.generate([_activity()]);
-      expect(plan.description, contains("fatigued"));
+      expect(plan.description, contains("fatigue"));
     });
 
     test('fresh description when formScore > 10', () {
@@ -238,7 +244,7 @@ void main() {
         weeklyMinutes: {'W1': 160},
       );
       final plan = useCase.generate([_activity()]);
-      expect(plan.description, contains("Balanced"));
+      expect(plan.description, contains("balanced"));
     });
   });
 
