@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/utils/responsive.dart';
+import '../../domain/entities/running_stats.dart';
 import '../providers/activities_provider.dart';
 import '../widgets/fitness_form_card.dart';
 import '../widgets/recent_runs_list.dart';
@@ -15,76 +16,80 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(runningStatsProvider);
     final activities = ref.watch(activitiesProvider);
-    final athleteNameAsync = ref.watch(athleteNameProvider);
-
-    final greeting = athleteNameAsync.whenOrNull(
-          data: (name) => name,
-        ) ??
-        'Runner';
-
-    final hour = DateTime.now().hour;
-    final timeGreeting = hour < 12
-        ? 'Good morning'
-        : hour < 17
-            ? 'Good afternoon'
-            : 'Good evening';
-
+    final nameAsync = ref.watch(athleteNameProvider);
     return Scaffold(
       appBar: AppBar(
-        title: Text('$timeGreeting, $greeting'),
+        title: Text(_greeting(nameAsync.whenOrNull(data: (n) => n))),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => ref.read(activitiesProvider.notifier).refresh(),
-          ),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: () => ref.read(activitiesProvider.notifier).refresh()),
         ],
       ),
       body: ConstrainedContent(
         child: activities.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 64, color: Colors.red),
-              const SizedBox(height: 16),
-              Text('Error: $e'),
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: () =>
-                    ref.read(activitiesProvider.notifier).refresh(),
-                child: const Text('Retry'),
-              ),
-            ],
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => _DashboardError(error: e),
+          data: (_) => statsAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, _) => Center(child: Text('Error: $err')),
+            data: (stats) => stats == null ? const Center(child: Text('No data')) : _DashboardData(stats: stats),
           ),
         ),
-        data: (_) => statsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (err, _) => Center(child: Text('Error: $err')),
-          data: (stats) => stats == null
-              ? const Center(child: Text('No running activities found'))
-              : RefreshIndicator(
-                  onRefresh: () =>
-                      ref.read(activitiesProvider.notifier).refresh(),
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        FitnessFormCard(stats: stats),
-                        const SizedBox(height: 16),
-                        const TodayWorkoutCard(),
-                        const SizedBox(height: 16),
-                        WeeklyVolumeChart(stats: stats),
-                        const SizedBox(height: 16),
-                        const RecentRunsList(),
-                      ],
-                    ),
-                  ),
-                ),
-        ),
       ),
+    );
+  }
+
+  String _greeting(String? name) {
+    final h = DateTime.now().hour;
+    final tg = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+    return '$tg, ${name ?? 'Runner'}';
+  }
+}
+
+class _DashboardError extends ConsumerWidget {
+  final Object error;
+  const _DashboardError({required this.error});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 64, color: Colors.red),
+          const SizedBox(height: 16),
+          Text('Error: $error'),
+          const SizedBox(height: 16),
+          FilledButton(
+            onPressed: () => ref.read(activitiesProvider.notifier).refresh(),
+            child: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DashboardData extends ConsumerWidget {
+  final RunningStats stats;
+  const _DashboardData({required this.stats});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return RefreshIndicator(
+      onRefresh: () => ref.read(activitiesProvider.notifier).refresh(),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            FitnessFormCard(stats: stats),
+            const SizedBox(height: 16),
+            const TodayWorkoutCard(),
+            const SizedBox(height: 16),
+            WeeklyVolumeChart(stats: stats),
+            const SizedBox(height: 16),
+            const RecentRunsList(),
+          ],
+        ),
       ),
     );
   }

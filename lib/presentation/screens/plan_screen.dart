@@ -13,41 +13,53 @@ class PlanScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final plan = ref.watch(trainingPlanProvider);
-
     return Scaffold(
       appBar: AppBar(title: const Text('Training Plan')),
       body: ConstrainedContent(
         child: plan.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, _) => Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                const SizedBox(height: 16),
-                const Text(
-                  'Could not generate your training plan.\n'
-                  'Make sure you\'re connected to Strava and have completed some runs.',
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-          data: (plan) => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _PlanHeader(plan: plan),
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: plan.days.length,
-                  itemBuilder: (context, i) => _PlanDayCard(day: plan.days[i]),
-                ),
-              ),
-            ],
-          ),
+          error: (_, _) => const _PlanErrorView(),
+          data: (plan) => _PlanDataView(plan: plan),
         ),
       ),
+    );
+  }
+}
+
+class _PlanErrorView extends StatelessWidget {
+  const _PlanErrorView();
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 64, color: Colors.red),
+          const SizedBox(height: 16),
+          const Text('Could not generate your training plan.\nMake sure you\'re connected to Strava.', textAlign: TextAlign.center),
+        ],
+      ),
+    );
+  }
+}
+
+class _PlanDataView extends StatelessWidget {
+  final TrainingPlan plan;
+  const _PlanDataView({required this.plan});
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _PlanHeader(plan: plan),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: plan.days.length,
+            itemBuilder: (context, i) => _PlanDayCard(day: plan.days[i]),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -92,55 +104,69 @@ class _PlanDayCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          backgroundColor: typeColor(day.type).withValues(alpha: 0.15),
-          child: Icon(typeIcon(day.type), color: typeColor(day.type)),
-        ),
-        title: Row(
-          children: [
-            Text(
-              _dayLabel(day.date),
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(width: 8),
-            _WorkoutTypeBadge(type: day.type),
-          ],
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            if (!isRest && day.targetMinutes != null)
-              day.warmUpMinutes != null
-                  ? Text(
-                      'Warmup ${day.warmUpMinutes} min + '
-                      'Run ${day.workMinutes} min + '
-                      'Cooldown ${day.coolDownMinutes} min',
-                    )
-                  : Text('${day.targetMinutes} min'),
-            if (day.paceTarget != null)
-              Text(
-                '${_paceStr(day.paceTarget!.fastestPace)} - '
-                '${_paceStr(day.paceTarget!.slowestPace)} /km',
-                style: const TextStyle(fontWeight: FontWeight.w500),
-              ),
-            if (day.heartRateTarget != null)
-              Text(
-                '♡ ${day.heartRateTarget!.minBpm}-${day.heartRateTarget!.maxBpm} bpm',
-              ),
-            const SizedBox(height: 4),
-            Text(day.description, style: Theme.of(context).textTheme.bodySmall),
-          ],
-        ),
+        leading: _DayIcon(type: day.type),
+        title: _DayTitle(day: day),
+        subtitle: _DaySubtitle(day: day, isRest: isRest),
         trailing: isRest ? null : const Icon(Icons.chevron_right),
         onTap: isRest ? null : () => context.push('/run-session', extra: day),
       ),
     );
   }
+}
 
-  String _dayLabel(DateTime date) {
+class _DayIcon extends StatelessWidget {
+  final WorkoutType type;
+  const _DayIcon({required this.type});
+  @override
+  Widget build(BuildContext context) {
+    return CircleAvatar(
+      backgroundColor: typeColor(type).withValues(alpha: 0.15),
+      child: Icon(typeIcon(type), color: typeColor(type)),
+    );
+  }
+}
+
+class _DayTitle extends StatelessWidget {
+  final TrainingDay day;
+  const _DayTitle({required this.day});
+  @override
+  Widget build(BuildContext context) {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return days[date.weekday - 1];
+    final label = days[day.date.weekday - 1];
+    return Row(
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+        const SizedBox(width: 8),
+        _WorkoutTypeBadge(type: day.type),
+      ],
+    );
+  }
+}
+
+class _DaySubtitle extends StatelessWidget {
+  final TrainingDay day;
+  final bool isRest;
+  const _DaySubtitle({required this.day, required this.isRest});
+  
+  @override
+  Widget build(BuildContext context) {
+    final paceTarget = day.paceTarget;
+    final hrTarget = day.heartRateTarget;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 4),
+        if (!isRest && day.targetMinutes != null)
+          day.warmUpMinutes != null
+              ? Text('Warmup ${day.warmUpMinutes} min + Run ${day.workMinutes} min + Cooldown ${day.coolDownMinutes} min')
+              : Text('${day.targetMinutes} min'),
+        if (paceTarget != null)
+          Text('${_paceStr(paceTarget.fastestPace)} - ${_paceStr(paceTarget.slowestPace)} /km', style: const TextStyle(fontWeight: FontWeight.w500)),
+        if (hrTarget != null) Text('♡ ${hrTarget.minBpm}-${hrTarget.maxBpm} bpm'),
+        const SizedBox(height: 4),
+        Text(day.description, style: Theme.of(context).textTheme.bodySmall),
+      ],
+    );
   }
 
   String _paceStr(Duration pace) {
@@ -148,6 +174,8 @@ class _PlanDayCard extends StatelessWidget {
     final s = pace.inSeconds % 60;
     return '$m:${s.toString().padLeft(2, '0')}';
   }
+
+
 }
 
 class _WorkoutTypeBadge extends StatelessWidget {

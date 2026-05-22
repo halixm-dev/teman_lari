@@ -1,6 +1,7 @@
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:developer';
 
+import 'package:http/http.dart' as http;
 import '../../data/datasources/strava_auth_datasource.dart';
 import '../../data/datasources/token_storage.dart';
 import '../errors/exceptions.dart';
@@ -19,6 +20,7 @@ class StravaApiClient {
     String endpoint, {
     Map<String, String>? params,
   }) async {
+    log('Strava API GET: $endpoint', name: 'StravaApiClient');
     await _rateLimiter.checkAndWait();
     final response = await _requestWithRetry(() async {
       final token = await _getValidToken();
@@ -39,6 +41,7 @@ class StravaApiClient {
     String endpoint, {
     Map<String, String>? params,
   }) async {
+    log('Strava API GET List: $endpoint', name: 'StravaApiClient');
     await _rateLimiter.checkAndWait();
     final response = await _requestWithRetry(() async {
       final token = await _getValidToken();
@@ -59,6 +62,7 @@ class StravaApiClient {
     var response = await request();
 
     if (response.statusCode == 429) {
+      log('Rate limit reached on request', name: 'StravaApiClient', error: '429');
       throw StravaApiException(
         429,
         'Rate limit reached, try again in 15 minutes',
@@ -87,11 +91,14 @@ class StravaApiClient {
   }
 
   Future<void> _forceRefreshToken() {
-    if (_refreshTokenFuture != null) return _refreshTokenFuture!;
-    _refreshTokenFuture = _performTokenRefresh().whenComplete(() {
+    final existingFuture = _refreshTokenFuture;
+    if (existingFuture != null) return existingFuture;
+    
+    final newFuture = _performTokenRefresh().whenComplete(() {
       _refreshTokenFuture = null;
     });
-    return _refreshTokenFuture!;
+    _refreshTokenFuture = newFuture;
+    return newFuture;
   }
 
   Future<void> _performTokenRefresh() async {
@@ -101,7 +108,9 @@ class StravaApiClient {
     try {
       tokens = await _authDataSource.refreshToken(tokens.refreshToken);
       await _tokenStorage.saveTokens(tokens);
+      log('Token refresh successful', name: 'StravaApiClient');
     } catch (e) {
+      log('Token refresh failed', name: 'StravaApiClient', error: e);
       await _tokenStorage.clearTokens();
       throw UnauthenticatedException();
     }

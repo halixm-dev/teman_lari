@@ -102,10 +102,11 @@ class RunSessionState {
       ));
     }
 
+    final intervals = plan.intervals;
     if (plan.type == WorkoutType.intervals &&
-        plan.intervals != null &&
-        plan.intervals!.isNotEmpty) {
-      for (final interval in plan.intervals!) {
+        intervals != null &&
+        intervals.isNotEmpty) {
+      for (final interval in intervals) {
         segments.add(PhaseSegment(
           type: interval.type == IntervalPhaseType.work
               ? PhaseSegmentType.work
@@ -113,11 +114,14 @@ class RunSessionState {
           durationSeconds: interval.duration.inSeconds,
         ));
       }
-    } else if (plan.workMinutes != null && plan.workMinutes! > 0) {
-      segments.add(PhaseSegment(
-        type: PhaseSegmentType.work,
-        durationSeconds: plan.workMinutes! * 60,
-      ));
+    } else {
+      final workMins = plan.workMinutes;
+      if (workMins != null && workMins > 0) {
+        segments.add(PhaseSegment(
+          type: PhaseSegmentType.work,
+          durationSeconds: workMins * 60,
+        ));
+      }
     }
 
     if (cooldown > 0) {

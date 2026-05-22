@@ -19,8 +19,11 @@ class FitnessFormCard extends StatelessWidget {
         : Colors.orange;
 
     return Card(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+      child: Semantics(
+        button: true,
+        label: 'View Training Status Details',
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         onTap: () => _showDetailsSheet(context),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -66,6 +69,7 @@ class FitnessFormCard extends StatelessWidget {
                 ],
               ),
             ],
+          ),
           ),
         ),
       ),

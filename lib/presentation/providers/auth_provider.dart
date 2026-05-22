@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
@@ -70,7 +72,8 @@ class AuthNotifier extends Notifier<AuthState> {
       await ref.read(stravaAuthUseCaseProvider).authenticate();
       await _syncAthleteProfile();
       state = const AuthState.authenticated();
-    } catch (e) {
+    } catch (e, stack) {
+      log('Login failed', name: 'AuthNotifier', error: e, stackTrace: stack);
       state = AuthState.error(e.toString());
     }
   }
@@ -89,7 +92,9 @@ class AuthNotifier extends Notifier<AuthState> {
         athleteDateOfBirth: athlete.dateOfBirth,
         athleteName: name.isNotEmpty ? name : null,
       );
-    } catch (_) {}
+    } catch (e, stack) {
+      log('Profile sync failed', name: 'AuthNotifier', error: e, stackTrace: stack);
+    }
   }
 
   Future<void> logout() async {

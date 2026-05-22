@@ -31,10 +31,11 @@ class TrainingDay {
   });
 
   int? get workMinutes {
-    if (targetMinutes == null) return null;
-    var work = targetMinutes!;
-    if (warmUpMinutes != null) work -= warmUpMinutes!;
-    if (coolDownMinutes != null) work -= coolDownMinutes!;
+    final target = targetMinutes;
+    if (target == null) return null;
+    var work = target;
+    work -= warmUpMinutes ?? 0;
+    work -= coolDownMinutes ?? 0;
     return work;
   }
 }

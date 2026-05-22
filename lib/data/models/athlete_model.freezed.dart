@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AthleteModel {
 
- int get id;@JsonKey(name: 'first_name') String? get firstName;@JsonKey(name: 'last_name') String? get lastName;@JsonKey(name: 'profile_medium') String? get profileMedium; String? get profile; String? get city; String? get state; String? get country;@JsonKey(name: 'sex') String? get sex;@JsonKey(name: 'premium') bool? get premium;@JsonKey(name: 'date_of_birth') String? get dateOfBirth;@JsonKey(name: 'max_heartrate') double? get maxHeartrate;@JsonKey(name: 'ftp') int? get ftp;@JsonKey(name: 'weight') double? get weight;
+ int get id; String? get firstName; String? get lastName; String? get profileMedium; String? get profile; String? get city; String? get state; String? get country; String? get sex; bool? get premium; String? get dateOfBirth; double? get maxHeartrate; int? get ftp; double? get weight;
 /// Create a copy of AthleteModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $AthleteModelCopyWith<$Res>  {
   factory $AthleteModelCopyWith(AthleteModel value, $Res Function(AthleteModel) _then) = _$AthleteModelCopyWithImpl;
 @useResult
 $Res call({
- int id,@JsonKey(name: 'first_name') String? firstName,@JsonKey(name: 'last_name') String? lastName,@JsonKey(name: 'profile_medium') String? profileMedium, String? profile, String? city, String? state, String? country,@JsonKey(name: 'sex') String? sex,@JsonKey(name: 'premium') bool? premium,@JsonKey(name: 'date_of_birth') String? dateOfBirth,@JsonKey(name: 'max_heartrate') double? maxHeartrate,@JsonKey(name: 'ftp') int? ftp,@JsonKey(name: 'weight') double? weight
+ int id, String? firstName, String? lastName, String? profileMedium, String? profile, String? city, String? state, String? country, String? sex, bool? premium, String? dateOfBirth, double? maxHeartrate, int? ftp, double? weight
 });
 
 
@@ -166,7 +166,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'first_name')  String? firstName, @JsonKey(name: 'last_name')  String? lastName, @JsonKey(name: 'profile_medium')  String? profileMedium,  String? profile,  String? city,  String? state,  String? country, @JsonKey(name: 'sex')  String? sex, @JsonKey(name: 'premium')  bool? premium, @JsonKey(name: 'date_of_birth')  String? dateOfBirth, @JsonKey(name: 'max_heartrate')  double? maxHeartrate, @JsonKey(name: 'ftp')  int? ftp, @JsonKey(name: 'weight')  double? weight)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String? firstName,  String? lastName,  String? profileMedium,  String? profile,  String? city,  String? state,  String? country,  String? sex,  bool? premium,  String? dateOfBirth,  double? maxHeartrate,  int? ftp,  double? weight)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AthleteModel() when $default != null:
 return $default(_that.id,_that.firstName,_that.lastName,_that.profileMedium,_that.profile,_that.city,_that.state,_that.country,_that.sex,_that.premium,_that.dateOfBirth,_that.maxHeartrate,_that.ftp,_that.weight);case _:
@@ -187,7 +187,7 @@ return $default(_that.id,_that.firstName,_that.lastName,_that.profileMedium,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'first_name')  String? firstName, @JsonKey(name: 'last_name')  String? lastName, @JsonKey(name: 'profile_medium')  String? profileMedium,  String? profile,  String? city,  String? state,  String? country, @JsonKey(name: 'sex')  String? sex, @JsonKey(name: 'premium')  bool? premium, @JsonKey(name: 'date_of_birth')  String? dateOfBirth, @JsonKey(name: 'max_heartrate')  double? maxHeartrate, @JsonKey(name: 'ftp')  int? ftp, @JsonKey(name: 'weight')  double? weight)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String? firstName,  String? lastName,  String? profileMedium,  String? profile,  String? city,  String? state,  String? country,  String? sex,  bool? premium,  String? dateOfBirth,  double? maxHeartrate,  int? ftp,  double? weight)  $default,) {final _that = this;
 switch (_that) {
 case _AthleteModel():
 return $default(_that.id,_that.firstName,_that.lastName,_that.profileMedium,_that.profile,_that.city,_that.state,_that.country,_that.sex,_that.premium,_that.dateOfBirth,_that.maxHeartrate,_that.ftp,_that.weight);case _:
@@ -207,7 +207,7 @@ return $default(_that.id,_that.firstName,_that.lastName,_that.profileMedium,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id, @JsonKey(name: 'first_name')  String? firstName, @JsonKey(name: 'last_name')  String? lastName, @JsonKey(name: 'profile_medium')  String? profileMedium,  String? profile,  String? city,  String? state,  String? country, @JsonKey(name: 'sex')  String? sex, @JsonKey(name: 'premium')  bool? premium, @JsonKey(name: 'date_of_birth')  String? dateOfBirth, @JsonKey(name: 'max_heartrate')  double? maxHeartrate, @JsonKey(name: 'ftp')  int? ftp, @JsonKey(name: 'weight')  double? weight)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String? firstName,  String? lastName,  String? profileMedium,  String? profile,  String? city,  String? state,  String? country,  String? sex,  bool? premium,  String? dateOfBirth,  double? maxHeartrate,  int? ftp,  double? weight)?  $default,) {final _that = this;
 switch (_that) {
 case _AthleteModel() when $default != null:
 return $default(_that.id,_that.firstName,_that.lastName,_that.profileMedium,_that.profile,_that.city,_that.state,_that.country,_that.sex,_that.premium,_that.dateOfBirth,_that.maxHeartrate,_that.ftp,_that.weight);case _:
@@ -222,23 +222,23 @@ return $default(_that.id,_that.firstName,_that.lastName,_that.profileMedium,_tha
 @JsonSerializable()
 
 class _AthleteModel extends AthleteModel {
-  const _AthleteModel({required this.id, @JsonKey(name: 'first_name') this.firstName, @JsonKey(name: 'last_name') this.lastName, @JsonKey(name: 'profile_medium') this.profileMedium, this.profile, this.city, this.state, this.country, @JsonKey(name: 'sex') this.sex, @JsonKey(name: 'premium') this.premium, @JsonKey(name: 'date_of_birth') this.dateOfBirth, @JsonKey(name: 'max_heartrate') this.maxHeartrate, @JsonKey(name: 'ftp') this.ftp, @JsonKey(name: 'weight') this.weight}): super._();
+  const _AthleteModel({required this.id, this.firstName, this.lastName, this.profileMedium, this.profile, this.city, this.state, this.country, this.sex, this.premium, this.dateOfBirth, this.maxHeartrate, this.ftp, this.weight}): super._();
   factory _AthleteModel.fromJson(Map<String, dynamic> json) => _$AthleteModelFromJson(json);
 
 @override final  int id;
-@override@JsonKey(name: 'first_name') final  String? firstName;
-@override@JsonKey(name: 'last_name') final  String? lastName;
-@override@JsonKey(name: 'profile_medium') final  String? profileMedium;
+@override final  String? firstName;
+@override final  String? lastName;
+@override final  String? profileMedium;
 @override final  String? profile;
 @override final  String? city;
 @override final  String? state;
 @override final  String? country;
-@override@JsonKey(name: 'sex') final  String? sex;
-@override@JsonKey(name: 'premium') final  bool? premium;
-@override@JsonKey(name: 'date_of_birth') final  String? dateOfBirth;
-@override@JsonKey(name: 'max_heartrate') final  double? maxHeartrate;
-@override@JsonKey(name: 'ftp') final  int? ftp;
-@override@JsonKey(name: 'weight') final  double? weight;
+@override final  String? sex;
+@override final  bool? premium;
+@override final  String? dateOfBirth;
+@override final  double? maxHeartrate;
+@override final  int? ftp;
+@override final  double? weight;
 
 /// Create a copy of AthleteModel
 /// with the given fields replaced by the non-null parameter values.
@@ -273,7 +273,7 @@ abstract mixin class _$AthleteModelCopyWith<$Res> implements $AthleteModelCopyWi
   factory _$AthleteModelCopyWith(_AthleteModel value, $Res Function(_AthleteModel) _then) = __$AthleteModelCopyWithImpl;
 @override @useResult
 $Res call({
- int id,@JsonKey(name: 'first_name') String? firstName,@JsonKey(name: 'last_name') String? lastName,@JsonKey(name: 'profile_medium') String? profileMedium, String? profile, String? city, String? state, String? country,@JsonKey(name: 'sex') String? sex,@JsonKey(name: 'premium') bool? premium,@JsonKey(name: 'date_of_birth') String? dateOfBirth,@JsonKey(name: 'max_heartrate') double? maxHeartrate,@JsonKey(name: 'ftp') int? ftp,@JsonKey(name: 'weight') double? weight
+ int id, String? firstName, String? lastName, String? profileMedium, String? profile, String? city, String? state, String? country, String? sex, bool? premium, String? dateOfBirth, double? maxHeartrate, int? ftp, double? weight
 });
 
 

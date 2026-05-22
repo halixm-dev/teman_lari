@@ -5,6 +5,11 @@ import '../../core/utils/responsive.dart';
 import '../providers/activities_provider.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_colors.dart';
+import '../widgets/settings/about_card.dart';
+import '../widgets/settings/disconnect_strava_card.dart';
+import '../widgets/settings/heart_rate_card.dart';
+import '../widgets/settings/save_button.dart';
+import '../widgets/settings/zones_preview_card.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -103,8 +108,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (val != null && val >= 100 && val <= 250) {
       return val;
     }
-    if (_storedAge != null) {
-      return 220 - _storedAge!;
+    final age = _storedAge;
+    if (age != null) {
+      return 220 - age;
     }
     return 190;
   }
@@ -195,34 +201,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final maxHr = getEffectiveMaxHr();
     final restingHr = getEffectiveRestingHr(maxHr);
     final hrr = maxHr - restingHr;
-
     const boundaries = [0.60, 0.70, 0.80, 0.90];
-    const labels = [
-      'Zone 1 - Recovery',
-      'Zone 2 - Aerobic Base',
-      'Zone 3 - Tempo',
-      'Zone 4 - Threshold',
-      'Zone 5 - VO2max',
-    ];
-    const colors = [
-      Colors.blue,
-      Colors.green,
-      Colors.orange,
-      AppColors.brandOrange,
-      Colors.red,
-    ];
+    const labels = ['Zone 1 - Recovery', 'Zone 2 - Aerobic Base', 'Zone 3 - Tempo', 'Zone 4 - Threshold', 'Zone 5 - VO2max'];
+    const colors = [Colors.blue, Colors.green, Colors.orange, AppColors.brandOrange, Colors.red];
 
     return List.generate(5, (i) {
-      final minBpm =
-          i == 0 ? restingHr : (restingHr + hrr * boundaries[i - 1]).round();
-      final maxBpm =
-          i == 4 ? maxHr : (restingHr + hrr * boundaries[i]).round();
-      return {
-        'label': labels[i],
-        'min': minBpm,
-        'max': maxBpm,
-        'color': colors[i],
-      };
+      final minBpm = i == 0 ? restingHr : (restingHr + hrr * boundaries[i - 1]).round();
+      final maxBpm = i == 4 ? maxHr : (restingHr + hrr * boundaries[i]).round();
+      return {'label': labels[i], 'min': minBpm, 'max': maxBpm, 'color': colors[i]};
     });
   }
 
@@ -233,234 +219,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       body: ConstrainedContent(
         child: ListView(
           children: [
-            _buildHeartRateCard(),
-            _buildZonesPreviewCard(),
-            Card(
-              margin: const EdgeInsets.all(16),
-              child: ListTile(
-                leading: const Icon(Icons.logout, color: Colors.red),
-                title: const Text('Disconnect Strava'),
-                subtitle: const Text('Remove access to your Strava account'),
-                onTap: () => _showLogoutDialog(context, ref),
-              ),
+            HeartRateCard(
+              restingHrController: _restingHrController,
+              maxHrController: _maxHrController,
+              restingHrError: _restingHrError,
+              maxHrError: _maxHrError,
+              storedAge: _storedAge,
+              saveButton: _buildSaveButton(),
+              maxHrHint: _buildMaxHrHint(),
             ),
-            Card(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('About', style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 8),
-                    const Text('Teman Lari v1.0.0'),
-                    const SizedBox(height: 4),
-                    const Text('Built with Flutter & Riverpod'),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Powered by Strava',
-                      style: TextStyle(
-                        color: AppColors.gray500,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            ZonesPreviewCard(zones: _calculatePreviewZones()),
+            DisconnectStravaCard(
+              onTap: () => _showLogoutDialog(context, ref),
             ),
+            const AboutCard(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeartRateCard() {
-    return Card(
-      margin: const EdgeInsets.all(16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.favorite, color: AppColors.brandOrange),
-                const SizedBox(width: 8),
-                Text(
-                  'Heart Rate Settings',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              controller: _restingHrController,
-              label: 'Resting Heart Rate (bpm)',
-              hint: 'blank = auto (60)',
-              keyboardType: TextInputType.number,
-              prefixIcon: Icons.favorite_border,
-              errorText: _restingHrError,
-            ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              controller: _maxHrController,
-              label: 'Max Heart Rate (bpm)',
-              hint: _buildMaxHrHint(),
-              keyboardType: TextInputType.number,
-              prefixIcon: Icons.bolt,
-              errorText: _maxHrError,
-            ),
-            if (_storedAge != null) ...[
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  const Icon(Icons.info_outline, size: 16, color: AppColors.gray500),
-                  const SizedBox(width: 4),
-                  const Text(
-                    'Age (from Strava): ',
-                    style: TextStyle(color: AppColors.gray700),
-                  ),
-                  Text(
-                    '$_storedAge yrs',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.gray900,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-            const SizedBox(height: 20),
-            _buildSaveButton(),
-          ],
-        ),
-      ),
-    );
-  }
 
-  Widget _buildZonesPreviewCard() {
-    final zones = _calculatePreviewZones();
-
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Heart Rate Zones Preview',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const Icon(Icons.show_chart, color: AppColors.brandOrange),
-              ],
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Real-time estimation of heart rate training zones using the Karvonen formula (Heart Rate Reserve). These zones will be applied to your analysis and workouts upon saving.',
-              style: TextStyle(
-                fontSize: 12,
-                color: AppColors.gray500,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ...zones.map((zone) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          zone['label'],
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                          ),
-                        ),
-                        Text(
-                          '${zone['min']} - ${zone['max']} bpm',
-                          style: const TextStyle(
-                            fontFamily: 'JetBrains Mono',
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                            color: AppColors.brandOrange,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Container(
-                      height: 8,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: zone['color'].withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: FractionallySizedBox(
-                          widthFactor: 1.0,
-                          child: Container(
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: zone['color'],
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    required TextInputType keyboardType,
-    required IconData prefixIcon,
-    String? errorText,
-  }) {
-    return TextField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        errorText: errorText,
-        prefixIcon: Icon(prefixIcon, color: AppColors.gray500),
-        border: const OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
-        ),
-        focusedBorder: const OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
-          borderSide: BorderSide(color: AppColors.brandOrange, width: 2),
-        ),
-        isDense: true,
-      ),
-      keyboardType: keyboardType,
-    );
-  }
 
   String _buildMaxHrHint() {
-    if (_storedAge != null) {
-      final formula = 220 - _storedAge!;
+    final age = _storedAge;
+    if (age != null) {
+      final formula = 220 - age;
       return 'blank = auto (220-age: $formula)';
     }
     return 'blank = auto (190)';
@@ -471,52 +255,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final hasError = _restingHrError != null || _maxHrError != null;
     final canSave = hasChanges && !hasError && !_isSaving;
 
-    return SizedBox(
-      width: double.infinity,
-      height: 48,
-      child: FilledButton(
-        onPressed: canSave ? _saveChanges : null,
-        style: FilledButton.styleFrom(
-          backgroundColor: AppColors.brandOrange,
-          disabledBackgroundColor: AppColors.gray200,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
-        child: _isSaving
-            ? const SizedBox(
-                height: 24,
-                width: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
-            : _showSuccess
-                ? const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.check, color: Colors.white),
-                      SizedBox(width: 8),
-                      Text(
-                        'Saved Successfully',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  )
-                : Text(
-                    'Save Changes',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: canSave ? Colors.white : AppColors.gray500,
-                    ),
-                  ),
-      ),
+    return SettingsSaveButton(
+      canSave: canSave,
+      isSaving: _isSaving,
+      showSuccess: _showSuccess,
+      onSave: _saveChanges,
     );
   }
 
@@ -525,14 +268,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Disconnect Strava'),
-        content: const Text(
-          'Are you sure you want to disconnect your Strava account?',
-        ),
+        content: const Text('Are you sure you want to disconnect your Strava account?'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           FilledButton(
             onPressed: () {
               ref.read(authStateProvider.notifier).logout();

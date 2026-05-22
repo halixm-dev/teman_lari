@@ -160,8 +160,11 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: InkWell(
-        onTap: onTap,
+      child: Semantics(
+        button: onTap != null,
+        label: '$label: $value',
+        child: InkWell(
+          onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(12),
@@ -187,6 +190,7 @@ class _StatCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

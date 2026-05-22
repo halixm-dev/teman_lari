@@ -31,8 +31,13 @@ class TodayWorkoutCard extends ConsumerWidget {
         final isRest = day.type == WorkoutType.rest;
 
         return Card(
-          child: InkWell(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          child: Semantics(
+            button: !isRest,
+            label: isRest
+                ? 'Rest day. No workout today.'
+                : 'Start today\'s workout: ${_typeLabel(day.type)}',
+            child: InkWell(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
             onTap: isRest
                 ? null
                 : () => context.push('/run-session', extra: day),
@@ -100,6 +105,7 @@ class TodayWorkoutCard extends ConsumerWidget {
                 ],
               ),
             ),
+          ),
           ),
         );
       },

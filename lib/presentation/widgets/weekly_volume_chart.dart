@@ -80,11 +80,13 @@ class _WeeklyVolumeChartState extends State<WeeklyVolumeChart> {
     final entries = _entries;
 
     _selectedWeekKey ??= _currentWeekKey;
+    final selectedKey = _selectedWeekKey;
+    if (selectedKey == null) return const SizedBox();
 
     final selectedDistance =
-        widget.stats.weeklyVolume[_selectedWeekKey] ?? 0;
+        widget.stats.weeklyVolume[selectedKey] ?? 0.0;
     final selectedMinutes =
-        widget.stats.weeklyMinutes[_selectedWeekKey] ?? 0;
+        widget.stats.weeklyMinutes[selectedKey] ?? 0.0;
 
     return Card(
       child: Padding(
@@ -93,7 +95,7 @@ class _WeeklyVolumeChartState extends State<WeeklyVolumeChart> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _WeeklySummary(
-              weekLabel: _formatWeekLabel(_selectedWeekKey!),
+              weekLabel: _formatWeekLabel(selectedKey),
               distance: selectedDistance,
               time: _formatMinutes(selectedMinutes),
               labelStyle: Theme.of(context).textTheme.titleMedium,
@@ -103,7 +105,7 @@ class _WeeklyVolumeChartState extends State<WeeklyVolumeChart> {
               height: 200,
               child: _VolumeLineChart(
                 entries: entries,
-                selectedKey: _selectedWeekKey!,
+                selectedKey: selectedKey,
                 isDark: Theme.of(context).brightness == Brightness.dark,
                 onWeekSelected: (key) {
                   setState(() => _selectedWeekKey = key);
@@ -224,10 +226,12 @@ class _VolumeLineChart extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        return GestureDetector(
-          onTapDown: (details) {
-            final index =
-                _indexFromDx(details.localPosition.dx, constraints.maxWidth);
+        return Semantics(
+          label: 'Weekly volume chart. Tap or pan to select weeks.',
+          child: GestureDetector(
+            onTapDown: (details) {
+              final index =
+                  _indexFromDx(details.localPosition.dx, constraints.maxWidth);
             onWeekSelected(entries[index].key);
           },
           onPanUpdate: (details) {
@@ -243,8 +247,9 @@ class _VolumeLineChart extends StatelessWidget {
               isDark: isDark,
             ),
           ),
-        );
-      },
+        ),
+      );
+    },
     );
   }
 }

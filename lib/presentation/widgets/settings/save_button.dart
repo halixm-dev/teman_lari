@@ -1,0 +1,75 @@
+import 'package:flutter/material.dart';
+
+import '../../theme/app_colors.dart';
+
+class SettingsSaveButton extends StatelessWidget {
+  final bool canSave;
+  final bool isSaving;
+  final bool showSuccess;
+  final VoidCallback? onSave;
+
+  const SettingsSaveButton({
+    super.key,
+    required this.canSave,
+    required this.isSaving,
+    required this.showSuccess,
+    this.onSave,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: FilledButton(
+        onPressed: canSave ? onSave : null,
+        style: FilledButton.styleFrom(
+          backgroundColor: AppColors.brandOrange,
+          disabledBackgroundColor: AppColors.gray200,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        child: _buildChild(),
+      ),
+    );
+  }
+
+  Widget _buildChild() {
+    if (isSaving) {
+      return const SizedBox(
+        height: 24,
+        width: 24,
+        child: CircularProgressIndicator(
+          strokeWidth: 2.5,
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+        ),
+      );
+    }
+    if (showSuccess) {
+      return const Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.check, color: Colors.white),
+          SizedBox(width: 8),
+          Text(
+            'Saved Successfully',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      );
+    }
+    return Text(
+      'Save Changes',
+      style: TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 16,
+        color: canSave ? Colors.white : AppColors.gray500,
+      ),
+    );
+  }
+}

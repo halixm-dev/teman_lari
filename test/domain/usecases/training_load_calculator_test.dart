@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:teman_lari/domain/entities/run_activity.dart';
-import 'package:teman_lari/domain/entities/running_stats.dart';
 import 'package:teman_lari/domain/usecases/training_load_calculator.dart';
 
 void main() {

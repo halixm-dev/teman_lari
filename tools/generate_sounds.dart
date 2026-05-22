@@ -1,5 +1,6 @@
+import 'dart:developer';
 import 'dart:io';
-import 'dart:math';
+import 'dart:math' hide log;
 import 'dart:typed_data';
 
 const _sampleRate = 22050;
@@ -19,7 +20,7 @@ void main() {
   generate('phase_change.wav', 300, _swoosh(300, 900));
   generate('split.wav', 250, _bellTone(784));
 
-  print('Generated ${outDir.listSync().length} sound files in $outDir');
+  log('Generated ${outDir.listSync().length} sound files in $outDir');
 }
 
 void generate(String name, int durationMs, double Function(double) gen) {

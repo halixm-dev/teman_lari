@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$StravaTokens {
 
-@JsonKey(name: 'access_token') String get accessToken;@JsonKey(name: 'refresh_token') String get refreshToken;@JsonKey(name: 'expires_at') int get expiresAt;
+ String get accessToken; String get refreshToken; int get expiresAt;
 /// Create a copy of StravaTokens
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $StravaTokensCopyWith<$Res>  {
   factory $StravaTokensCopyWith(StravaTokens value, $Res Function(StravaTokens) _then) = _$StravaTokensCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'access_token') String accessToken,@JsonKey(name: 'refresh_token') String refreshToken,@JsonKey(name: 'expires_at') int expiresAt
+ String accessToken, String refreshToken, int expiresAt
 });
 
 
@@ -155,7 +155,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'access_token')  String accessToken, @JsonKey(name: 'refresh_token')  String refreshToken, @JsonKey(name: 'expires_at')  int expiresAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String accessToken,  String refreshToken,  int expiresAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _StravaTokens() when $default != null:
 return $default(_that.accessToken,_that.refreshToken,_that.expiresAt);case _:
@@ -176,7 +176,7 @@ return $default(_that.accessToken,_that.refreshToken,_that.expiresAt);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'access_token')  String accessToken, @JsonKey(name: 'refresh_token')  String refreshToken, @JsonKey(name: 'expires_at')  int expiresAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String accessToken,  String refreshToken,  int expiresAt)  $default,) {final _that = this;
 switch (_that) {
 case _StravaTokens():
 return $default(_that.accessToken,_that.refreshToken,_that.expiresAt);case _:
@@ -196,7 +196,7 @@ return $default(_that.accessToken,_that.refreshToken,_that.expiresAt);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'access_token')  String accessToken, @JsonKey(name: 'refresh_token')  String refreshToken, @JsonKey(name: 'expires_at')  int expiresAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String accessToken,  String refreshToken,  int expiresAt)?  $default,) {final _that = this;
 switch (_that) {
 case _StravaTokens() when $default != null:
 return $default(_that.accessToken,_that.refreshToken,_that.expiresAt);case _:
@@ -211,12 +211,12 @@ return $default(_that.accessToken,_that.refreshToken,_that.expiresAt);case _:
 @JsonSerializable()
 
 class _StravaTokens extends StravaTokens {
-  const _StravaTokens({@JsonKey(name: 'access_token') required this.accessToken, @JsonKey(name: 'refresh_token') required this.refreshToken, @JsonKey(name: 'expires_at') required this.expiresAt}): super._();
+  const _StravaTokens({required this.accessToken, required this.refreshToken, required this.expiresAt}): super._();
   factory _StravaTokens.fromJson(Map<String, dynamic> json) => _$StravaTokensFromJson(json);
 
-@override@JsonKey(name: 'access_token') final  String accessToken;
-@override@JsonKey(name: 'refresh_token') final  String refreshToken;
-@override@JsonKey(name: 'expires_at') final  int expiresAt;
+@override final  String accessToken;
+@override final  String refreshToken;
+@override final  int expiresAt;
 
 /// Create a copy of StravaTokens
 /// with the given fields replaced by the non-null parameter values.
@@ -251,7 +251,7 @@ abstract mixin class _$StravaTokensCopyWith<$Res> implements $StravaTokensCopyWi
   factory _$StravaTokensCopyWith(_StravaTokens value, $Res Function(_StravaTokens) _then) = __$StravaTokensCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'access_token') String accessToken,@JsonKey(name: 'refresh_token') String refreshToken,@JsonKey(name: 'expires_at') int expiresAt
+ String accessToken, String refreshToken, int expiresAt
 });
 
 

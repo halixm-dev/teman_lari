@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import 'app_spacing.dart';
+import 'app_theme_extensions.dart';
 import 'app_typography.dart';
 
 class AppTheme {
@@ -10,16 +11,13 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      colorScheme: const ColorScheme.light(
-        primary: AppColors.brandOrange,
-        onPrimary: AppColors.white,
-        primaryContainer: AppColors.brandOrangeTint,
-        secondary: AppColors.gray700,
-        onSecondary: AppColors.white,
-        surface: AppColors.white,
-        onSurface: AppColors.gray900,
-        error: AppColors.danger,
-        onError: AppColors.white,
+      extensions: const [
+        defaultSpacingExtension,
+        defaultColorsExtension,
+      ],
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: AppColors.brandOrange,
+        brightness: Brightness.light,
       ),
       scaffoldBackgroundColor: AppColors.gray50,
       textTheme: TextTheme(
@@ -125,16 +123,13 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      colorScheme: const ColorScheme.dark(
-        primary: AppColors.brandOrange,
-        onPrimary: AppColors.white,
-        primaryContainer: AppColors.brandOrangeDark,
-        secondary: AppColors.textSecondaryDark,
-        onSecondary: AppColors.textPrimaryDark,
-        surface: AppColors.surfacePrimaryDark,
-        onSurface: AppColors.textPrimaryDark,
-        error: AppColors.danger,
-        onError: AppColors.white,
+      extensions: const [
+        defaultSpacingExtension,
+        defaultColorsExtension,
+      ],
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: AppColors.brandOrange,
+        brightness: Brightness.dark,
       ),
       scaffoldBackgroundColor: AppColors.surfacePrimaryDark,
       textTheme: TextTheme(

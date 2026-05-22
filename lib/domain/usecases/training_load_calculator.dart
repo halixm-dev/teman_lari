@@ -47,11 +47,12 @@ class TrainingLoadCalculator {
     required int maxHr,
     required int restingHr,
   }) {
-    if (activity.avgHeartRate == null) {
+    final hr = activity.avgHeartRate;
+    if (hr == null) {
       return activity.movingTime.inMinutes * 0.5;
     }
     final hrReserve =
-        (activity.avgHeartRate! - restingHr) / (maxHr - restingHr);
+        (hr - restingHr) / (maxHr - restingHr);
     final durationHours = activity.movingTime.inMinutes / 60.0;
     return hrReserve * hrReserve * durationHours * 100;
   }

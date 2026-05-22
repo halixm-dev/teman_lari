@@ -122,8 +122,9 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
         _smoothedSpeed =
             _smoothingAlpha * rawSpeed + (1 - _smoothingAlpha) * _smoothedSpeed;
       }
-    } else if (_lastPosition != null) {
-      final last = _lastPosition!;
+    } else {
+      final last = _lastPosition;
+      if (last != null) {
       final dist = Geolocator.distanceBetween(
         last.latitude,
         last.longitude,
@@ -145,13 +146,14 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
         }
       }
     }
-
+    }
     if (_smoothedSpeed > _minGpsSpeed) {
       _gpsPaceSeconds = (1000 / _smoothedSpeed).round();
     }
 
-    if (pos.accuracy < 50 && _lastPosition != null) {
-      final last = _lastPosition!;
+    final lastPos = _lastPosition;
+    if (pos.accuracy < 50 && lastPos != null) {
+      final last = lastPos;
       final dist = Geolocator.distanceBetween(
         last.latitude,
         last.longitude,
@@ -184,7 +186,7 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
   }
 
   void _start() {
-    if (_timer != null && _timer!.isActive) return;
+    if (_timer?.isActive ?? false) return;
 
     _lastStepCount = _pedometerService.stepsSinceStart;
     _stepHistory.clear();
@@ -244,9 +246,10 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
     }
     _lastStepCount = currentSteps;
 
+    final lastGps = _lastGpsUpdate;
     final gpsTimedOut =
-        _lastGpsUpdate == null ||
-        DateTime.now().difference(_lastGpsUpdate!) > _gpsTimeout;
+        lastGps == null ||
+        DateTime.now().difference(lastGps) > _gpsTimeout;
     final gpsConnected = _gpsPermissionGranted && _gpsHasFix && !gpsTimedOut;
     final gpsSpeedUsable = gpsConnected && _smoothedSpeed > _minGpsSpeed;
 
@@ -310,9 +313,10 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
     if (currentKm > _lastAnnouncedKm && currentKm > 0) {
       _lastAnnouncedKm = currentKm;
       _soundFx.playSplit();
-      if (_state.isAudioCoachOn && _state.currentPaceSecondsPerKm != null) {
+      final currentPace = _state.currentPaceSecondsPerKm;
+      if (_state.isAudioCoachOn && currentPace != null) {
         _audioCoach.announceSplit(
-            currentKm, _state.currentPaceSecondsPerKm!);
+            currentKm, currentPace);
       }
     }
 
@@ -400,124 +404,9 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
                     final isLandscape = orientation == Orientation.landscape;
 
                     if (isLandscape) {
-                      return Row(
-                        children: [
-                          Expanded(
-                            flex: 3,
-                            child: Column(
-                              children: [
-                                _Header(
-                                  planName: typeLabel(_state.plan.type),
-                                  phase: _state.phase,
-                                  isFinished: _state.phase == WorkoutPhase.finished,
-                                  onExit: () => _showExitSheet(context),
-                                ),
-                                if (_state.phase == WorkoutPhase.finished)
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
-                                    child: Text(
-                                      'Workout Complete!',
-                                      style: TextStyle(
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.w700,
-                                        color: _phaseColorLight(_state.phase),
-                                      ),
-                                    ),
-                                  )
-                                else
-                                  Expanded(
-                                    child: RunTimerDisplay(
-                                      phaseArcs: _buildPhaseArcs(),
-                                      timeText: _formatTime(_state.elapsedSeconds),
-                                      phaseLabel: _currentPhaseLabel(),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                            flex: 2,
-                            child: Column(
-                              children: [
-                                if (_state.phase != WorkoutPhase.finished) ...[
-                                  RunPacerDisplay(
-                                    currentPaceSecondsPerKm: _state.currentPaceSecondsPerKm,
-                                    fastestTargetSeconds: _state.fastestTarget.inSeconds,
-                                    slowestTargetSeconds: _state.slowestTarget.inSeconds,
-                                  ),
-                                  _PaceSourceIndicator(source: _paceSource),
-                                  RunSecondaryMetrics(
-                                    elapsedSeconds: _state.elapsedSeconds,
-                                    remainingSeconds: _state.remainingSeconds,
-                                  ),
-                                ],
-                                const Spacer(),
-                                RunControls(
-                                  isRunning: _state.isRunning,
-                                  isLocked: _state.isLocked,
-                                  isAudioCoachOn: _state.isAudioCoachOn,
-                                  isFinished: _state.phase == WorkoutPhase.finished,
-                                  onToggleRunning: _toggleRunning,
-                                  onToggleLock: _toggleLock,
-                                  onToggleAudioCoach: _toggleAudioCoach,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      );
+                      return _buildLandscapeLayout(context);
                     }
-
-                    return Column(
-                      children: [
-                        _Header(
-                          planName: typeLabel(_state.plan.type),
-                          phase: _state.phase,
-                          isFinished: _state.phase == WorkoutPhase.finished,
-                          onExit: () => _showExitSheet(context),
-                        ),
-                        Expanded(
-                          child: RunTimerDisplay(
-                            phaseArcs: _buildPhaseArcs(),
-                            timeText: _formatTime(_state.elapsedSeconds),
-                            phaseLabel: _currentPhaseLabel(),
-                          ),
-                        ),
-                        if (_state.phase == WorkoutPhase.finished)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            child: Text(
-                              'Workout Complete!',
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w700,
-                                color: _phaseColorLight(_state.phase),
-                              ),
-                            ),
-                          )
-                        else ...[
-                          RunPacerDisplay(
-                            currentPaceSecondsPerKm: _state.currentPaceSecondsPerKm,
-                            fastestTargetSeconds: _state.fastestTarget.inSeconds,
-                            slowestTargetSeconds: _state.slowestTarget.inSeconds,
-                          ),
-                          _PaceSourceIndicator(source: _paceSource),
-                          RunSecondaryMetrics(
-                            elapsedSeconds: _state.elapsedSeconds,
-                            remainingSeconds: _state.remainingSeconds,
-                          ),
-                        ],
-                        RunControls(
-                          isRunning: _state.isRunning,
-                          isLocked: _state.isLocked,
-                          isAudioCoachOn: _state.isAudioCoachOn,
-                          isFinished: _state.phase == WorkoutPhase.finished,
-                          onToggleRunning: _toggleRunning,
-                          onToggleLock: _toggleLock,
-                          onToggleAudioCoach: _toggleAudioCoach,
-                        ),
-                      ],
-                    );
+                    return _buildPortraitLayout(context);
                   },
                 ),
               ),
@@ -532,8 +421,11 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
                   left: 0,
                   right: 0,
                   child: Center(
-                    child: GestureDetector(
-                      onTap: _toggleLock,
+                    child: Semantics(
+                      button: true,
+                      label: 'Unlock screen',
+                      child: GestureDetector(
+                        onTap: _toggleLock,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 20,
@@ -566,11 +458,134 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
                     ),
                   ),
                 ),
-              ],
+              ),
+            ],
               ],
             ),
         ),
       ),
+    );
+  }
+
+  Widget _buildLandscapeLayout(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          flex: 3,
+          child: Column(
+            children: [
+              _Header(
+                planName: typeLabel(_state.plan.type),
+                phase: _state.phase,
+                isFinished: _state.phase == WorkoutPhase.finished,
+                onExit: () => _showExitSheet(context),
+              ),
+              if (_state.phase == WorkoutPhase.finished)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Text(
+                    'Workout Complete!',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: _phaseColorLight(_state.phase),
+                    ),
+                  ),
+                )
+              else
+                Expanded(
+                  child: RunTimerDisplay(
+                    phaseArcs: _buildPhaseArcs(),
+                    timeText: _formatTime(_state.elapsedSeconds),
+                    phaseLabel: _currentPhaseLabel(),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        Expanded(
+          flex: 2,
+          child: Column(
+            children: [
+              if (_state.phase != WorkoutPhase.finished) ...[
+                RunPacerDisplay(
+                  currentPaceSecondsPerKm: _state.currentPaceSecondsPerKm,
+                  fastestTargetSeconds: _state.fastestTarget.inSeconds,
+                  slowestTargetSeconds: _state.slowestTarget.inSeconds,
+                ),
+                _PaceSourceIndicator(source: _paceSource),
+                RunSecondaryMetrics(
+                  elapsedSeconds: _state.elapsedSeconds,
+                  remainingSeconds: _state.remainingSeconds,
+                ),
+              ],
+              const Spacer(),
+              RunControls(
+                isRunning: _state.isRunning,
+                isLocked: _state.isLocked,
+                isAudioCoachOn: _state.isAudioCoachOn,
+                isFinished: _state.phase == WorkoutPhase.finished,
+                onToggleRunning: _toggleRunning,
+                onToggleLock: _toggleLock,
+                onToggleAudioCoach: _toggleAudioCoach,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPortraitLayout(BuildContext context) {
+    return Column(
+      children: [
+        _Header(
+          planName: typeLabel(_state.plan.type),
+          phase: _state.phase,
+          isFinished: _state.phase == WorkoutPhase.finished,
+          onExit: () => _showExitSheet(context),
+        ),
+        Expanded(
+          child: RunTimerDisplay(
+            phaseArcs: _buildPhaseArcs(),
+            timeText: _formatTime(_state.elapsedSeconds),
+            phaseLabel: _currentPhaseLabel(),
+          ),
+        ),
+        if (_state.phase == WorkoutPhase.finished)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Text(
+              'Workout Complete!',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: _phaseColorLight(_state.phase),
+              ),
+            ),
+          )
+        else ...[
+          RunPacerDisplay(
+            currentPaceSecondsPerKm: _state.currentPaceSecondsPerKm,
+            fastestTargetSeconds: _state.fastestTarget.inSeconds,
+            slowestTargetSeconds: _state.slowestTarget.inSeconds,
+          ),
+          _PaceSourceIndicator(source: _paceSource),
+          RunSecondaryMetrics(
+            elapsedSeconds: _state.elapsedSeconds,
+            remainingSeconds: _state.remainingSeconds,
+          ),
+        ],
+        RunControls(
+          isRunning: _state.isRunning,
+          isLocked: _state.isLocked,
+          isAudioCoachOn: _state.isAudioCoachOn,
+          isFinished: _state.phase == WorkoutPhase.finished,
+          onToggleRunning: _toggleRunning,
+          onToggleLock: _toggleLock,
+          onToggleAudioCoach: _toggleAudioCoach,
+        ),
+      ],
     );
   }
 

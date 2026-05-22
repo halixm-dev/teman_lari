@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ActivityModel {
 
- int get id; String get name; String get type; double get distance;@JsonKey(name: 'moving_time') int get movingTime;@JsonKey(name: 'elapsed_time') int get elapsedTime;@JsonKey(name: 'total_elevation_gain') double get totalElevationGain;@JsonKey(name: 'start_date') String get startDate;@JsonKey(name: 'average_speed') double get averageSpeed;@JsonKey(name: 'max_speed') double get maxSpeed;@JsonKey(name: 'average_heartrate') double? get averageHeartrate;@JsonKey(name: 'max_heartrate') double? get maxHeartrate;@JsonKey(name: 'average_cadence') double? get averageCadence;@JsonKey(name: 'suffer_score') int? get sufferScore;@JsonKey(name: 'has_heartrate') bool get hasHeartrate;@JsonKey(name: 'workout_type') int? get workoutType;@JsonKey(name: 'perceived_exertion') double? get perceivedExertion;
+ int get id; String get name; String get type; double get distance; int get movingTime; int get elapsedTime; double get totalElevationGain; String get startDate; double get averageSpeed; double get maxSpeed; double? get averageHeartrate; double? get maxHeartrate; double? get averageCadence; int? get sufferScore; bool get hasHeartrate; int? get workoutType; double? get perceivedExertion;
 /// Create a copy of ActivityModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $ActivityModelCopyWith<$Res>  {
   factory $ActivityModelCopyWith(ActivityModel value, $Res Function(ActivityModel) _then) = _$ActivityModelCopyWithImpl;
 @useResult
 $Res call({
- int id, String name, String type, double distance,@JsonKey(name: 'moving_time') int movingTime,@JsonKey(name: 'elapsed_time') int elapsedTime,@JsonKey(name: 'total_elevation_gain') double totalElevationGain,@JsonKey(name: 'start_date') String startDate,@JsonKey(name: 'average_speed') double averageSpeed,@JsonKey(name: 'max_speed') double maxSpeed,@JsonKey(name: 'average_heartrate') double? averageHeartrate,@JsonKey(name: 'max_heartrate') double? maxHeartrate,@JsonKey(name: 'average_cadence') double? averageCadence,@JsonKey(name: 'suffer_score') int? sufferScore,@JsonKey(name: 'has_heartrate') bool hasHeartrate,@JsonKey(name: 'workout_type') int? workoutType,@JsonKey(name: 'perceived_exertion') double? perceivedExertion
+ int id, String name, String type, double distance, int movingTime, int elapsedTime, double totalElevationGain, String startDate, double averageSpeed, double maxSpeed, double? averageHeartrate, double? maxHeartrate, double? averageCadence, int? sufferScore, bool hasHeartrate, int? workoutType, double? perceivedExertion
 });
 
 
@@ -169,7 +169,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  String type,  double distance, @JsonKey(name: 'moving_time')  int movingTime, @JsonKey(name: 'elapsed_time')  int elapsedTime, @JsonKey(name: 'total_elevation_gain')  double totalElevationGain, @JsonKey(name: 'start_date')  String startDate, @JsonKey(name: 'average_speed')  double averageSpeed, @JsonKey(name: 'max_speed')  double maxSpeed, @JsonKey(name: 'average_heartrate')  double? averageHeartrate, @JsonKey(name: 'max_heartrate')  double? maxHeartrate, @JsonKey(name: 'average_cadence')  double? averageCadence, @JsonKey(name: 'suffer_score')  int? sufferScore, @JsonKey(name: 'has_heartrate')  bool hasHeartrate, @JsonKey(name: 'workout_type')  int? workoutType, @JsonKey(name: 'perceived_exertion')  double? perceivedExertion)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  String type,  double distance,  int movingTime,  int elapsedTime,  double totalElevationGain,  String startDate,  double averageSpeed,  double maxSpeed,  double? averageHeartrate,  double? maxHeartrate,  double? averageCadence,  int? sufferScore,  bool hasHeartrate,  int? workoutType,  double? perceivedExertion)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ActivityModel() when $default != null:
 return $default(_that.id,_that.name,_that.type,_that.distance,_that.movingTime,_that.elapsedTime,_that.totalElevationGain,_that.startDate,_that.averageSpeed,_that.maxSpeed,_that.averageHeartrate,_that.maxHeartrate,_that.averageCadence,_that.sufferScore,_that.hasHeartrate,_that.workoutType,_that.perceivedExertion);case _:
@@ -190,7 +190,7 @@ return $default(_that.id,_that.name,_that.type,_that.distance,_that.movingTime,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  String type,  double distance, @JsonKey(name: 'moving_time')  int movingTime, @JsonKey(name: 'elapsed_time')  int elapsedTime, @JsonKey(name: 'total_elevation_gain')  double totalElevationGain, @JsonKey(name: 'start_date')  String startDate, @JsonKey(name: 'average_speed')  double averageSpeed, @JsonKey(name: 'max_speed')  double maxSpeed, @JsonKey(name: 'average_heartrate')  double? averageHeartrate, @JsonKey(name: 'max_heartrate')  double? maxHeartrate, @JsonKey(name: 'average_cadence')  double? averageCadence, @JsonKey(name: 'suffer_score')  int? sufferScore, @JsonKey(name: 'has_heartrate')  bool hasHeartrate, @JsonKey(name: 'workout_type')  int? workoutType, @JsonKey(name: 'perceived_exertion')  double? perceivedExertion)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  String type,  double distance,  int movingTime,  int elapsedTime,  double totalElevationGain,  String startDate,  double averageSpeed,  double maxSpeed,  double? averageHeartrate,  double? maxHeartrate,  double? averageCadence,  int? sufferScore,  bool hasHeartrate,  int? workoutType,  double? perceivedExertion)  $default,) {final _that = this;
 switch (_that) {
 case _ActivityModel():
 return $default(_that.id,_that.name,_that.type,_that.distance,_that.movingTime,_that.elapsedTime,_that.totalElevationGain,_that.startDate,_that.averageSpeed,_that.maxSpeed,_that.averageHeartrate,_that.maxHeartrate,_that.averageCadence,_that.sufferScore,_that.hasHeartrate,_that.workoutType,_that.perceivedExertion);case _:
@@ -210,7 +210,7 @@ return $default(_that.id,_that.name,_that.type,_that.distance,_that.movingTime,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  String type,  double distance, @JsonKey(name: 'moving_time')  int movingTime, @JsonKey(name: 'elapsed_time')  int elapsedTime, @JsonKey(name: 'total_elevation_gain')  double totalElevationGain, @JsonKey(name: 'start_date')  String startDate, @JsonKey(name: 'average_speed')  double averageSpeed, @JsonKey(name: 'max_speed')  double maxSpeed, @JsonKey(name: 'average_heartrate')  double? averageHeartrate, @JsonKey(name: 'max_heartrate')  double? maxHeartrate, @JsonKey(name: 'average_cadence')  double? averageCadence, @JsonKey(name: 'suffer_score')  int? sufferScore, @JsonKey(name: 'has_heartrate')  bool hasHeartrate, @JsonKey(name: 'workout_type')  int? workoutType, @JsonKey(name: 'perceived_exertion')  double? perceivedExertion)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  String type,  double distance,  int movingTime,  int elapsedTime,  double totalElevationGain,  String startDate,  double averageSpeed,  double maxSpeed,  double? averageHeartrate,  double? maxHeartrate,  double? averageCadence,  int? sufferScore,  bool hasHeartrate,  int? workoutType,  double? perceivedExertion)?  $default,) {final _that = this;
 switch (_that) {
 case _ActivityModel() when $default != null:
 return $default(_that.id,_that.name,_that.type,_that.distance,_that.movingTime,_that.elapsedTime,_that.totalElevationGain,_that.startDate,_that.averageSpeed,_that.maxSpeed,_that.averageHeartrate,_that.maxHeartrate,_that.averageCadence,_that.sufferScore,_that.hasHeartrate,_that.workoutType,_that.perceivedExertion);case _:
@@ -225,26 +225,26 @@ return $default(_that.id,_that.name,_that.type,_that.distance,_that.movingTime,_
 @JsonSerializable()
 
 class _ActivityModel extends ActivityModel {
-  const _ActivityModel({required this.id, required this.name, required this.type, required this.distance, @JsonKey(name: 'moving_time') required this.movingTime, @JsonKey(name: 'elapsed_time') required this.elapsedTime, @JsonKey(name: 'total_elevation_gain') required this.totalElevationGain, @JsonKey(name: 'start_date') required this.startDate, @JsonKey(name: 'average_speed') required this.averageSpeed, @JsonKey(name: 'max_speed') required this.maxSpeed, @JsonKey(name: 'average_heartrate') this.averageHeartrate, @JsonKey(name: 'max_heartrate') this.maxHeartrate, @JsonKey(name: 'average_cadence') this.averageCadence, @JsonKey(name: 'suffer_score') this.sufferScore, @JsonKey(name: 'has_heartrate') this.hasHeartrate = false, @JsonKey(name: 'workout_type') this.workoutType, @JsonKey(name: 'perceived_exertion') this.perceivedExertion}): super._();
+  const _ActivityModel({required this.id, required this.name, required this.type, required this.distance, required this.movingTime, required this.elapsedTime, required this.totalElevationGain, required this.startDate, required this.averageSpeed, required this.maxSpeed, this.averageHeartrate, this.maxHeartrate, this.averageCadence, this.sufferScore, this.hasHeartrate = false, this.workoutType, this.perceivedExertion}): super._();
   factory _ActivityModel.fromJson(Map<String, dynamic> json) => _$ActivityModelFromJson(json);
 
 @override final  int id;
 @override final  String name;
 @override final  String type;
 @override final  double distance;
-@override@JsonKey(name: 'moving_time') final  int movingTime;
-@override@JsonKey(name: 'elapsed_time') final  int elapsedTime;
-@override@JsonKey(name: 'total_elevation_gain') final  double totalElevationGain;
-@override@JsonKey(name: 'start_date') final  String startDate;
-@override@JsonKey(name: 'average_speed') final  double averageSpeed;
-@override@JsonKey(name: 'max_speed') final  double maxSpeed;
-@override@JsonKey(name: 'average_heartrate') final  double? averageHeartrate;
-@override@JsonKey(name: 'max_heartrate') final  double? maxHeartrate;
-@override@JsonKey(name: 'average_cadence') final  double? averageCadence;
-@override@JsonKey(name: 'suffer_score') final  int? sufferScore;
-@override@JsonKey(name: 'has_heartrate') final  bool hasHeartrate;
-@override@JsonKey(name: 'workout_type') final  int? workoutType;
-@override@JsonKey(name: 'perceived_exertion') final  double? perceivedExertion;
+@override final  int movingTime;
+@override final  int elapsedTime;
+@override final  double totalElevationGain;
+@override final  String startDate;
+@override final  double averageSpeed;
+@override final  double maxSpeed;
+@override final  double? averageHeartrate;
+@override final  double? maxHeartrate;
+@override final  double? averageCadence;
+@override final  int? sufferScore;
+@override@JsonKey() final  bool hasHeartrate;
+@override final  int? workoutType;
+@override final  double? perceivedExertion;
 
 /// Create a copy of ActivityModel
 /// with the given fields replaced by the non-null parameter values.
@@ -279,7 +279,7 @@ abstract mixin class _$ActivityModelCopyWith<$Res> implements $ActivityModelCopy
   factory _$ActivityModelCopyWith(_ActivityModel value, $Res Function(_ActivityModel) _then) = __$ActivityModelCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String name, String type, double distance,@JsonKey(name: 'moving_time') int movingTime,@JsonKey(name: 'elapsed_time') int elapsedTime,@JsonKey(name: 'total_elevation_gain') double totalElevationGain,@JsonKey(name: 'start_date') String startDate,@JsonKey(name: 'average_speed') double averageSpeed,@JsonKey(name: 'max_speed') double maxSpeed,@JsonKey(name: 'average_heartrate') double? averageHeartrate,@JsonKey(name: 'max_heartrate') double? maxHeartrate,@JsonKey(name: 'average_cadence') double? averageCadence,@JsonKey(name: 'suffer_score') int? sufferScore,@JsonKey(name: 'has_heartrate') bool hasHeartrate,@JsonKey(name: 'workout_type') int? workoutType,@JsonKey(name: 'perceived_exertion') double? perceivedExertion
+ int id, String name, String type, double distance, int movingTime, int elapsedTime, double totalElevationGain, String startDate, double averageSpeed, double maxSpeed, double? averageHeartrate, double? maxHeartrate, double? averageCadence, int? sufferScore, bool hasHeartrate, int? workoutType, double? perceivedExertion
 });
 
 

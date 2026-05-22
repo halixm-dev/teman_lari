@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ActivityStreams {
 
- StreamData? get time;@JsonKey(name: 'heartrate') StreamData? get heartrate; StreamData? get cadence;@JsonKey(name: 'velocity_smooth') StreamData? get velocitySmooth; StreamData? get altitude;
+ StreamData? get time; StreamData? get heartrate; StreamData? get cadence; StreamData? get velocitySmooth; StreamData? get altitude;
 /// Create a copy of ActivityStreams
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $ActivityStreamsCopyWith<$Res>  {
   factory $ActivityStreamsCopyWith(ActivityStreams value, $Res Function(ActivityStreams) _then) = _$ActivityStreamsCopyWithImpl;
 @useResult
 $Res call({
- StreamData? time,@JsonKey(name: 'heartrate') StreamData? heartrate, StreamData? cadence,@JsonKey(name: 'velocity_smooth') StreamData? velocitySmooth, StreamData? altitude
+ StreamData? time, StreamData? heartrate, StreamData? cadence, StreamData? velocitySmooth, StreamData? altitude
 });
 
 
@@ -217,7 +217,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( StreamData? time, @JsonKey(name: 'heartrate')  StreamData? heartrate,  StreamData? cadence, @JsonKey(name: 'velocity_smooth')  StreamData? velocitySmooth,  StreamData? altitude)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( StreamData? time,  StreamData? heartrate,  StreamData? cadence,  StreamData? velocitySmooth,  StreamData? altitude)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ActivityStreams() when $default != null:
 return $default(_that.time,_that.heartrate,_that.cadence,_that.velocitySmooth,_that.altitude);case _:
@@ -238,7 +238,7 @@ return $default(_that.time,_that.heartrate,_that.cadence,_that.velocitySmooth,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( StreamData? time, @JsonKey(name: 'heartrate')  StreamData? heartrate,  StreamData? cadence, @JsonKey(name: 'velocity_smooth')  StreamData? velocitySmooth,  StreamData? altitude)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( StreamData? time,  StreamData? heartrate,  StreamData? cadence,  StreamData? velocitySmooth,  StreamData? altitude)  $default,) {final _that = this;
 switch (_that) {
 case _ActivityStreams():
 return $default(_that.time,_that.heartrate,_that.cadence,_that.velocitySmooth,_that.altitude);case _:
@@ -258,7 +258,7 @@ return $default(_that.time,_that.heartrate,_that.cadence,_that.velocitySmooth,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( StreamData? time, @JsonKey(name: 'heartrate')  StreamData? heartrate,  StreamData? cadence, @JsonKey(name: 'velocity_smooth')  StreamData? velocitySmooth,  StreamData? altitude)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( StreamData? time,  StreamData? heartrate,  StreamData? cadence,  StreamData? velocitySmooth,  StreamData? altitude)?  $default,) {final _that = this;
 switch (_that) {
 case _ActivityStreams() when $default != null:
 return $default(_that.time,_that.heartrate,_that.cadence,_that.velocitySmooth,_that.altitude);case _:
@@ -273,13 +273,13 @@ return $default(_that.time,_that.heartrate,_that.cadence,_that.velocitySmooth,_t
 @JsonSerializable()
 
 class _ActivityStreams extends ActivityStreams {
-  const _ActivityStreams({this.time, @JsonKey(name: 'heartrate') this.heartrate, this.cadence, @JsonKey(name: 'velocity_smooth') this.velocitySmooth, this.altitude}): super._();
+  const _ActivityStreams({this.time, this.heartrate, this.cadence, this.velocitySmooth, this.altitude}): super._();
   factory _ActivityStreams.fromJson(Map<String, dynamic> json) => _$ActivityStreamsFromJson(json);
 
 @override final  StreamData? time;
-@override@JsonKey(name: 'heartrate') final  StreamData? heartrate;
+@override final  StreamData? heartrate;
 @override final  StreamData? cadence;
-@override@JsonKey(name: 'velocity_smooth') final  StreamData? velocitySmooth;
+@override final  StreamData? velocitySmooth;
 @override final  StreamData? altitude;
 
 /// Create a copy of ActivityStreams
@@ -315,7 +315,7 @@ abstract mixin class _$ActivityStreamsCopyWith<$Res> implements $ActivityStreams
   factory _$ActivityStreamsCopyWith(_ActivityStreams value, $Res Function(_ActivityStreams) _then) = __$ActivityStreamsCopyWithImpl;
 @override @useResult
 $Res call({
- StreamData? time,@JsonKey(name: 'heartrate') StreamData? heartrate, StreamData? cadence,@JsonKey(name: 'velocity_smooth') StreamData? velocitySmooth, StreamData? altitude
+ StreamData? time, StreamData? heartrate, StreamData? cadence, StreamData? velocitySmooth, StreamData? altitude
 });
 
 
@@ -410,7 +410,7 @@ $StreamDataCopyWith<$Res>? get altitude {
 /// @nodoc
 mixin _$StreamData {
 
- String get type; List<double> get data;@JsonKey(name: 'series_type') String? get seriesType;@JsonKey(name: 'original_size') int? get originalSize;@JsonKey(name: 'resolution') String? get resolution;
+ String get type; List<double> get data; String? get seriesType; int? get originalSize; String? get resolution;
 /// Create a copy of StreamData
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -443,7 +443,7 @@ abstract mixin class $StreamDataCopyWith<$Res>  {
   factory $StreamDataCopyWith(StreamData value, $Res Function(StreamData) _then) = _$StreamDataCopyWithImpl;
 @useResult
 $Res call({
- String type, List<double> data,@JsonKey(name: 'series_type') String? seriesType,@JsonKey(name: 'original_size') int? originalSize,@JsonKey(name: 'resolution') String? resolution
+ String type, List<double> data, String? seriesType, int? originalSize, String? resolution
 });
 
 
@@ -552,7 +552,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String type,  List<double> data, @JsonKey(name: 'series_type')  String? seriesType, @JsonKey(name: 'original_size')  int? originalSize, @JsonKey(name: 'resolution')  String? resolution)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String type,  List<double> data,  String? seriesType,  int? originalSize,  String? resolution)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _StreamData() when $default != null:
 return $default(_that.type,_that.data,_that.seriesType,_that.originalSize,_that.resolution);case _:
@@ -573,7 +573,7 @@ return $default(_that.type,_that.data,_that.seriesType,_that.originalSize,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String type,  List<double> data, @JsonKey(name: 'series_type')  String? seriesType, @JsonKey(name: 'original_size')  int? originalSize, @JsonKey(name: 'resolution')  String? resolution)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String type,  List<double> data,  String? seriesType,  int? originalSize,  String? resolution)  $default,) {final _that = this;
 switch (_that) {
 case _StreamData():
 return $default(_that.type,_that.data,_that.seriesType,_that.originalSize,_that.resolution);case _:
@@ -593,7 +593,7 @@ return $default(_that.type,_that.data,_that.seriesType,_that.originalSize,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String type,  List<double> data, @JsonKey(name: 'series_type')  String? seriesType, @JsonKey(name: 'original_size')  int? originalSize, @JsonKey(name: 'resolution')  String? resolution)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String type,  List<double> data,  String? seriesType,  int? originalSize,  String? resolution)?  $default,) {final _that = this;
 switch (_that) {
 case _StreamData() when $default != null:
 return $default(_that.type,_that.data,_that.seriesType,_that.originalSize,_that.resolution);case _:
@@ -608,7 +608,7 @@ return $default(_that.type,_that.data,_that.seriesType,_that.originalSize,_that.
 @JsonSerializable()
 
 class _StreamData extends StreamData {
-  const _StreamData({required this.type, required final  List<double> data, @JsonKey(name: 'series_type') this.seriesType, @JsonKey(name: 'original_size') this.originalSize, @JsonKey(name: 'resolution') this.resolution}): _data = data,super._();
+  const _StreamData({required this.type, required final  List<double> data, this.seriesType, this.originalSize, this.resolution}): _data = data,super._();
   factory _StreamData.fromJson(Map<String, dynamic> json) => _$StreamDataFromJson(json);
 
 @override final  String type;
@@ -619,9 +619,9 @@ class _StreamData extends StreamData {
   return EqualUnmodifiableListView(_data);
 }
 
-@override@JsonKey(name: 'series_type') final  String? seriesType;
-@override@JsonKey(name: 'original_size') final  int? originalSize;
-@override@JsonKey(name: 'resolution') final  String? resolution;
+@override final  String? seriesType;
+@override final  int? originalSize;
+@override final  String? resolution;
 
 /// Create a copy of StreamData
 /// with the given fields replaced by the non-null parameter values.
@@ -656,7 +656,7 @@ abstract mixin class _$StreamDataCopyWith<$Res> implements $StreamDataCopyWith<$
   factory _$StreamDataCopyWith(_StreamData value, $Res Function(_StreamData) _then) = __$StreamDataCopyWithImpl;
 @override @useResult
 $Res call({
- String type, List<double> data,@JsonKey(name: 'series_type') String? seriesType,@JsonKey(name: 'original_size') int? originalSize,@JsonKey(name: 'resolution') String? resolution
+ String type, List<double> data, String? seriesType, int? originalSize, String? resolution
 });
 
 

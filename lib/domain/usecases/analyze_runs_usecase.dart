@@ -149,14 +149,17 @@ class AnalyzeRunsUseCase {
         }
         totalSeconds += activity.movingTime.inSeconds.toDouble();
       } else {
-        final zone = _loadCalculator.hrToZone(
-          activity.avgHeartRate!,
-          maxHr: maxHr,
-          restingHr: restingHr,
-        );
-        final seconds = activity.movingTime.inSeconds.toDouble();
-        zoneSeconds[zone] = (zoneSeconds[zone] ?? 0) + seconds;
-        totalSeconds += seconds;
+        final avg = activity.avgHeartRate;
+        if (avg != null) {
+          final zone = _loadCalculator.hrToZone(
+            avg,
+            maxHr: maxHr,
+            restingHr: restingHr,
+          );
+          final seconds = activity.movingTime.inSeconds.toDouble();
+          zoneSeconds[zone] = (zoneSeconds[zone] ?? 0) + seconds;
+          totalSeconds += seconds;
+        }
       }
     }
 
@@ -170,8 +173,8 @@ class AnalyzeRunsUseCase {
   }) {
     if (userValue != null) return userValue;
     final values = activities
-        .where((a) => a.maxHeartRate != null)
-        .map((a) => a.maxHeartRate!);
+        .map((a) => a.maxHeartRate)
+        .whereType<double>();
     if (values.isEmpty) return null;
     return values.reduce((a, b) => a > b ? a : b).round();
   }

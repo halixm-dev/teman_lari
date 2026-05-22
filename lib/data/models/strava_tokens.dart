@@ -8,9 +8,9 @@ abstract class StravaTokens with _$StravaTokens {
   const StravaTokens._();
 
   const factory StravaTokens({
-    @JsonKey(name: 'access_token') required String accessToken,
-    @JsonKey(name: 'refresh_token') required String refreshToken,
-    @JsonKey(name: 'expires_at') required int expiresAt,
+    required String accessToken,
+    required String refreshToken,
+    required int expiresAt,
   }) = _StravaTokens;
 
   factory StravaTokens.fromJson(Map<String, dynamic> json) =>

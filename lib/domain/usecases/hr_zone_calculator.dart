@@ -39,8 +39,8 @@ class HrZoneCalculator {
 
   static int _observedMaxHr(List<RunActivity> activities) {
     return activities
-            .where((a) => a.maxHeartRate != null)
-            .map((a) => a.maxHeartRate!)
+            .map((a) => a.maxHeartRate)
+            .whereType<double>()
             .fold<double?>(
               null,
               (max, hr) => max == null ? hr : (hr > max ? hr : max),

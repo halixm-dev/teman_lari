@@ -25,7 +25,9 @@ class RunPacerDisplay extends StatelessWidget {
     final halfRange = (slowestTargetSeconds - fastestTargetSeconds).toDouble();
     final buffer = halfRange * 2;
     if (buffer <= 0) return 0.5;
-    return ((currentPaceSecondsPerKm! - mid) / buffer + 0.5).clamp(0.0, 1.0);
+    final pace = currentPaceSecondsPerKm;
+    if (pace == null) return 0.5;
+    return ((pace - mid) / buffer + 0.5).clamp(0.0, 1.0);
   }
 
   Color _paceStatusColor() {
@@ -46,7 +48,8 @@ class RunPacerDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasPace = currentPaceSecondsPerKm != null;
+    final pace = currentPaceSecondsPerKm;
+    final hasPace = pace != null;
     final theme = Theme.of(context);
 
     return Container(
@@ -64,7 +67,7 @@ class RunPacerDisplay extends StatelessWidget {
             textBaseline: TextBaseline.alphabetic,
             children: [
               Text(
-                hasPace ? _formatPace(currentPaceSecondsPerKm!) : "--'--",
+                hasPace ? _formatPace(pace) : "--'--",
                 style: theme.textTheme.displayMedium?.copyWith(
                   fontFamily: 'JetBrains Mono',
                   fontSize: 36,

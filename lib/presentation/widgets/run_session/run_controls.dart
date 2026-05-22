@@ -74,16 +74,21 @@ class _RunControlsState extends State<RunControls> {
             icon: widget.isLocked ? Icons.lock : Icons.lock_open,
             onPressed: widget.isFinished ? null : widget.onToggleLock,
             isActive: widget.isLocked,
+            semanticLabel: widget.isLocked ? 'Unlock screen' : 'Lock screen',
           ),
           _IconButton(
             icon: widget.isAudioCoachOn ? Icons.volume_up : Icons.volume_off,
             onPressed: widget.isFinished ? null : widget.onToggleAudioCoach,
             isActive: widget.isAudioCoachOn,
+            semanticLabel: widget.isAudioCoachOn ? 'Disable audio coach' : 'Enable audio coach',
           ),
           // Play / Pause FAB
           if (!widget.isFinished)
-            GestureDetector(
-              onTap: widget.isRunning ? null : widget.onToggleRunning,
+            Semantics(
+              button: true,
+              label: widget.isRunning ? 'Pause workout' : 'Start workout',
+              child: GestureDetector(
+                onTap: widget.isRunning ? null : widget.onToggleRunning,
               onLongPressStart: (_) => _onLongPressStart(),
               onLongPressEnd: (_) => _onLongPressEnd(),
               onLongPressCancel: _onLongPressCancel,
@@ -133,6 +138,7 @@ class _RunControlsState extends State<RunControls> {
                 },
               ),
             ),
+          ),
         ],
       ),
     );
@@ -143,11 +149,13 @@ class _IconButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onPressed;
   final bool isActive;
+  final String semanticLabel;
 
   const _IconButton({
     required this.icon,
     required this.onPressed,
     required this.isActive,
+    required this.semanticLabel,
   });
 
   @override
@@ -161,10 +169,13 @@ class _IconButton extends StatelessWidget {
             ? theme.colorScheme.primary.withValues(alpha: 0.15)
             : theme.colorScheme.surfaceContainerHighest,
         shape: const CircleBorder(),
-        child: InkWell(
-          onTap: onPressed,
-          customBorder: const CircleBorder(),
-          child: Icon(
+        child: Semantics(
+          button: true,
+          label: semanticLabel,
+          child: InkWell(
+            onTap: onPressed,
+            customBorder: const CircleBorder(),
+            child: Icon(
             icon,
             color: isActive
                 ? theme.colorScheme.primary
@@ -172,6 +183,7 @@ class _IconButton extends StatelessWidget {
             size: 24,
           ),
         ),
+      ),
       ),
     );
   }

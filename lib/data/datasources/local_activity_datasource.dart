@@ -12,13 +12,15 @@ class LocalActivityDataSource {
   Box? _hrStreamsBox;
 
   Future<Box> get activitiesBox async {
-    _activitiesBox ??= await Hive.openBox(_activitiesBoxName);
-    return _activitiesBox!;
+    final box = _activitiesBox ?? await Hive.openBox(_activitiesBoxName);
+    _activitiesBox = box;
+    return box;
   }
 
   Future<Box> get hrStreamsBox async {
-    _hrStreamsBox ??= await Hive.openBox(_hrStreamsBoxName);
-    return _hrStreamsBox!;
+    final box = _hrStreamsBox ?? await Hive.openBox(_hrStreamsBoxName);
+    _hrStreamsBox = box;
+    return box;
   }
 
   Future<void> saveActivities(List<ActivityModel> activities) async {

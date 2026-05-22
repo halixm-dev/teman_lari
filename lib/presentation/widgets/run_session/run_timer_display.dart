@@ -32,6 +32,7 @@ class RunTimerDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final label = phaseLabel;
     return AspectRatio(
       aspectRatio: 1,
       child: Padding(
@@ -58,10 +59,10 @@ class RunTimerDisplay extends StatelessWidget {
                     height: 1.0,
                   ),
                 ),
-                if (phaseLabel != null) ...[
+                if (label != null) ...[
                   const SizedBox(height: 8),
                   Text(
-                    phaseLabel!,
+                    label,
                     style: theme.textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                       letterSpacing: 0.5,
