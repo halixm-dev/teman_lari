@@ -35,3 +35,4 @@ Clean Architecture:
 
 - Design tokens: `DESIGN.md` — refer there, don't duplicate
 - Training plan architecture: `docs/TRAINING_PLAN_AGENTS.md`
+- Flutter rules: `docs/flutter_rules.md`
