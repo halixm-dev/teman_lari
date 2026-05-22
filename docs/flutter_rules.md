@@ -13,9 +13,8 @@
 * **SOLID:** Strictly enforced.
 * **State Management:**
   * **Pattern:** Separate UI state (ephemeral) from App state.
-  * **Native First:** Use `ValueNotifier`, `ChangeNotifier`.
-  * **Prohibited:** NO Riverpod, Bloc, GetX unless explicitly requested.
-  * **DI:** Manual constructor injection or `provider` package if requested.
+  * **Standard:** Use `Riverpod` for all dependency injection and app state.
+  * **Providers:** Place Riverpod providers in `lib/presentation/providers/`.
 
 ## Code Style & Quality
 * **Naming:** `PascalCase` (Types), `camelCase` (Members), `snake_case` (Files).

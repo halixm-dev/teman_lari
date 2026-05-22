@@ -34,19 +34,19 @@ Clean Architecture:
 
 ## Domain-Specific Docs
 
-- Design tokens: `DESIGN.md` — refer there, don't duplicate
-- Training plan architecture: `docs/TRAINING_PLAN_AGENTS.md`
+- Design tokens: `docs/design.md` — refer there, don't duplicate
+- Training plan architecture: `docs/training_plan_architecture.md`
 - Flutter rules: `docs/flutter_rules.md`
 
 ## Agent skills
 
 ### Issue tracker
 
-GitHub issue tracker (via `gh` CLI). See `docs/agents/issue-tracker.md`.
+GitHub issue tracker (via `gh` CLI). See `docs/agents/issue_tracker.md`.
 
 ### Triage labels
 
-Default triage labels (needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix). See `docs/agents/triage-labels.md`.
+Default triage labels (needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix). See `docs/agents/triage_labels.md`.
 
 ### Domain docs
 
