@@ -117,10 +117,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               labelType: NavigationRailLabelType.all,
               leading: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Icon(
-                  Icons.directions_run,
+                child: ImageIcon(
+                  const AssetImage('assets/icons/Icon.png'),
                   color: Theme.of(context).colorScheme.primary,
-                  size: 32,
+                  size: 48,
                 ),
               ),
               destinations: const [

@@ -303,9 +303,9 @@ Strava's map is a first-class UI element, not a widget.
 [Feed] [Explore] [⊕ Record] [Groups] [Profile]
 ```
 
+- Background: `--color-white` (light mode) / `--color-surface-secondary` (dark mode)
 - Record button: `--color-brand-orange` filled circle, 56px, elevated
-- Active tab: icon turns orange + label shows
-- Inactive: icon gray, label hidden
+- Active tab: icon turns `--color-brand-orange`
 - Height: 56px safe area + device insets
 
 #### Desktop Top Nav

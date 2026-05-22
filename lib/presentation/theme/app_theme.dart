@@ -116,6 +116,21 @@ class AppTheme {
           );
         }),
       ),
+      navigationRailTheme: NavigationRailThemeData(
+        backgroundColor: AppColors.white,
+        indicatorColor: AppColors.gray200,
+        useIndicator: true,
+        selectedIconTheme: const IconThemeData(color: AppColors.brandOrange),
+        unselectedIconTheme: const IconThemeData(color: AppColors.gray900),
+        selectedLabelTextStyle: AppTypography.bodySm.copyWith(
+          color: AppColors.brandOrange,
+          fontWeight: FontWeight.w600,
+        ),
+        unselectedLabelTextStyle: AppTypography.bodySm.copyWith(
+          color: AppColors.gray900,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 
@@ -252,6 +267,21 @@ class AppTheme {
             fontWeight: FontWeight.w600,
           );
         }),
+      ),
+      navigationRailTheme: NavigationRailThemeData(
+        backgroundColor: AppColors.surfaceSecondaryDark,
+        indicatorColor: AppColors.surfaceTertiaryDark,
+        useIndicator: true,
+        selectedIconTheme: const IconThemeData(color: AppColors.brandOrange),
+        unselectedIconTheme: const IconThemeData(color: AppColors.textPrimaryDark),
+        selectedLabelTextStyle: AppTypography.bodySm.copyWith(
+          color: AppColors.brandOrange,
+          fontWeight: FontWeight.w600,
+        ),
+        unselectedLabelTextStyle: AppTypography.bodySm.copyWith(
+          color: AppColors.textPrimaryDark,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
