@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../domain/entities/running_stats.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_typography.dart';
 
 class PaceProgressionChart extends StatelessWidget {
   final List<PaceDataPoint> dataPoints;
@@ -41,7 +42,7 @@ class PaceProgressionChart extends StatelessWidget {
               ),
               tooltipMargin: 8,
               tooltipBorderRadius: BorderRadius.circular(8),
-              getTooltipColor: (spot) => AppColors.gray900,
+              getTooltipColor: (spot) => AppColors.gray900.withValues(alpha: 0.85),
               getTooltipItems: (touchedSpots) {
                 return touchedSpots.map((spot) {
                   final idx = spot.spotIndex;
@@ -54,26 +55,22 @@ class PaceProgressionChart extends StatelessWidget {
                     children: [
                       TextSpan(
                         text: DateFormat.MMMd().format(point.date),
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
+                        style: AppTypography.caption.copyWith(
+                          color: AppColors.white.withValues(alpha: 0.7),
                         ),
                       ),
                       TextSpan(
                         text: '\n$mins:${secs.toString().padLeft(2, '0')} /km',
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: AppTypography.jetbrainsMono.copyWith(
+                          color: AppColors.white,
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       TextSpan(
                         text: '\n${point.distanceKm.toStringAsFixed(2)} km',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                        style: AppTypography.caption.copyWith(
+                          color: AppColors.white,
                         ),
                       ),
                     ],
@@ -133,7 +130,11 @@ class PaceProgressionChart extends StatelessWidget {
                   final secs = pace % 60;
                   return Text(
                     '$mins:${secs.toString().padLeft(2, '0')}',
-                    style: const TextStyle(fontSize: 10),
+                    style: AppTypography.jetbrainsMono.copyWith(
+                      fontSize: 11,
+                      color: AppColors.gray500,
+                      fontWeight: FontWeight.w500,
+                    ),
                   );
                 },
               ),
@@ -154,7 +155,9 @@ class PaceProgressionChart extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
                       DateFormat.Md().format(dataPoints[idx].date),
-                      style: const TextStyle(fontSize: 9),
+                      style: AppTypography.caption.copyWith(
+                        color: AppColors.gray500,
+                      ),
                     ),
                   );
                 },
@@ -172,7 +175,7 @@ class PaceProgressionChart extends StatelessWidget {
             drawVerticalLine: false,
             horizontalInterval: interval,
             getDrawingHorizontalLine: (_) => FlLine(
-              color: AppColors.gray500.withValues(alpha: 0.2),
+              color: const Color.fromRGBO(0, 0, 0, 0.06),
               strokeWidth: 1,
             ),
           ),

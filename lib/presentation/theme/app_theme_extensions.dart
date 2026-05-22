@@ -61,6 +61,13 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
   final Color brandOrange;
   final Color brandOrangeTint;
   final Color brandOrangeDark;
+  final Color kudos;
+  final Color pr;
+  final Color kom;
+  final Color run;
+  final Color ride;
+  final Color swim;
+  final Color hike;
   final Color success;
   final Color danger;
   final Color warning;
@@ -70,6 +77,13 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     required this.brandOrange,
     required this.brandOrangeTint,
     required this.brandOrangeDark,
+    required this.kudos,
+    required this.pr,
+    required this.kom,
+    required this.run,
+    required this.ride,
+    required this.swim,
+    required this.hike,
     required this.success,
     required this.danger,
     required this.warning,
@@ -91,6 +105,13 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
       brandOrange: Color.lerp(brandOrange, other.brandOrange, t)!,
       brandOrangeTint: Color.lerp(brandOrangeTint, other.brandOrangeTint, t)!,
       brandOrangeDark: Color.lerp(brandOrangeDark, other.brandOrangeDark, t)!,
+      kudos: Color.lerp(kudos, other.kudos, t)!,
+      pr: Color.lerp(pr, other.pr, t)!,
+      kom: Color.lerp(kom, other.kom, t)!,
+      run: Color.lerp(run, other.run, t)!,
+      ride: Color.lerp(ride, other.ride, t)!,
+      swim: Color.lerp(swim, other.swim, t)!,
+      hike: Color.lerp(hike, other.hike, t)!,
       success: Color.lerp(success, other.success, t)!,
       danger: Color.lerp(danger, other.danger, t)!,
       warning: Color.lerp(warning, other.warning, t)!,
@@ -117,6 +138,13 @@ const defaultColorsExtension = AppColorsExtension(
   brandOrange: AppColors.brandOrange,
   brandOrangeTint: AppColors.brandOrangeTint,
   brandOrangeDark: AppColors.brandOrangeDark,
+  kudos: AppColors.kudos,
+  pr: AppColors.pr,
+  kom: AppColors.kom,
+  run: AppColors.run,
+  ride: AppColors.ride,
+  swim: AppColors.swim,
+  hike: AppColors.hike,
   success: AppColors.success,
   danger: AppColors.danger,
   warning: AppColors.warning,

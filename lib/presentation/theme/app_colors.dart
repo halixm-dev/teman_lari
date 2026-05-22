@@ -20,6 +20,13 @@ class AppColors {
   static const Color white = Color(0xFFFFFFFF);
 
   // Semantic
+  static const Color kudos = Color(0xFFFC4C02);
+  static const Color pr = Color(0xFF8B5CF6);
+  static const Color kom = Color(0xFFFFD700);
+  static const Color run = Color(0xFFFC4C02);
+  static const Color ride = Color(0xFF0077B6);
+  static const Color swim = Color(0xFF00B4D8);
+  static const Color hike = Color(0xFF2D6A4F);
   static const Color success = Color(0xFF22C55E);
   static const Color warning = Color(0xFFF59E0B);
   static const Color danger = Color(0xFFEF4444);

@@ -7,9 +7,9 @@ class HrZoneDistributionChart extends StatelessWidget {
   const HrZoneDistributionChart({super.key, required this.zoneDistribution});
 
   static const zoneColors = [
-    Colors.grey,
     Colors.blue,
     Colors.green,
+    Colors.yellow,
     Colors.orange,
     Colors.red,
   ];
