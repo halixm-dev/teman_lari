@@ -58,7 +58,7 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
 
   static const double _smoothingAlpha = 0.25;
   static const Duration _gpsTimeout = Duration(seconds: 10);
-  static const double _minGpsSpeed = 1.0;
+  static const double _minGpsSpeed = 0.5;
   static const int _stepWindowSize = 10;
 
   @override
@@ -115,6 +115,9 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
 
     final rawSpeed = pos.speed;
 
+    // Ignore highly inaccurate points for speed calculation
+    if (pos.accuracy > 30) return;
+
     if (rawSpeed > 0) {
       if (_smoothedSpeed == 0) {
         _smoothedSpeed = rawSpeed;
@@ -133,9 +136,9 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
       );
       final timeDelta = pos.timestamp
           .difference(last.timestamp)
-          .inSeconds
-          .clamp(1, 60);
-      if (dist < 200) {
+          .inMilliseconds / 1000.0;
+          
+      if (dist < 200 && timeDelta > 0) {
         final calcSpeed = dist / timeDelta;
         if (_smoothedSpeed == 0) {
           _smoothedSpeed = calcSpeed;
@@ -255,7 +258,7 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
 
     int? newPace;
     if (gpsSpeedUsable) {
-      newPace = _gpsPaceSeconds.clamp(120, 600);
+      newPace = _gpsPaceSeconds.clamp(120, 1800);
       _paceSource = PaceSource.gps;
     } else {
       final windowSize = _stepHistory.length > _stepWindowSize

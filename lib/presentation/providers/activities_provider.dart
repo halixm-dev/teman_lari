@@ -1,5 +1,6 @@
 import 'dart:isolate';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/network/strava_api_client.dart';
 import '../../data/datasources/local_activity_datasource.dart';
@@ -200,11 +201,17 @@ final runningStatsProvider = FutureProvider<RunningStats?>((ref) async {
   }
 
   final useCase = ref.read(analyzeRunsUseCaseProvider);
-  final stats = await Isolate.run(() => useCase.compute(
-    target,
-    userMaxHr: prefs.maxHr,
-    userRestingHr: prefs.restingHr,
-  ));
+  final stats = kIsWeb
+      ? useCase.compute(
+          target,
+          userMaxHr: prefs.maxHr,
+          userRestingHr: prefs.restingHr,
+        )
+      : await Isolate.run(() => useCase.compute(
+          target,
+          userMaxHr: prefs.maxHr,
+          userRestingHr: prefs.restingHr,
+        ));
 
   final activityMaxHr = target
       .map((a) => a.maxHeartRate)
@@ -224,12 +231,20 @@ final trainingPlanProvider = FutureProvider<TrainingPlan>((ref) async {
   final activities = await ref.watch(activitiesProvider.future);
   final weekInCycle = await ref.watch(weekInCycleProvider.future);
   final prefs = await ref.watch(hrPreferencesProvider.future);
-  return await Isolate.run(() => ref.read(generatePlanUseCaseProvider).generate(
-    activities,
-    weekInCycle: weekInCycle,
-    userMaxHr: prefs.maxHr,
-    userRestingHr: prefs.restingHr,
-  ));
+  final generateUseCase = ref.read(generatePlanUseCaseProvider);
+  return kIsWeb
+      ? generateUseCase.generate(
+          activities,
+          weekInCycle: weekInCycle,
+          userMaxHr: prefs.maxHr,
+          userRestingHr: prefs.restingHr,
+        )
+      : await Isolate.run(() => generateUseCase.generate(
+          activities,
+          weekInCycle: weekInCycle,
+          userMaxHr: prefs.maxHr,
+          userRestingHr: prefs.restingHr,
+        ));
 });
 
 final weekInCycleProvider =

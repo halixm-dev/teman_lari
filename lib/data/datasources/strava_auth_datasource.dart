@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -13,10 +13,10 @@ class StravaAuthDataSource {
 
   Future<StravaTokens> authenticate() async {
     final redirectUri = kIsWeb
-        ? 'https://temanlari.vercel.app'
+        ? (kDebugMode ? Uri.base.origin : 'https://temanlari.vercel.app')
         : ApiConstants.stravaRedirectUri;
     final callbackScheme = kIsWeb
-        ? 'https'
+        ? 'http'
         : 'com.halixm.temanlari';
 
     final authUrl = Uri.https('www.strava.com', '/oauth/authorize', {
