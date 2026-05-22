@@ -1,172 +1,46 @@
 import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/network/strava_api_client.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
 import '../../data/datasources/local_activity_datasource.dart';
-import '../../data/datasources/preferences_storage.dart';
-import '../../data/datasources/strava_activity_datasource.dart';
 import '../../data/repositories/activity_repository_impl.dart';
 import '../../domain/entities/activity.dart';
 import '../../domain/entities/running_stats.dart';
-import '../../domain/entities/training_plan.dart';
 import '../../domain/repositories/activity_repository.dart';
 import '../../domain/usecases/analyze_runs_usecase.dart';
-import '../../domain/usecases/generate_plan_usecase.dart';
 import '../../domain/usecases/get_activities_usecase.dart';
-import '../../domain/usecases/training_plan_config.dart';
-import '../../domain/usecases/workout_descriptions.dart';
-import '../../domain/usecases/workout_sequence_strategy.dart';
-import 'auth_provider.dart';
+import 'core_provider.dart';
+import 'preferences_provider.dart';
 
-final stravaApiClientProvider = Provider<StravaApiClient>((ref) {
-  return StravaApiClient(
-    ref.read(tokenStorageProvider),
-    ref.read(stravaAuthDataSourceProvider),
-    ref.read(httpClientProvider),
-  );
-});
+part 'activities_provider.g.dart';
 
-final stravaActivityDataSourceProvider = Provider<StravaActivityDataSource>((
-  ref,
-) {
-  return StravaActivityDataSource(ref.read(stravaApiClientProvider));
-});
-
-final localActivityDataSourceProvider = Provider<LocalActivityDataSource>((
-  ref,
-) {
+@Riverpod(keepAlive: true)
+LocalActivityDataSource localActivityDataSource(Ref ref) {
   return LocalActivityDataSource();
-});
-
-final preferencesStorageProvider = Provider<PreferencesStorage>((ref) {
-  return PreferencesStorage();
-});
-
-final hrPreferencesProvider =
-    AsyncNotifierProvider<HrPreferencesNotifier, HrPreferences>(
-      () => HrPreferencesNotifier(),
-    );
-
-class HrPreferencesNotifier extends AsyncNotifier<HrPreferences> {
-  @override
-  Future<HrPreferences> build() async {
-    return ref.read(preferencesStorageProvider).getPreferences();
-  }
-
-  Future<void> saveRestingHr(int value) async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      await ref.read(preferencesStorageProvider).saveRestingHr(value);
-      return ref.read(preferencesStorageProvider).getPreferences();
-    });
-  }
-
-  Future<void> clearRestingHr() async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      await ref.read(preferencesStorageProvider).clearRestingHr();
-      return ref.read(preferencesStorageProvider).getPreferences();
-    });
-  }
-
-  Future<void> saveMaxHr(int value) async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      await ref.read(preferencesStorageProvider).saveMaxHr(value);
-      return ref.read(preferencesStorageProvider).getPreferences();
-    });
-  }
-
-  Future<void> clearMaxHr() async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      await ref.read(preferencesStorageProvider).clearMaxHr();
-      return ref.read(preferencesStorageProvider).getPreferences();
-    });
-  }
-
-  Future<void> saveThresholdPace(int seconds) async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      await ref.read(preferencesStorageProvider).saveThresholdPace(seconds);
-      return ref.read(preferencesStorageProvider).getPreferences();
-    });
-  }
-
-  Future<void> clearThresholdPace() async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      await ref.read(preferencesStorageProvider).clearThresholdPace();
-      return ref.read(preferencesStorageProvider).getPreferences();
-    });
-  }
-
-  Future<void> updateFromStrava({
-    int? activityMaxHr,
-    double? athleteMaxHr,
-    String? athleteDateOfBirth,
-    String? athleteName,
-  }) async {
-    final changed = await ref
-        .read(preferencesStorageProvider)
-        .updateFromStrava(
-          activityMaxHr: activityMaxHr,
-          athleteMaxHr: athleteMaxHr,
-          athleteDateOfBirth: athleteDateOfBirth,
-          athleteName: athleteName,
-        );
-    if (changed) {
-      ref.invalidateSelf();
-    }
-  }
 }
 
-final activityRepositoryProvider = Provider<ActivityRepository>((ref) {
+@Riverpod(keepAlive: true)
+ActivityRepository activityRepository(Ref ref) {
   return ActivityRepositoryImpl(
     remoteDataSource: ref.read(stravaActivityDataSourceProvider),
     localDataSource: ref.read(localActivityDataSourceProvider),
     preferencesStorage: ref.read(preferencesStorageProvider),
   );
-});
+}
 
-final getActivitiesUseCaseProvider = Provider<GetActivitiesUseCase>((ref) {
+@Riverpod(keepAlive: true)
+GetActivitiesUseCase getActivitiesUseCase(Ref ref) {
   return GetActivitiesUseCase(ref.read(activityRepositoryProvider));
-});
+}
 
-final analyzeRunsUseCaseProvider = Provider<AnalyzeRunsUseCase>((ref) {
+@Riverpod(keepAlive: true)
+AnalyzeRunsUseCase analyzeRunsUseCase(Ref ref) {
   return AnalyzeRunsUseCase();
-});
+}
 
-final trainingPlanConfigProvider = Provider<TrainingPlanConfig>((ref) {
-  return TrainingPlanConfig.defaultConfig;
-});
-
-final workoutSequenceStrategyProvider = Provider<WorkoutSequenceStrategy>((
-  ref,
-) {
-  return const DynamicWorkoutSequenceStrategy();
-});
-
-final workoutDescriptionsProvider = Provider<WorkoutDescriptions>((ref) {
-  return const WorkoutDescriptions();
-});
-
-final generatePlanUseCaseProvider = Provider<GeneratePlanUseCase>((ref) {
-  return GeneratePlanUseCase(
-    analyzeRuns: ref.read(analyzeRunsUseCaseProvider),
-    config: ref.read(trainingPlanConfigProvider),
-    sequenceStrategy: ref.read(workoutSequenceStrategyProvider),
-    descriptions: ref.read(workoutDescriptionsProvider),
-  );
-});
-
-final activitiesProvider =
-    AsyncNotifierProvider<ActivitiesNotifier, List<Activity>>(
-      () => ActivitiesNotifier(),
-    );
-
-class ActivitiesNotifier extends AsyncNotifier<List<Activity>> {
+@riverpod
+class ActivitiesNotifier extends _$ActivitiesNotifier {
   @override
   Future<List<Activity>> build() async {
     return ref.read(getActivitiesUseCaseProvider).execute(monthsBack: 12);
@@ -180,7 +54,8 @@ class ActivitiesNotifier extends AsyncNotifier<List<Activity>> {
   }
 }
 
-final runningStatsProvider = FutureProvider<RunningStats?>((ref) async {
+@riverpod
+Future<RunningStats?> runningStats(Ref ref) async {
   final activities = await ref.watch(activitiesProvider.future);
   final prefs = await ref.watch(hrPreferencesProvider.future);
   final repo = ref.read(activityRepositoryProvider);
@@ -256,83 +131,4 @@ final runningStatsProvider = FutureProvider<RunningStats?>((ref) async {
   }
 
   return stats;
-});
-
-final trainingPlanProvider = FutureProvider<TrainingPlan>((ref) async {
-  final activities = await ref.watch(activitiesProvider.future);
-  final weekInCycle = await ref.watch(weekInCycleProvider.future);
-  final prefs = await ref.watch(hrPreferencesProvider.future);
-  final generateUseCase = ref.read(generatePlanUseCaseProvider);
-  return kIsWeb
-      ? generateUseCase.generate(
-          activities,
-          weekInCycle: weekInCycle,
-          userMaxHr: prefs.maxHr,
-          userRestingHr: prefs.restingHr,
-        )
-      : await Isolate.run(
-          () => generateUseCase.generate(
-            activities,
-            weekInCycle: weekInCycle,
-            userMaxHr: prefs.maxHr,
-            userRestingHr: prefs.restingHr,
-          ),
-        );
-});
-
-final weekInCycleProvider = AsyncNotifierProvider<WeekInCycleNotifier, int>(
-  () => WeekInCycleNotifier(),
-);
-
-class WeekInCycleNotifier extends AsyncNotifier<int> {
-  @override
-  Future<int> build() async {
-    final prefs = ref.read(preferencesStorageProvider);
-    final stored = await prefs.getWeekInCycle();
-    final cycleStart = await prefs.getCycleStartDate();
-    final daysSinceStart = DateTime.now().difference(cycleStart).inDays;
-
-    if (daysSinceStart >= 28) {
-      await prefs.setWeekInCycle(0);
-      await prefs.setCycleStartDate(DateTime.now());
-      return 0;
-    }
-
-    final expectedWeek = daysSinceStart ~/ 7;
-    if (expectedWeek > stored && expectedWeek < 4) {
-      await prefs.setWeekInCycle(expectedWeek);
-      return expectedWeek;
-    }
-
-    return stored;
-  }
-
-  Future<void> advanceWeek() async {
-    final current = await future;
-    final prefs = ref.read(preferencesStorageProvider);
-    if (current < 3) {
-      final next = current + 1;
-      await prefs.setWeekInCycle(next);
-    } else {
-      await prefs.setWeekInCycle(0);
-      await prefs.setCycleStartDate(DateTime.now());
-    }
-    ref.invalidateSelf();
-  }
-
-  Future<void> resetCycle() async {
-    final prefs = ref.read(preferencesStorageProvider);
-    await prefs.setWeekInCycle(0);
-    await prefs.setCycleStartDate(DateTime.now());
-    ref.invalidateSelf();
-  }
 }
-
-final cycleStartDateProvider = FutureProvider<DateTime>((ref) async {
-  final prefs = ref.read(preferencesStorageProvider);
-  return prefs.getCycleStartDate();
-});
-
-final athleteNameProvider = FutureProvider<String?>((ref) async {
-  return ref.read(preferencesStorageProvider).getAthleteName();
-});

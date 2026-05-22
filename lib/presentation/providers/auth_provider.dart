@@ -1,58 +1,22 @@
 import 'dart:developer';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../core/network/strava_api_client.dart';
-import '../../data/datasources/preferences_storage.dart';
-import '../../data/datasources/strava_auth_datasource.dart';
-import '../../data/datasources/strava_activity_datasource.dart';
-import '../../data/datasources/token_storage.dart';
 import '../../domain/usecases/strava_auth_usecase.dart';
+import 'core_provider.dart';
 
-// Shared HTTP client with proper disposal
-final httpClientProvider = Provider<http.Client>((ref) {
-  final client = http.Client();
-  ref.onDispose(() => client.close());
-  return client;
-});
+part 'auth_provider.g.dart';
 
-final tokenStorageProvider = Provider<TokenStorage>((ref) {
-  return TokenStorage();
-});
-
-final stravaAuthDataSourceProvider = Provider<StravaAuthDataSource>((ref) {
-  return StravaAuthDataSource(ref.read(httpClientProvider));
-});
-
-final stravaAuthUseCaseProvider = Provider<StravaAuthUseCase>((ref) {
+@Riverpod(keepAlive: true)
+StravaAuthUseCase stravaAuthUseCase(Ref ref) {
   return StravaAuthUseCase(
     authDataSource: ref.read(stravaAuthDataSourceProvider),
     tokenStorage: ref.read(tokenStorageProvider),
   );
-});
+}
 
-final authApiClientProvider = Provider<StravaApiClient>((ref) {
-  return StravaApiClient(
-    ref.read(tokenStorageProvider),
-    ref.read(stravaAuthDataSourceProvider),
-    ref.read(httpClientProvider),
-  );
-});
-
-final authAthleteDataSourceProvider = Provider<StravaActivityDataSource>((ref) {
-  return StravaActivityDataSource(ref.read(authApiClientProvider));
-});
-
-final authPreferencesStorageProvider = Provider<PreferencesStorage>((ref) {
-  return PreferencesStorage();
-});
-
-final authStateProvider = NotifierProvider<AuthNotifier, AuthState>(
-  AuthNotifier.new,
-);
-
-class AuthNotifier extends Notifier<AuthState> {
+@riverpod
+class AuthNotifier extends _$AuthNotifier {
   @override
   AuthState build() {
     _checkAuthStatus();
@@ -81,9 +45,9 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<void> _syncAthleteProfile() async {
     try {
       final athlete = await ref
-          .read(authAthleteDataSourceProvider)
+          .read(stravaActivityDataSourceProvider)
           .getAthlete();
-      final storage = ref.read(authPreferencesStorageProvider);
+      final storage = ref.read(preferencesStorageProvider);
       final name = [
         if (athlete.firstName != null) athlete.firstName,
         if (athlete.lastName != null) athlete.lastName,

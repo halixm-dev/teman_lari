@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/utils/responsive.dart';
 import '../../domain/entities/training_plan.dart';
-import '../providers/activities_provider.dart';
+import '../providers/training_plan_provider.dart';
 import '../theme/app_colors.dart';
 
 class PlanScreen extends ConsumerWidget {

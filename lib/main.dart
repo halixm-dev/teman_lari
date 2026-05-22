@@ -71,7 +71,7 @@ class SplashScreen extends ConsumerStatefulWidget {
 class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   Widget build(BuildContext context) {
-    ref.listen(authStateProvider, (previous, next) {
+    ref.listen(authProvider, (previous, next) {
       if (next.isLoading) return;
       if (next.isAuthenticated) {
         context.go('/dashboard');

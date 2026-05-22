@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/utils/responsive.dart';
-import '../providers/activities_provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/preferences_provider.dart';
 import '../theme/app_colors.dart';
 import '../widgets/settings/about_card.dart';
 import '../widgets/settings/disconnect_strava_card.dart';
@@ -293,7 +293,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           FilledButton(
             onPressed: () {
-              ref.read(authStateProvider.notifier).logout();
+              ref.read(authProvider.notifier).logout();
               Navigator.pop(context);
             },
             child: const Text('Disconnect'),

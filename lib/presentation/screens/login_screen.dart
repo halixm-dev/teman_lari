@@ -11,10 +11,13 @@ class LoginScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(authStateProvider, (prev, next) {
-      if (next.isAuthenticated) context.go('/dashboard');
+    ref.listen(authProvider, (prev, next) {
+      if (next.isAuthenticated) {
+        context.go('/dashboard');
+      }
     });
-    final authState = ref.watch(authStateProvider);
+
+    final authState = ref.watch(authProvider);
 
     return Scaffold(
       body: ConstrainedContent(
@@ -105,7 +108,7 @@ class _LoginButton extends ConsumerWidget {
     return FilledButton.icon(
       onPressed: isLoading
           ? null
-          : () => ref.read(authStateProvider.notifier).login(),
+          : () => ref.read(authProvider.notifier).login(),
       icon: const Icon(Icons.login),
       label: const Text('Connect with Strava'),
       style: FilledButton.styleFrom(

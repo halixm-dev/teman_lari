@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/utils/responsive.dart';
 import '../../domain/entities/running_stats.dart';
 import '../providers/activities_provider.dart';
+import '../providers/preferences_provider.dart';
 import '../widgets/fitness_form_card.dart';
 import '../widgets/recent_activities_list.dart';
 import '../widgets/today_workout_card.dart';
