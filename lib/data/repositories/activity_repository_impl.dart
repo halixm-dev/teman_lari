@@ -103,7 +103,7 @@ class ActivityRepositoryImpl implements ActivityRepository {
     int maxHr = 190,
   }) {
     return models.map((model) {
-      final date = DateTime.parse(model.startDate);
+      final date = DateTime.parse(model.startDate).toLocal();
       final distanceKm = model.distance / 1000.0;
       final movingTimeSeconds = model.movingTime;
       final paceSecondsPerKm =
