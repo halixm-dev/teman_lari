@@ -376,8 +376,23 @@ void main() {
       mockAnalyze.stats = _stats(totalRuns: 20, formScore: 0);
       final plan = useCase.generate(activities);
       expect(plan.days.length, 7);
-      expect(plan.days[0].type, WorkoutType.easy);
-      expect(plan.days[2].type, WorkoutType.rest);
+      // After 5+ rest days, non-beginner should start with a run
+      expect(plan.days[0].type, isNot(WorkoutType.rest));
+      // Verify hard workouts are followed by rest or easy
+      for (int i = 0; i < plan.days.length - 1; i++) {
+        final current = plan.days[i].type;
+        final next = plan.days[i + 1].type;
+        final isHard = current == WorkoutType.intervals ||
+            current == WorkoutType.tempo ||
+            current == WorkoutType.longRun;
+        if (isHard) {
+          expect(
+            next,
+            anyOf(WorkoutType.rest, WorkoutType.easy),
+            reason: 'day $i ($current) must be followed by rest or easy',
+          );
+        }
+      }
     });
 
     test('recovery after hard workout', () {

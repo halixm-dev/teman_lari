@@ -14,7 +14,16 @@ class PlanScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final plan = ref.watch(trainingPlanProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Training Plan')),
+      appBar: AppBar(
+        title: const Text('Training Plan'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.info_outline),
+            color: AppColors.brandOrange,
+            onPressed: () => _showInfoSheet(context),
+          ),
+        ],
+      ),
       body: ConstrainedContent(
         child: plan.when(
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -22,6 +31,87 @@ class PlanScreen extends ConsumerWidget {
           data: (plan) => _PlanDataView(plan: plan),
         ),
       ),
+    );
+  }
+
+  void _showInfoSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.gray300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'How Your Plan Works',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    height: 1.35,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              _InfoRow(
+                icon: Icons.history,
+                text:
+                    'Your training plan is generated from your workout history and performance analysis.',
+              ),
+              const SizedBox(height: 16),
+              _InfoRow(
+                icon: Icons.auto_awesome,
+                text:
+                    'It dynamically updates each time you log a new run, adapting to your current fitness and recovery.',
+              ),
+              const SizedBox(height: 16),
+              _InfoRow(
+                icon: Icons.calendar_today,
+                text:
+                    'Your next workout is confirmed based on your latest data. Later days are projected and may adjust as you train.',
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
+  const _InfoRow({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 22, color: AppColors.gray500),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(fontSize: 14, height: 1.55),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -36,7 +126,10 @@ class _PlanErrorView extends StatelessWidget {
         children: [
           const Icon(Icons.error_outline, size: 64, color: Colors.red),
           const SizedBox(height: 16),
-          const Text('Could not generate your training plan.\nMake sure you\'re connected to Strava.', textAlign: TextAlign.center),
+          const Text(
+            'Could not generate your training plan.\nMake sure you\'re connected to Strava.',
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     );
@@ -56,7 +149,32 @@ class _PlanDataView extends StatelessWidget {
           child: ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: plan.days.length,
-            itemBuilder: (context, i) => _PlanDayCard(day: plan.days[i]),
+            itemBuilder: (context, i) {
+              final isFirst = i == 0;
+              final card = _PlanDayCard(day: plan.days[i], isFirst: isFirst);
+
+              if (isFirst) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(left: 4, bottom: 8),
+                      child: Text(
+                        'Next Workout',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                          color: AppColors.brandOrange,
+                        ),
+                      ),
+                    ),
+                    card,
+                  ],
+                );
+              }
+
+              return Opacity(opacity: 0.55, child: card);
+            },
           ),
         ),
       ],
@@ -94,18 +212,28 @@ class _PlanHeader extends StatelessWidget {
 
 class _PlanDayCard extends StatelessWidget {
   final TrainingDay day;
+  final bool isFirst;
 
-  const _PlanDayCard({required this.day});
+  const _PlanDayCard({required this.day, this.isFirst = false});
 
   @override
   Widget build(BuildContext context) {
     final isRest = day.type == WorkoutType.rest;
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
+      shape: isFirst
+          ? RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: AppColors.brandOrange, width: 1.5),
+            )
+          : null,
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: isFirst ? 12 : 8,
+        ),
         leading: _DayIcon(type: day.type),
-        title: _DayTitle(day: day),
+        title: _DayTitle(day: day, isFirst: isFirst),
         subtitle: _DaySubtitle(day: day, isRest: isRest),
         trailing: isRest ? null : const Icon(Icons.chevron_right),
         onTap: isRest ? null : () => context.push('/run-session', extra: day),
@@ -128,7 +256,8 @@ class _DayIcon extends StatelessWidget {
 
 class _DayTitle extends StatelessWidget {
   final TrainingDay day;
-  const _DayTitle({required this.day});
+  final bool isFirst;
+  const _DayTitle({required this.day, this.isFirst = false});
   @override
   Widget build(BuildContext context) {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -138,6 +267,24 @@ class _DayTitle extends StatelessWidget {
         Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
         const SizedBox(width: 8),
         _WorkoutTypeBadge(type: day.type),
+        if (!isFirst) ...[
+          const SizedBox(width: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+            decoration: BoxDecoration(
+              color: AppColors.gray300.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Text(
+              'Projected',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: AppColors.gray500,
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -147,7 +294,7 @@ class _DaySubtitle extends StatelessWidget {
   final TrainingDay day;
   final bool isRest;
   const _DaySubtitle({required this.day, required this.isRest});
-  
+
   @override
   Widget build(BuildContext context) {
     final paceTarget = day.paceTarget;
@@ -158,11 +305,17 @@ class _DaySubtitle extends StatelessWidget {
         const SizedBox(height: 4),
         if (!isRest && day.targetMinutes != null)
           day.warmUpMinutes != null
-              ? Text('Warmup ${day.warmUpMinutes} min + Run ${day.workMinutes} min + Cooldown ${day.coolDownMinutes} min')
+              ? Text(
+                  'Warmup ${day.warmUpMinutes} min + Run ${day.workMinutes} min + Cooldown ${day.coolDownMinutes} min',
+                )
               : Text('${day.targetMinutes} min'),
         if (paceTarget != null)
-          Text('${_paceStr(paceTarget.fastestPace)} - ${_paceStr(paceTarget.slowestPace)} /km', style: const TextStyle(fontWeight: FontWeight.w500)),
-        if (hrTarget != null) Text('♡ ${hrTarget.minBpm}-${hrTarget.maxBpm} bpm'),
+          Text(
+            '${_paceStr(paceTarget.fastestPace)} - ${_paceStr(paceTarget.slowestPace)} /km',
+            style: const TextStyle(fontWeight: FontWeight.w500),
+          ),
+        if (hrTarget != null)
+          Text('♡ ${hrTarget.minBpm}-${hrTarget.maxBpm} bpm'),
         const SizedBox(height: 4),
         Text(day.description, style: Theme.of(context).textTheme.bodySmall),
       ],
@@ -174,8 +327,6 @@ class _DaySubtitle extends StatelessWidget {
     final s = pace.inSeconds % 60;
     return '$m:${s.toString().padLeft(2, '0')}';
   }
-
-
 }
 
 class _WorkoutTypeBadge extends StatelessWidget {

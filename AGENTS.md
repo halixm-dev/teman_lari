@@ -8,6 +8,7 @@ Strava running analyzer with training plan generation (Flutter/Dart).
 
 ## Tooling
 
+- Token Optimizer (RTK): ALWAYS prefix commands with `rtk` if possible (e.g. `rtk git status`, `rtk git commit`) to save tokens.
 - Codegen: `dart run build_runner build --delete-conflicting-outputs`
 - Test: `flutter test`
 - Lint: `flutter analyze`
