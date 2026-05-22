@@ -39,9 +39,9 @@ class _Header extends StatelessWidget {
       children: [
         Text(
           'Heart Rate Zones Preview',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
         const Icon(Icons.show_chart, color: AppColors.brandOrange),
       ],
@@ -66,7 +66,10 @@ class _ZoneRow extends StatelessWidget {
             children: [
               Text(
                 zone['label'],
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
               ),
               Text(
                 '${zone['min']} - ${zone['max']} bpm',

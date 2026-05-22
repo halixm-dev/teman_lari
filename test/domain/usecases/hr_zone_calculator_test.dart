@@ -22,27 +22,30 @@ RunActivity _makeActivity({
 
 void main() {
   group('HrZoneCalculator', () {
-    test('uses default restingHr=60 and default maxHr=190 with empty activities', () {
-      final zones = HrZoneCalculator.fromActivities([]);
+    test(
+      'uses default restingHr=60 and default maxHr=190 with empty activities',
+      () {
+        final zones = HrZoneCalculator.fromActivities([]);
 
-      expect(zones.length, 5);
-      // With maxHr=190, restingHr=60 → HRR=130
-      // Zone 1: 60 – 60+130*0.60=138
-      // Zone 2: 138 – 60+130*0.70=151
-      // Zone 3: 151 – 60+130*0.80=164
-      // Zone 4: 164 – 60+130*0.90=177
-      // Zone 5: 177 – 190
-      expect(zones[0].minBpm, 60);
-      expect(zones[0].maxBpm, 138);
-      expect(zones[1].minBpm, 138);
-      expect(zones[1].maxBpm, 151);
-      expect(zones[2].minBpm, 151);
-      expect(zones[2].maxBpm, 164);
-      expect(zones[3].minBpm, 164);
-      expect(zones[3].maxBpm, 177);
-      expect(zones[4].minBpm, 177);
-      expect(zones[4].maxBpm, 190);
-    });
+        expect(zones.length, 5);
+        // With maxHr=190, restingHr=60 → HRR=130
+        // Zone 1: 60 – 60+130*0.60=138
+        // Zone 2: 138 – 60+130*0.70=151
+        // Zone 3: 151 – 60+130*0.80=164
+        // Zone 4: 164 – 60+130*0.90=177
+        // Zone 5: 177 – 190
+        expect(zones[0].minBpm, 60);
+        expect(zones[0].maxBpm, 138);
+        expect(zones[1].minBpm, 138);
+        expect(zones[1].maxBpm, 151);
+        expect(zones[2].minBpm, 151);
+        expect(zones[2].maxBpm, 164);
+        expect(zones[3].minBpm, 164);
+        expect(zones[3].maxBpm, 177);
+        expect(zones[4].minBpm, 177);
+        expect(zones[4].maxBpm, 190);
+      },
+    );
 
     test('uses custom restingHr when provided', () {
       final zones = HrZoneCalculator.fromActivities([], restingHr: 50);
@@ -103,8 +106,11 @@ void main() {
       );
 
       for (int i = 0; i < zones.length - 1; i++) {
-        expect(zones[i].maxBpm, zones[i + 1].minBpm,
-            reason: 'Zone ${i + 1} max should equal Zone ${i + 2} min');
+        expect(
+          zones[i].maxBpm,
+          zones[i + 1].minBpm,
+          reason: 'Zone ${i + 1} max should equal Zone ${i + 2} min',
+        );
       }
     });
 

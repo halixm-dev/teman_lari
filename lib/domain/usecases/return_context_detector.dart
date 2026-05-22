@@ -86,7 +86,8 @@ class ReturnContextDetector {
     final weekly = <String, double>{};
     for (final activity in activities) {
       final weekKey = _weekCommencingKey(activity.date);
-      weekly[weekKey] = (weekly[weekKey] ?? 0) +
+      weekly[weekKey] =
+          (weekly[weekKey] ?? 0) +
           (byDistance
               ? activity.distanceKm
               : activity.movingTime.inMinutes.toDouble());

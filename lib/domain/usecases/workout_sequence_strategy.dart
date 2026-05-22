@@ -69,9 +69,7 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
     final daysSinceLastRun = _daysSinceLastRun(recentActivities, startDate);
     if (daysSinceLastRun >= 2 && nextWeek.first == WorkoutType.rest) {
       // Find the first non-rest day and rotate to it
-      final firstRunIdx = nextWeek.indexWhere(
-        (w) => w != WorkoutType.rest,
-      );
+      final firstRunIdx = nextWeek.indexWhere((w) => w != WorkoutType.rest);
       if (firstRunIdx > 0) {
         nextWeek = [
           ...nextWeek.sublist(firstRunIdx),
@@ -164,9 +162,7 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
     if (!constraints.allows(WorkoutType.tempo) &&
         !constraints.allows(WorkoutType.intervals) &&
         !constraints.allows(WorkoutType.longRun)) {
-      return last == WorkoutType.rest
-          ? WorkoutType.easy
-          : WorkoutType.rest;
+      return last == WorkoutType.rest ? WorkoutType.easy : WorkoutType.rest;
     }
 
     // Cap hard workouts to max 3 per week (80/20 rule)
@@ -208,11 +204,13 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
     for (int i = 0; i < 14; i++) {
       final act = _getActivityOn(activities, cursor);
       if (act != null) {
-        history.add(classifyWorkoutType(
-          act,
-          thresholdPace,
-          longRunMinDuration: longRunMinDuration,
-        ));
+        history.add(
+          classifyWorkoutType(
+            act,
+            thresholdPace,
+            longRunMinDuration: longRunMinDuration,
+          ),
+        );
       } else {
         history.add(WorkoutType.rest);
       }
@@ -234,10 +232,12 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
 
   bool _hasRunToday(List<RunActivity> activities) {
     final today = DateTime.now();
-    return activities.any((a) =>
-        a.date.year == today.year &&
-        a.date.month == today.month &&
-        a.date.day == today.day);
+    return activities.any(
+      (a) =>
+          a.date.year == today.year &&
+          a.date.month == today.month &&
+          a.date.day == today.day,
+    );
   }
 
   int _daysSinceLastRun(List<RunActivity> activities, DateTime startDate) {

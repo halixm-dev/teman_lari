@@ -142,9 +142,9 @@ double _square(double phase) => sin(phase) > 0 ? 1.0 : -1.0;
 
 List<int> _le16(int v) => [v & 0xFF, (v >> 8) & 0xFF];
 List<int> _le32(int v) => [
-      v & 0xFF,
-      (v >> 8) & 0xFF,
-      (v >> 16) & 0xFF,
-      (v >> 24) & 0xFF,
-    ];
+  v & 0xFF,
+  (v >> 8) & 0xFF,
+  (v >> 16) & 0xFF,
+  (v >> 24) & 0xFF,
+];
 List<int> _utf8(String s) => s.codeUnits;

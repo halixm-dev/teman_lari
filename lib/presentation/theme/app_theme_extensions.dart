@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:teman_lari/presentation/theme/app_colors.dart';
 import 'package:teman_lari/presentation/theme/app_spacing.dart';
+import 'package:teman_lari/presentation/theme/app_typography.dart';
 
 class AppSpacingExtension extends ThemeExtension<AppSpacingExtension> {
   final double space1;
@@ -34,7 +35,9 @@ class AppSpacingExtension extends ThemeExtension<AppSpacingExtension> {
 
   @override
   ThemeExtension<AppSpacingExtension> lerp(
-      covariant ThemeExtension<AppSpacingExtension>? other, double t) {
+    covariant ThemeExtension<AppSpacingExtension>? other,
+    double t,
+  ) {
     if (other is! AppSpacingExtension) {
       return this;
     }
@@ -97,7 +100,9 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
 
   @override
   ThemeExtension<AppColorsExtension> lerp(
-      covariant ThemeExtension<AppColorsExtension>? other, double t) {
+    covariant ThemeExtension<AppColorsExtension>? other,
+    double t,
+  ) {
     if (other is! AppColorsExtension) {
       return this;
     }
@@ -116,6 +121,38 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
       danger: Color.lerp(danger, other.danger, t)!,
       warning: Color.lerp(warning, other.warning, t)!,
       info: Color.lerp(info, other.info, t)!,
+    );
+  }
+}
+
+class AppTypographyExtension extends ThemeExtension<AppTypographyExtension> {
+  final TextStyle statValue;
+  final TextStyle statLabel;
+  final TextStyle caption;
+
+  const AppTypographyExtension({
+    required this.statValue,
+    required this.statLabel,
+    required this.caption,
+  });
+
+  @override
+  ThemeExtension<AppTypographyExtension> copyWith() {
+    return this;
+  }
+
+  @override
+  ThemeExtension<AppTypographyExtension> lerp(
+    covariant ThemeExtension<AppTypographyExtension>? other,
+    double t,
+  ) {
+    if (other is! AppTypographyExtension) {
+      return this;
+    }
+    return AppTypographyExtension(
+      statValue: TextStyle.lerp(statValue, other.statValue, t)!,
+      statLabel: TextStyle.lerp(statLabel, other.statLabel, t)!,
+      caption: TextStyle.lerp(caption, other.caption, t)!,
     );
   }
 }
@@ -149,4 +186,10 @@ const defaultColorsExtension = AppColorsExtension(
   danger: AppColors.danger,
   warning: AppColors.warning,
   info: AppColors.info,
+);
+
+final defaultTypographyExtension = AppTypographyExtension(
+  statValue: AppTypography.statValue,
+  statLabel: AppTypography.statLabel,
+  caption: AppTypography.caption,
 );

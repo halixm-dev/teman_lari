@@ -80,8 +80,9 @@ class AuthNotifier extends Notifier<AuthState> {
 
   Future<void> _syncAthleteProfile() async {
     try {
-      final athlete =
-          await ref.read(authAthleteDataSourceProvider).getAthlete();
+      final athlete = await ref
+          .read(authAthleteDataSourceProvider)
+          .getAthlete();
       final storage = ref.read(authPreferencesStorageProvider);
       final name = [
         if (athlete.firstName != null) athlete.firstName,
@@ -93,7 +94,12 @@ class AuthNotifier extends Notifier<AuthState> {
         athleteName: name.isNotEmpty ? name : null,
       );
     } catch (e, stack) {
-      log('Profile sync failed', name: 'AuthNotifier', error: e, stackTrace: stack);
+      log(
+        'Profile sync failed',
+        name: 'AuthNotifier',
+        error: e,
+        stackTrace: stack,
+      );
     }
   }
 

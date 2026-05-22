@@ -45,8 +45,8 @@ final preferencesStorageProvider = Provider<PreferencesStorage>((ref) {
 
 final hrPreferencesProvider =
     AsyncNotifierProvider<HrPreferencesNotifier, HrPreferences>(
-  () => HrPreferencesNotifier(),
-);
+      () => HrPreferencesNotifier(),
+    );
 
 class HrPreferencesNotifier extends AsyncNotifier<HrPreferences> {
   @override
@@ -92,12 +92,14 @@ class HrPreferencesNotifier extends AsyncNotifier<HrPreferences> {
     String? athleteDateOfBirth,
     String? athleteName,
   }) async {
-    final changed = await ref.read(preferencesStorageProvider).updateFromStrava(
-      activityMaxHr: activityMaxHr,
-      athleteMaxHr: athleteMaxHr,
-      athleteDateOfBirth: athleteDateOfBirth,
-      athleteName: athleteName,
-    );
+    final changed = await ref
+        .read(preferencesStorageProvider)
+        .updateFromStrava(
+          activityMaxHr: activityMaxHr,
+          athleteMaxHr: athleteMaxHr,
+          athleteDateOfBirth: athleteDateOfBirth,
+          athleteName: athleteName,
+        );
     if (changed) {
       ref.invalidateSelf();
     }
@@ -166,7 +168,8 @@ final runningStatsProvider = FutureProvider<RunningStats?>((ref) async {
   final activities = await ref.watch(activitiesProvider.future);
   final prefs = await ref.watch(hrPreferencesProvider.future);
   final repo = ref.read(activityRepositoryProvider);
-  final sortedActivities = [...activities]..sort((a, b) => b.date.compareTo(a.date));
+  final sortedActivities = [...activities]
+    ..sort((a, b) => b.date.compareTo(a.date));
   final withHrIds = sortedActivities
       .where((a) => a.avgHeartRate != null)
       .map((a) => a.id)
@@ -207,21 +210,26 @@ final runningStatsProvider = FutureProvider<RunningStats?>((ref) async {
           userMaxHr: prefs.maxHr,
           userRestingHr: prefs.restingHr,
         )
-      : await Isolate.run(() => useCase.compute(
-          target,
-          userMaxHr: prefs.maxHr,
-          userRestingHr: prefs.restingHr,
-        ));
+      : await Isolate.run(
+          () => useCase.compute(
+            target,
+            userMaxHr: prefs.maxHr,
+            userRestingHr: prefs.restingHr,
+          ),
+        );
 
   final activityMaxHr = target
       .map((a) => a.maxHeartRate)
       .whereType<double>()
-      .fold<double?>(null, (max, hr) => max == null ? hr : (hr > max ? hr : max));
+      .fold<double?>(
+        null,
+        (max, hr) => max == null ? hr : (hr > max ? hr : max),
+      );
 
   if (activityMaxHr != null) {
-    await ref.read(hrPreferencesProvider.notifier).updateFromStrava(
-      activityMaxHr: activityMaxHr.round(),
-    );
+    await ref
+        .read(hrPreferencesProvider.notifier)
+        .updateFromStrava(activityMaxHr: activityMaxHr.round());
   }
 
   return stats;
@@ -239,16 +247,17 @@ final trainingPlanProvider = FutureProvider<TrainingPlan>((ref) async {
           userMaxHr: prefs.maxHr,
           userRestingHr: prefs.restingHr,
         )
-      : await Isolate.run(() => generateUseCase.generate(
-          activities,
-          weekInCycle: weekInCycle,
-          userMaxHr: prefs.maxHr,
-          userRestingHr: prefs.restingHr,
-        ));
+      : await Isolate.run(
+          () => generateUseCase.generate(
+            activities,
+            weekInCycle: weekInCycle,
+            userMaxHr: prefs.maxHr,
+            userRestingHr: prefs.restingHr,
+          ),
+        );
 });
 
-final weekInCycleProvider =
-    AsyncNotifierProvider<WeekInCycleNotifier, int>(
+final weekInCycleProvider = AsyncNotifierProvider<WeekInCycleNotifier, int>(
   () => WeekInCycleNotifier(),
 );
 

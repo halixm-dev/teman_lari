@@ -21,7 +21,10 @@ class DashboardScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(_greeting(nameAsync.whenOrNull(data: (n) => n))),
         actions: [
-          IconButton(icon: const Icon(Icons.refresh), onPressed: () => ref.read(activitiesProvider.notifier).refresh()),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => ref.read(activitiesProvider.notifier).refresh(),
+          ),
         ],
       ),
       body: ConstrainedContent(
@@ -31,7 +34,9 @@ class DashboardScreen extends ConsumerWidget {
           data: (_) => statsAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (err, _) => Center(child: Text('Error: $err')),
-            data: (stats) => stats == null ? const Center(child: Text('No data')) : _DashboardData(stats: stats),
+            data: (stats) => stats == null
+                ? const Center(child: Text('No data'))
+                : _DashboardData(stats: stats),
           ),
         ),
       ),
@@ -40,7 +45,11 @@ class DashboardScreen extends ConsumerWidget {
 
   String _greeting(String? name) {
     final h = DateTime.now().hour;
-    final tg = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+    final tg = h < 12
+        ? 'Good morning'
+        : h < 17
+        ? 'Good afternoon'
+        : 'Good evening';
     return '$tg, ${name ?? 'Runner'}';
   }
 }

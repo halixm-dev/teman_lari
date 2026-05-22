@@ -105,9 +105,9 @@ class _CardHeader extends StatelessWidget {
         const SizedBox(width: 8),
         Text(
           'Heart Rate Settings',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
       ],
     );

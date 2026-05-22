@@ -12,8 +12,8 @@ class AnalyzeRunsUseCase {
   AnalyzeRunsUseCase({
     TrainingLoadCalculator? loadCalculator,
     ReturnContextDetector? returnDetector,
-  })  : _loadCalculator = loadCalculator ?? TrainingLoadCalculator(),
-        _returnDetector = returnDetector ?? ReturnContextDetector();
+  }) : _loadCalculator = loadCalculator ?? TrainingLoadCalculator(),
+       _returnDetector = returnDetector ?? ReturnContextDetector();
 
   RunningStats compute(
     List<RunActivity> activities, {
@@ -100,7 +100,8 @@ class AnalyzeRunsUseCase {
     final weekly = <String, double>{};
     for (final activity in activities) {
       final weekKey = _weekCommencingKey(activity.date);
-      weekly[weekKey] = (weekly[weekKey] ?? 0) +
+      weekly[weekKey] =
+          (weekly[weekKey] ?? 0) +
           (byDistance
               ? activity.distanceKm
               : activity.movingTime.inMinutes.toDouble());
@@ -167,29 +168,22 @@ class AnalyzeRunsUseCase {
     return zoneSeconds.map((k, v) => MapEntry(k, v / totalSeconds));
   }
 
-  int? _resolveMaxHr(
-    List<RunActivity> activities, {
-    int? userValue,
-  }) {
+  int? _resolveMaxHr(List<RunActivity> activities, {int? userValue}) {
     if (userValue != null) return userValue;
-    final values = activities
-        .map((a) => a.maxHeartRate)
-        .whereType<double>();
+    final values = activities.map((a) => a.maxHeartRate).whereType<double>();
     if (values.isEmpty) return null;
     return values.reduce((a, b) => a > b ? a : b).round();
   }
 
-  int? _resolveRestingHr(
-    List<RunActivity> activities, {
-    int? userValue,
-  }) {
+  int? _resolveRestingHr(List<RunActivity> activities, {int? userValue}) {
     if (userValue != null) return userValue;
     return null;
   }
 
   double? _estimateVo2Max(List<RunActivity> activities) {
-    final candidates =
-        activities.where((a) => a.movingTime.inMinutes >= 12).toList();
+    final candidates = activities
+        .where((a) => a.movingTime.inMinutes >= 12)
+        .toList();
     if (candidates.isEmpty) return null;
 
     final best = candidates.reduce(

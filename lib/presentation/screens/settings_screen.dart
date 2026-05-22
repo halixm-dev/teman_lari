@@ -54,11 +54,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     _restingHrController.text = prefs.restingHr.toString();
     _storedRestingHr = prefs.restingHr;
-    
+
     final maxStr = prefs.maxHr?.toString() ?? '';
     _maxHrController.text = maxStr;
     _storedMaxHr = prefs.maxHr;
-    
+
     _storedAge = prefs.age;
 
     _restingHrController.addListener(_onFieldChanged);
@@ -190,9 +190,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     } catch (e) {
       setState(() => _isSaving = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save settings: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to save settings: $e')));
       }
     }
   }
@@ -202,13 +202,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final restingHr = getEffectiveRestingHr(maxHr);
     final hrr = maxHr - restingHr;
     const boundaries = [0.60, 0.70, 0.80, 0.90];
-    const labels = ['Zone 1 - Recovery', 'Zone 2 - Aerobic Base', 'Zone 3 - Tempo', 'Zone 4 - Threshold', 'Zone 5 - VO2max'];
-    const colors = [Colors.blue, Colors.green, Colors.orange, AppColors.brandOrange, Colors.red];
+    const labels = [
+      'Zone 1 - Recovery',
+      'Zone 2 - Aerobic Base',
+      'Zone 3 - Tempo',
+      'Zone 4 - Threshold',
+      'Zone 5 - VO2max',
+    ];
+    const colors = [
+      Colors.blue,
+      Colors.green,
+      Colors.orange,
+      AppColors.brandOrange,
+      Colors.red,
+    ];
 
     return List.generate(5, (i) {
-      final minBpm = i == 0 ? restingHr : (restingHr + hrr * boundaries[i - 1]).round();
+      final minBpm = i == 0
+          ? restingHr
+          : (restingHr + hrr * boundaries[i - 1]).round();
       final maxBpm = i == 4 ? maxHr : (restingHr + hrr * boundaries[i]).round();
-      return {'label': labels[i], 'min': minBpm, 'max': maxBpm, 'color': colors[i]};
+      return {
+        'label': labels[i],
+        'min': minBpm,
+        'max': maxBpm,
+        'color': colors[i],
+      };
     });
   }
 
@@ -229,17 +248,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               maxHrHint: _buildMaxHrHint(),
             ),
             ZonesPreviewCard(zones: _calculatePreviewZones()),
-            DisconnectStravaCard(
-              onTap: () => _showLogoutDialog(context, ref),
-            ),
+            DisconnectStravaCard(onTap: () => _showLogoutDialog(context, ref)),
             const AboutCard(),
           ],
         ),
       ),
     );
   }
-
-
 
   String _buildMaxHrHint() {
     final age = _storedAge;
@@ -268,9 +283,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Disconnect Strava'),
-        content: const Text('Are you sure you want to disconnect your Strava account?'),
+        content: const Text(
+          'Are you sure you want to disconnect your Strava account?',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
           FilledButton(
             onPressed: () {
               ref.read(authStateProvider.notifier).logout();

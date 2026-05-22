@@ -47,10 +47,7 @@ void main() {
     );
   }
 
-  RunningStats _advancedStats({
-    int totalRuns = 60,
-    ReturnContext? returnCtx,
-  }) {
+  RunningStats _advancedStats({int totalRuns = 60, ReturnContext? returnCtx}) {
     return RunningStats(
       totalRuns: totalRuns,
       totalDistanceKm: totalRuns * 8.0,
@@ -89,8 +86,11 @@ void main() {
       );
 
       // Plan starts tomorrow (since ran today). Tomorrow must be rest.
-      expect(sequence[0], equals(WorkoutType.rest),
-          reason: 'Day after a run should be rest for beginners');
+      expect(
+        sequence[0],
+        equals(WorkoutType.rest),
+        reason: 'Day after a run should be rest for beginners',
+      );
     });
 
     test('with no recent runs (3 days ago), day 1 should be easy', () {
@@ -112,8 +112,11 @@ void main() {
       );
 
       // Plan starts today (no run today). Should be easy since rested 3 days.
-      expect(sequence[0], equals(WorkoutType.easy),
-          reason: 'After 3 rest days, next workout should be easy');
+      expect(
+        sequence[0],
+        equals(WorkoutType.easy),
+        reason: 'After 3 rest days, next workout should be easy',
+      );
     });
 
     test('strict alternation — no two consecutive run days', () {
@@ -136,8 +139,11 @@ void main() {
       // Verify no two consecutive running days
       for (int i = 0; i < sequence.length - 1; i++) {
         if (sequence[i] != WorkoutType.rest) {
-          expect(sequence[i + 1], equals(WorkoutType.rest),
-              reason: 'Beginner day ${i + 1} after a run day $i should be rest');
+          expect(
+            sequence[i + 1],
+            equals(WorkoutType.rest),
+            reason: 'Beginner day ${i + 1} after a run day $i should be rest',
+          );
         }
       }
     });
@@ -158,10 +164,12 @@ void main() {
         weekInCycle: -1,
       );
 
-      final runDays =
-          sequence.where((w) => w != WorkoutType.rest).length;
-      expect(runDays, lessThanOrEqualTo(3),
-          reason: 'Beginners should have at most 3 running days per week');
+      final runDays = sequence.where((w) => w != WorkoutType.rest).length;
+      expect(
+        runDays,
+        lessThanOrEqualTo(3),
+        reason: 'Beginners should have at most 3 running days per week',
+      );
     });
   });
 
@@ -176,9 +184,7 @@ void main() {
         preGapAvgMin: 180,
         lastActivityDate: today.subtract(const Duration(days: 10)),
       );
-      final activities = [
-        _activity(date: today),
-      ];
+      final activities = [_activity(date: today)];
 
       final sequence = strategy.determineSequence(
         stats: _beginnerStats(totalRuns: 20, returnCtx: returnCtx),
@@ -189,8 +195,11 @@ void main() {
         weekInCycle: -1,
       );
 
-      expect(sequence[0], equals(WorkoutType.rest),
-          reason: 'Return ramp: day after a run should be rest');
+      expect(
+        sequence[0],
+        equals(WorkoutType.rest),
+        reason: 'Return ramp: day after a run should be rest',
+      );
     });
   });
 
@@ -213,8 +222,11 @@ void main() {
         weekInCycle: 3,
       );
 
-      expect(sequence[0], equals(WorkoutType.rest),
-          reason: 'Deload: day after a run should be rest');
+      expect(
+        sequence[0],
+        equals(WorkoutType.rest),
+        reason: 'Deload: day after a run should be rest',
+      );
     });
   });
 }

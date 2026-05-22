@@ -80,7 +80,9 @@ class _RunControlsState extends State<RunControls> {
             icon: widget.isAudioCoachOn ? Icons.volume_up : Icons.volume_off,
             onPressed: widget.isFinished ? null : widget.onToggleAudioCoach,
             isActive: widget.isAudioCoachOn,
-            semanticLabel: widget.isAudioCoachOn ? 'Disable audio coach' : 'Enable audio coach',
+            semanticLabel: widget.isAudioCoachOn
+                ? 'Disable audio coach'
+                : 'Enable audio coach',
           ),
           // Play / Pause FAB
           if (!widget.isFinished)
@@ -89,56 +91,56 @@ class _RunControlsState extends State<RunControls> {
               label: widget.isRunning ? 'Pause workout' : 'Start workout',
               child: GestureDetector(
                 onTap: widget.isRunning ? null : widget.onToggleRunning,
-              onLongPressStart: (_) => _onLongPressStart(),
-              onLongPressEnd: (_) => _onLongPressEnd(),
-              onLongPressCancel: _onLongPressCancel,
-              onLongPress: widget.isRunning ? null : null,
-              child: ValueListenableBuilder<double>(
-                valueListenable: _holdProgress,
-                builder: (context, progress, _) {
-                  final primaryColor = theme.colorScheme.primary;
-                  return Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: primaryColor,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: primaryColor.withValues(alpha: 0.3),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        if (progress > 0)
-                          SizedBox(
-                            width: 80,
-                            height: 80,
-                            child: CircularProgressIndicator(
-                              value: progress,
-                              color: theme.colorScheme.onPrimary.withValues(
-                                alpha: 0.6,
-                              ),
-                              strokeWidth: 4,
-                              backgroundColor: Colors.transparent,
-                            ),
+                onLongPressStart: (_) => _onLongPressStart(),
+                onLongPressEnd: (_) => _onLongPressEnd(),
+                onLongPressCancel: _onLongPressCancel,
+                onLongPress: widget.isRunning ? null : null,
+                child: ValueListenableBuilder<double>(
+                  valueListenable: _holdProgress,
+                  builder: (context, progress, _) {
+                    final primaryColor = theme.colorScheme.primary;
+                    return Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: primaryColor,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: primaryColor.withValues(alpha: 0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
                           ),
-                        Icon(
-                          widget.isRunning ? Icons.pause : Icons.play_arrow,
-                          color: theme.colorScheme.onPrimary,
-                          size: 36,
-                        ),
-                      ],
-                    ),
-                  );
-                },
+                        ],
+                      ),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          if (progress > 0)
+                            SizedBox(
+                              width: 80,
+                              height: 80,
+                              child: CircularProgressIndicator(
+                                value: progress,
+                                color: theme.colorScheme.onPrimary.withValues(
+                                  alpha: 0.6,
+                                ),
+                                strokeWidth: 4,
+                                backgroundColor: Colors.transparent,
+                              ),
+                            ),
+                          Icon(
+                            widget.isRunning ? Icons.pause : Icons.play_arrow,
+                            color: theme.colorScheme.onPrimary,
+                            size: 36,
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -176,14 +178,14 @@ class _IconButton extends StatelessWidget {
             onTap: onPressed,
             customBorder: const CircleBorder(),
             child: Icon(
-            icon,
-            color: isActive
-                ? theme.colorScheme.primary
-                : theme.colorScheme.onSurface,
-            size: 24,
+              icon,
+              color: isActive
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.onSurface,
+              size: 24,
+            ),
           ),
         ),
-      ),
       ),
     );
   }

@@ -33,16 +33,19 @@ class _AllEasyStrategy implements WorkoutSequenceStrategy {
     required int thresholdPace,
     required int longRunMinDuration,
     required int weekInCycle,
-  }) =>
-      List.filled(7, WorkoutType.easy);
+  }) => List.filled(7, WorkoutType.easy);
 }
 
 class _MockAnalyzeRuns extends AnalyzeRunsUseCase {
   RunningStats? stats;
 
   @override
-  RunningStats compute(List<RunActivity> activities,
-      {int? userMaxHr, int? userRestingHr, TrainingPlanConfig? config}) {
+  RunningStats compute(
+    List<RunActivity> activities, {
+    int? userMaxHr,
+    int? userRestingHr,
+    TrainingPlanConfig? config,
+  }) {
     return stats ?? super.compute(activities);
   }
 }
@@ -109,8 +112,10 @@ void main() {
       final plan = useCase.generate([]);
       expect(plan.days, isEmpty);
       expect(plan.goal, 'No data available');
-      expect(plan.description,
-          'Connect Strava and complete some runs to generate a plan.');
+      expect(
+        plan.description,
+        'Connect Strava and complete some runs to generate a plan.',
+      );
     });
   });
 
@@ -137,10 +142,7 @@ void main() {
       final activities = [_activity(daysAgo: 1)];
       final plan = useCase.generate(activities);
       for (int i = 0; i < 7; i++) {
-        expect(
-          plan.days[i].date.difference(plan.startDate).inDays,
-          i,
-        );
+        expect(plan.days[i].date.difference(plan.startDate).inDays, i);
       }
     });
 
@@ -150,14 +152,26 @@ void main() {
       for (final day in plan.days) {
         if (day.type != WorkoutType.rest &&
             day.type != WorkoutType.crossTraining) {
-          expect(day.paceTarget, isNotNull,
-              reason: '${day.type} should have pace target');
-          expect(day.heartRateTarget, isNotNull,
-              reason: '${day.type} should have HR target');
-          expect(day.targetMinutes, isNotNull,
-              reason: '${day.type} should have target minutes');
-          expect(day.estimatedDuration, isNotNull,
-              reason: '${day.type} should have estimated duration');
+          expect(
+            day.paceTarget,
+            isNotNull,
+            reason: '${day.type} should have pace target',
+          );
+          expect(
+            day.heartRateTarget,
+            isNotNull,
+            reason: '${day.type} should have HR target',
+          );
+          expect(
+            day.targetMinutes,
+            isNotNull,
+            reason: '${day.type} should have target minutes',
+          );
+          expect(
+            day.estimatedDuration,
+            isNotNull,
+            reason: '${day.type} should have estimated duration',
+          );
         }
       }
     });
@@ -177,18 +191,17 @@ void main() {
     });
 
     test('"Recovery & consolidation week" when formScore < -10', () {
-      mockAnalyze.stats =
-          _stats(totalRuns: 15, fitnessScore: 35, formScore: -15);
+      mockAnalyze.stats = _stats(
+        totalRuns: 15,
+        fitnessScore: 35,
+        formScore: -15,
+      );
       final plan = useCase.generate([_activity()]);
       expect(plan.goal, 'Recovery & consolidation week');
     });
 
     test('"Improve threshold pace" when fit and fresh', () {
-      mockAnalyze.stats = _stats(
-        totalRuns: 15,
-        fitnessScore: 35,
-        formScore: 0,
-      );
+      mockAnalyze.stats = _stats(totalRuns: 15, fitnessScore: 35, formScore: 0);
       final plan = useCase.generate([_activity()]);
       expect(plan.goal, 'Improve threshold pace & race readiness');
     });
@@ -268,7 +281,9 @@ void main() {
         (s, d) => s + (d.targetMinutes ?? 0),
       );
       expect(totalTarget, greaterThan(0));
-      final restDays = plan.days.where((d) => d.type == WorkoutType.rest).length;
+      final restDays = plan.days
+          .where((d) => d.type == WorkoutType.rest)
+          .length;
       expect(restDays, lessThan(7));
     });
   });
@@ -281,8 +296,9 @@ void main() {
         weeklyMinutes: {'W1': 120},
       );
       final plan = useCase.generate([_activity()]);
-      final intervalDays =
-          plan.days.where((d) => d.type == WorkoutType.intervals);
+      final intervalDays = plan.days.where(
+        (d) => d.type == WorkoutType.intervals,
+      );
       for (final d in intervalDays) {
         expect(d.targetMinutes, 30);
       }
@@ -295,8 +311,9 @@ void main() {
         weeklyMinutes: {'W1': 200, 'W2': 220, 'W3': 210, 'W4': 230},
       );
       final plan = useCase.generate([_activity()]);
-      final intervalDays =
-          plan.days.where((d) => d.type == WorkoutType.intervals);
+      final intervalDays = plan.days.where(
+        (d) => d.type == WorkoutType.intervals,
+      );
       for (final d in intervalDays) {
         expect(d.targetMinutes, 36);
       }
@@ -309,8 +326,9 @@ void main() {
         weeklyMinutes: {'W1': 300, 'W2': 340, 'W3': 310, 'W4': 330},
       );
       final plan = useCase.generate([_activity()]);
-      final intervalDays =
-          plan.days.where((d) => d.type == WorkoutType.intervals);
+      final intervalDays = plan.days.where(
+        (d) => d.type == WorkoutType.intervals,
+      );
       for (final d in intervalDays) {
         expect(d.targetMinutes, 42);
       }
@@ -323,8 +341,8 @@ void main() {
       mockAnalyze.stats = _stats(totalRuns: 1);
       final plan = useCase.generate(activities);
       final nonRest = plan.days.where(
-        (d) => d.type != WorkoutType.rest &&
-            d.type != WorkoutType.crossTraining,
+        (d) =>
+            d.type != WorkoutType.rest && d.type != WorkoutType.crossTraining,
       );
       for (final day in nonRest) {
         expect(day.heartRateTarget, isNotNull);
@@ -333,9 +351,7 @@ void main() {
     });
 
     test('uses actual max HR from activities', () {
-      final activities = [
-        _activity(daysAgo: 3, avgHr: 140, maxHr: 195),
-      ];
+      final activities = [_activity(daysAgo: 3, avgHr: 140, maxHr: 195)];
       mockAnalyze.stats = _stats(totalRuns: 1);
       final plan = useCase.generate(activities);
       final zones = plan.days
@@ -372,7 +388,9 @@ void main() {
 
   group('sequence selection', () {
     test('return sequence when last run > 3 days ago', () {
-      final activities = [_activity(daysAgo: 5, minutes: 40, paceSecPerKm: 340)];
+      final activities = [
+        _activity(daysAgo: 5, minutes: 40, paceSecPerKm: 340),
+      ];
       mockAnalyze.stats = _stats(totalRuns: 20, formScore: 0);
       final plan = useCase.generate(activities);
       expect(plan.days.length, 7);
@@ -382,7 +400,8 @@ void main() {
       for (int i = 0; i < plan.days.length - 1; i++) {
         final current = plan.days[i].type;
         final next = plan.days[i + 1].type;
-        final isHard = current == WorkoutType.intervals ||
+        final isHard =
+            current == WorkoutType.intervals ||
             current == WorkoutType.tempo ||
             current == WorkoutType.longRun;
         if (isHard) {
@@ -409,7 +428,8 @@ void main() {
       for (int i = 0; i < plan.days.length - 1; i++) {
         final current = plan.days[i].type;
         final next = plan.days[i + 1].type;
-        final isHard = current == WorkoutType.intervals ||
+        final isHard =
+            current == WorkoutType.intervals ||
             current == WorkoutType.tempo ||
             current == WorkoutType.longRun;
         if (isHard) {
@@ -549,8 +569,9 @@ void main() {
         weeklyMinutes: {'W1': 300},
       );
       final plan = customUseCase.generate([_activity()]);
-      final intervalDays =
-          plan.days.where((d) => d.type == WorkoutType.intervals);
+      final intervalDays = plan.days.where(
+        (d) => d.type == WorkoutType.intervals,
+      );
       for (final d in intervalDays) {
         expect(d.targetMinutes, 40);
       }

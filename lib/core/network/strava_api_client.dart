@@ -62,7 +62,11 @@ class StravaApiClient {
     var response = await request();
 
     if (response.statusCode == 429) {
-      log('Rate limit reached on request', name: 'StravaApiClient', error: '429');
+      log(
+        'Rate limit reached on request',
+        name: 'StravaApiClient',
+        error: '429',
+      );
       throw StravaApiException(
         429,
         'Rate limit reached, try again in 15 minutes',
@@ -93,7 +97,7 @@ class StravaApiClient {
   Future<void> _forceRefreshToken() {
     final existingFuture = _refreshTokenFuture;
     if (existingFuture != null) return existingFuture;
-    
+
     final newFuture = _performTokenRefresh().whenComplete(() {
       _refreshTokenFuture = null;
     });

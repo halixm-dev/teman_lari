@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../domain/entities/running_stats.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
+import '../theme/app_theme_extensions.dart';
 import '../theme/app_typography.dart';
 
 class FitnessFormCard extends StatelessWidget {
@@ -13,10 +14,10 @@ class FitnessFormCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final formColor = stats.formScore > 5
-        ? Colors.green
+        ? AppColors.success
         : stats.formScore < -5
-        ? Colors.red
-        : Colors.orange;
+        ? AppColors.danger
+        : AppColors.warning;
 
     return Card(
       child: Semantics(
@@ -24,52 +25,51 @@ class FitnessFormCard extends StatelessWidget {
         label: 'View Training Status Details',
         child: InkWell(
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        onTap: () => _showDetailsSheet(context),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Training Status',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  Icon(
-                    Icons.info_outline,
-                    size: 18,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.4),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _MetricChip(
-                    label: 'Fitness',
-                    value: stats.fitnessScore.toStringAsFixed(0),
-                    color: Colors.blue,
-                  ),
-                  _MetricChip(
-                    label: 'Fatigue',
-                    value: stats.fatigueScore.toStringAsFixed(0),
-                    color: Colors.red,
-                  ),
-                  _MetricChip(
-                    label: 'Form',
-                    value: stats.formScore.toStringAsFixed(0),
-                    color: formColor,
-                  ),
-                ],
-              ),
-            ],
-          ),
+          onTap: () => _showDetailsSheet(context),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Training Status',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Icon(
+                      Icons.info_outline,
+                      size: 18,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.4),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _MetricChip(
+                      label: 'Fitness',
+                      value: stats.fitnessScore.toStringAsFixed(0),
+                      color: AppColors.info,
+                    ),
+                    _MetricChip(
+                      label: 'Fatigue',
+                      value: stats.fatigueScore.toStringAsFixed(0),
+                      color: AppColors.danger,
+                    ),
+                    _MetricChip(
+                      label: 'Form',
+                      value: stats.formScore.toStringAsFixed(0),
+                      color: formColor,
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -102,8 +102,9 @@ class _TrainingStatusDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? AppColors.textPrimaryDark : AppColors.gray900;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.gray500;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.gray500;
 
     return Padding(
       padding: EdgeInsets.only(
@@ -143,7 +144,7 @@ class _TrainingStatusDetails extends StatelessWidget {
           _MetricExplanation(
             label: 'Fitness (CTL)',
             value: stats.fitnessScore.toStringAsFixed(0),
-            color: Colors.blue,
+            color: AppColors.info,
             description:
                 'Your long-term fitness level based on training load over the '
                 'last 42 days. A higher number means better aerobic conditioning.',
@@ -153,7 +154,7 @@ class _TrainingStatusDetails extends StatelessWidget {
           _MetricExplanation(
             label: 'Fatigue (ATL)',
             value: stats.fatigueScore.toStringAsFixed(0),
-            color: Colors.red,
+            color: AppColors.danger,
             description:
                 'Your short-term training load from the last 7 days. '
                 'This reflects how tired your body currently is.',
@@ -164,10 +165,10 @@ class _TrainingStatusDetails extends StatelessWidget {
             label: 'Form (TSB)',
             value: stats.formScore.toStringAsFixed(0),
             color: stats.formScore > 5
-                ? Colors.green
+                ? AppColors.success
                 : stats.formScore < -5
-                    ? Colors.red
-                    : Colors.orange,
+                    ? AppColors.danger
+                    : AppColors.warning,
             description:
                 'The balance between Fitness and Fatigue (Fitness − Fatigue). '
                 'Positive means fresh, negative means fatigued.',
@@ -244,8 +245,9 @@ class _MetricExplanation extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? AppColors.textPrimaryDark : AppColors.gray900;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.gray500;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.gray500;
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.space4),
@@ -261,10 +263,7 @@ class _MetricExplanation extends StatelessWidget {
               Container(
                 width: 10,
                 height: 10,
-                decoration: BoxDecoration(
-                  color: color,
-                  shape: BoxShape.circle,
-                ),
+                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
               ),
               const SizedBox(width: AppSpacing.space2),
               Text(
@@ -322,9 +321,10 @@ class _MetricChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final typoExt = Theme.of(context).extension<AppTypographyExtension>();
     return Column(
       children: [
-        Text(label, style: Theme.of(context).textTheme.bodySmall),
+        Text(label, style: typoExt?.statLabel ?? Theme.of(context).textTheme.bodySmall),
         const SizedBox(height: 4),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -334,7 +334,7 @@ class _MetricChip extends StatelessWidget {
           ),
           child: Text(
             value,
-            style: TextStyle(
+            style: typoExt?.statValue.copyWith(color: color) ?? TextStyle(
               color: color,
               fontSize: 20,
               fontWeight: FontWeight.bold,

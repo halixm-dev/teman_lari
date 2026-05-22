@@ -27,12 +27,20 @@ class LoginScreen extends ConsumerWidget {
                 children: [
                   const _LoginHeader(),
                   const SizedBox(height: 48),
-                  if (authState.isLoading) const CircularProgressIndicator()
-                  else _LoginError(error: authState.error),
+                  if (authState.isLoading)
+                    const CircularProgressIndicator()
+                  else
+                    _LoginError(error: authState.error),
                   const SizedBox(height: 24),
                   _LoginButton(isLoading: authState.isLoading),
                   const SizedBox(height: 24),
-                  const Text('Powered by Strava', style: TextStyle(color: AppColors.gray500, fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Powered by Strava',
+                    style: TextStyle(
+                      color: AppColors.gray500,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -48,14 +56,27 @@ class _LoginHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Column(children: [
-      const ImageIcon(AssetImage('assets/icons/Icon.png'), size: 100, color: AppColors.brandOrange),
-      const SizedBox(height: 32),
-      Text('Teman Lari', style: theme.textTheme.headlineMedium, textAlign: TextAlign.center),
-      const SizedBox(height: 16),
-      Text('Analyze your running history and generate personalized training plans',
-          style: theme.textTheme.bodyLarge, textAlign: TextAlign.center),
-    ]);
+    return Column(
+      children: [
+        const ImageIcon(
+          AssetImage('assets/icons/Icon.png'),
+          size: 100,
+          color: AppColors.brandOrange,
+        ),
+        const SizedBox(height: 32),
+        Text(
+          'Teman Lari',
+          style: theme.textTheme.headlineMedium,
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 16),
+        Text(
+          'Analyze your running history and generate personalized training plans',
+          style: theme.textTheme.bodyLarge,
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
   }
 }
 
@@ -67,8 +88,11 @@ class _LoginError extends StatelessWidget {
     if (error == null) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Text(error!, textAlign: TextAlign.center,
-          style: TextStyle(color: Theme.of(context).colorScheme.error)),
+      child: Text(
+        error!,
+        textAlign: TextAlign.center,
+        style: TextStyle(color: Theme.of(context).colorScheme.error),
+      ),
     );
   }
 }
@@ -79,10 +103,14 @@ class _LoginButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return FilledButton.icon(
-      onPressed: isLoading ? null : () => ref.read(authStateProvider.notifier).login(),
+      onPressed: isLoading
+          ? null
+          : () => ref.read(authStateProvider.notifier).login(),
       icon: const Icon(Icons.login),
       label: const Text('Connect with Strava'),
-      style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16)),
+      style: FilledButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+      ),
     );
   }
 }

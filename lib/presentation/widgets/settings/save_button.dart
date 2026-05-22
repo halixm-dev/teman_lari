@@ -26,9 +26,7 @@ class SettingsSaveButton extends StatelessWidget {
         style: FilledButton.styleFrom(
           backgroundColor: AppColors.brandOrange,
           disabledBackgroundColor: AppColors.gray200,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
         child: _buildChild(),
       ),

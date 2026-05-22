@@ -27,10 +27,7 @@ class ConstrainedContent extends StatelessWidget {
     return Center(
       child: SizedBox(
         width: maxWidth,
-        child: Padding(
-          padding: padding,
-          child: child,
-        ),
+        child: Padding(padding: padding, child: child),
       ),
     );
   }

@@ -63,59 +63,71 @@ void main() {
   ];
 
   group('LocalActivityDataSource - Hive Refactor Tests', () {
-    test('saveActivities and getCachedActivities returns activities in descending ID order', () async {
-      await dataSource.saveActivities(mockActivities);
+    test(
+      'saveActivities and getCachedActivities returns activities in descending ID order',
+      () async {
+        await dataSource.saveActivities(mockActivities);
 
-      final cached = await dataSource.getCachedActivities();
-      expect(cached, isNotNull);
-      expect(cached!.length, equals(2));
-      // Should be sorted by ID DESC: 102 first, then 101
-      expect(cached[0].id, equals(102));
-      expect(cached[1].id, equals(101));
-    });
+        final cached = await dataSource.getCachedActivities();
+        expect(cached, isNotNull);
+        expect(cached!.length, equals(2));
+        // Should be sorted by ID DESC: 102 first, then 101
+        expect(cached[0].id, equals(102));
+        expect(cached[1].id, equals(101));
+      },
+    );
 
-    test('getCachedActivities returns null if cache is older than 1 hour', () async {
-      // Open the box directly to inject a stale entry
-      final box = await dataSource.activitiesBox;
-      final oneHourAndFiveMinutesAgo = DateTime.now()
-          .subtract(const Duration(minutes: 65))
-          .millisecondsSinceEpoch;
+    test(
+      'getCachedActivities returns null if cache is older than 1 hour',
+      () async {
+        // Open the box directly to inject a stale entry
+        final box = await dataSource.activitiesBox;
+        final oneHourAndFiveMinutesAgo = DateTime.now()
+            .subtract(const Duration(minutes: 65))
+            .millisecondsSinceEpoch;
 
-      await box.put(101, {
-        'id': 101,
-        'data': jsonEncode(mockActivities[0].toJson()),
-        'synced_at': oneHourAndFiveMinutesAgo,
-      });
+        await box.put(101, {
+          'id': 101,
+          'data': jsonEncode(mockActivities[0].toJson()),
+          'synced_at': oneHourAndFiveMinutesAgo,
+        });
 
-      final cached = await dataSource.getCachedActivities();
-      expect(cached, isNull);
-    });
+        final cached = await dataSource.getCachedActivities();
+        expect(cached, isNull);
+      },
+    );
 
-    test('saveHeartRateStream and getCachedHeartRateStreams caches and retrieves streams', () async {
-      final streamData = [140.0, 142.0, 145.0, 148.0, 150.0];
-      await dataSource.saveHeartRateStream(101, streamData);
+    test(
+      'saveHeartRateStream and getCachedHeartRateStreams caches and retrieves streams',
+      () async {
+        final streamData = [140.0, 142.0, 145.0, 148.0, 150.0];
+        await dataSource.saveHeartRateStream(101, streamData);
 
-      final cached = await dataSource.getCachedHeartRateStreams();
-      expect(cached, contains(101));
-      expect(cached[101], equals(streamData));
-    });
+        final cached = await dataSource.getCachedHeartRateStreams();
+        expect(cached, contains(101));
+        expect(cached[101], equals(streamData));
+      },
+    );
 
-    test('getCachedHeartRateStreams filters out streams older than 1 hour', () async {
-      final box = await dataSource.hrStreamsBox;
-      final oneHourAndFiveMinutesAgo = DateTime.now()
-          .subtract(const Duration(minutes: 65))
-          .millisecondsSinceEpoch;
+    test(
+      'getCachedHeartRateStreams filters out streams older than 1 hour',
+      () async {
+        final box = await dataSource.hrStreamsBox;
+        final oneHourAndFiveMinutesAgo = DateTime.now()
+            .subtract(const Duration(minutes: 65))
+            .millisecondsSinceEpoch;
 
-      final streamData = [140.0, 142.0, 145.0, 148.0, 150.0];
-      await box.put(101, {
-        'activity_id': 101,
-        'data': jsonEncode(streamData),
-        'synced_at': oneHourAndFiveMinutesAgo,
-      });
+        final streamData = [140.0, 142.0, 145.0, 148.0, 150.0];
+        await box.put(101, {
+          'activity_id': 101,
+          'data': jsonEncode(streamData),
+          'synced_at': oneHourAndFiveMinutesAgo,
+        });
 
-      final cached = await dataSource.getCachedHeartRateStreams();
-      expect(cached, isNot(contains(101)));
-    });
+        final cached = await dataSource.getCachedHeartRateStreams();
+        expect(cached, isNot(contains(101)));
+      },
+    );
 
     test('clearCache removes all cached data', () async {
       await dataSource.saveActivities(mockActivities);

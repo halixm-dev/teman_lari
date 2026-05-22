@@ -42,7 +42,8 @@ class PaceProgressionChart extends StatelessWidget {
               ),
               tooltipMargin: 8,
               tooltipBorderRadius: BorderRadius.circular(8),
-              getTooltipColor: (spot) => AppColors.gray900.withValues(alpha: 0.85),
+              getTooltipColor: (spot) =>
+                  AppColors.gray900.withValues(alpha: 0.85),
               getTooltipItems: (touchedSpots) {
                 return touchedSpots.map((spot) {
                   final idx = spot.spotIndex;

@@ -46,8 +46,14 @@ class PaceZoneCalculator {
       return (candidates.first.pace.inSeconds * 1.05).round();
     }
 
-    final totalSeconds = activities.fold<int>(0, (sum, a) => sum + a.movingTime.inSeconds);
-    final totalDistanceKm = activities.fold<double>(0, (sum, a) => sum + a.distanceKm);
+    final totalSeconds = activities.fold<int>(
+      0,
+      (sum, a) => sum + a.movingTime.inSeconds,
+    );
+    final totalDistanceKm = activities.fold<double>(
+      0,
+      (sum, a) => sum + a.distanceKm,
+    );
     if (totalDistanceKm == 0) return 360; // Safe default: 6:00 min/km
     final avgPaceSecondsPerKm = (totalSeconds / totalDistanceKm).round();
     return (avgPaceSecondsPerKm * 0.90).round();

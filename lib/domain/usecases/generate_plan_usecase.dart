@@ -21,11 +21,11 @@ class GeneratePlanUseCase {
     TrainingPlanConfig? config,
     WorkoutSequenceStrategy? sequenceStrategy,
     WorkoutDescriptions? descriptions,
-  })  : _analyzeRuns = analyzeRuns ?? AnalyzeRunsUseCase(),
-        config = config ?? TrainingPlanConfig.defaultConfig,
-        sequenceStrategy =
-            sequenceStrategy ?? const DynamicWorkoutSequenceStrategy(),
-        descriptions = descriptions ?? const WorkoutDescriptions();
+  }) : _analyzeRuns = analyzeRuns ?? AnalyzeRunsUseCase(),
+       config = config ?? TrainingPlanConfig.defaultConfig,
+       sequenceStrategy =
+           sequenceStrategy ?? const DynamicWorkoutSequenceStrategy(),
+       descriptions = descriptions ?? const WorkoutDescriptions();
 
   TrainingPlan generate(
     List<RunActivity> activities, {
@@ -53,8 +53,11 @@ class GeneratePlanUseCase {
 
     return TrainingPlan(
       startDate: startDate,
-      goal: descriptions.goal(stats),
-      description: descriptions.planDescription(stats),
+      goal: descriptions.goal(stats, weekInCycle: weekInCycle),
+      description: descriptions.planDescription(
+        stats,
+        weekInCycle: weekInCycle,
+      ),
       weekInCycle: weekInCycle,
       cyclePhase: stats.recommendedPhase,
       days: _buildWeek(
@@ -80,17 +83,19 @@ class GeneratePlanUseCase {
     required int thresholdPace,
     int weekInCycle = -1,
   }) {
-    final sorted = [...activities]
-      ..sort((a, b) => b.date.compareTo(a.date));
+    final sorted = [...activities]..sort((a, b) => b.date.compareTo(a.date));
 
-    final easyLike = sorted
-        .where((a) =>
-            a.trainingLoad != TrainingLoad.hard &&
-            a.trainingLoad != TrainingLoad.veryHard &&
-            a.movingTime.inMinutes >= config.minRunDuration)
-        .map((a) => a.movingTime.inMinutes)
-        .toList()
-      ..sort();
+    final easyLike =
+        sorted
+            .where(
+              (a) =>
+                  a.trainingLoad != TrainingLoad.hard &&
+                  a.trainingLoad != TrainingLoad.veryHard &&
+                  a.movingTime.inMinutes >= config.minRunDuration,
+            )
+            .map((a) => a.movingTime.inMinutes)
+            .toList()
+          ..sort();
     final easyMedian = easyLike.isNotEmpty
         ? easyLike[easyLike.length ~/ 2]
         : 30;
@@ -150,8 +155,10 @@ class GeneratePlanUseCase {
         final effective = easyMin.clamp(config.minEasyRunMinutes, 9999);
         if (stats.totalRuns < config.continuousRunThreshold) {
           final phase = RunWalkPhase.fromTotalRuns(stats.totalRuns);
-          final target = phase.totalDurationMinutes
-              .clamp(config.beginnerMinEasyMinutes, effective);
+          final target = phase.totalDurationMinutes.clamp(
+            config.beginnerMinEasyMinutes,
+            effective,
+          );
           return TrainingDay(
             date: date,
             type: WorkoutType.easy,
@@ -202,13 +209,13 @@ class GeneratePlanUseCase {
       case WorkoutType.longRun:
         int effectiveLongRun = longRunMin;
         if (stats.recommendedPhase == CyclePhase.advanced &&
-            weekInCycle >= 0 && weekInCycle < 3) {
-          effectiveLongRun =
-              (longRunMin * (1.0 + weekInCycle * 0.10)).round();
+            weekInCycle >= 0 &&
+            weekInCycle < 3) {
+          effectiveLongRun = (longRunMin * (1.0 + weekInCycle * 0.10)).round();
         } else if (weekInCycle == 3 &&
             stats.recommendedPhase == CyclePhase.advanced) {
-          effectiveLongRun =
-              (longRunMin * config.deloadLongRunFraction).round();
+          effectiveLongRun = (longRunMin * config.deloadLongRunFraction)
+              .round();
         }
         return TrainingDay(
           date: date,
@@ -260,7 +267,9 @@ class GeneratePlanUseCase {
     }
 
     // 2. Active return ramp
-    if (returnCtx != null && returnCtx.isReturning && returnCtx.preGapAvgMin > 0) {
+    if (returnCtx != null &&
+        returnCtx.isReturning &&
+        returnCtx.preGapAvgMin > 0) {
       final volume = returnCtx.startVolumeFraction * returnCtx.preGapAvgMin;
       return volume.clamp(config.minWeeklyMinutes, config.maxWeeklyMinutes);
     }
@@ -268,25 +277,35 @@ class GeneratePlanUseCase {
     // 3. Periodized advanced
     if (weekInCycle >= 0 && stats.recommendedPhase == CyclePhase.advanced) {
       if (weekInCycle == 3) {
-        return (recentMinutes * config.deloadVolumeFraction)
-            .clamp(config.minWeeklyMinutes, config.maxWeeklyMinutes);
+        return (recentMinutes * config.deloadVolumeFraction).clamp(
+          config.minWeeklyMinutes,
+          config.maxWeeklyMinutes,
+        );
       }
       final factor = 1.0 + (weekInCycle * config.buildWeekVolumeIncrement);
-      return (recentMinutes * factor)
-          .clamp(config.minWeeklyMinutes, config.maxWeeklyMinutesScaleUp);
+      return (recentMinutes * factor).clamp(
+        config.minWeeklyMinutes,
+        config.maxWeeklyMinutesScaleUp,
+      );
     }
 
     // 4. Normal form-based
     if (stats.formScore < config.fatiguedThreshold) {
-      return (recentMinutes * 0.80)
-          .clamp(config.minWeeklyMinutes, config.maxWeeklyMinutes);
+      return (recentMinutes * 0.80).clamp(
+        config.minWeeklyMinutes,
+        config.maxWeeklyMinutes,
+      );
     }
     if (stats.formScore < config.slightlyFatiguedThreshold) {
-      return (recentMinutes * 0.95)
-          .clamp(config.minWeeklyMinutes, config.maxWeeklyMinutes);
+      return (recentMinutes * 0.95).clamp(
+        config.minWeeklyMinutes,
+        config.maxWeeklyMinutes,
+      );
     }
-    return (recentMinutes * 1.10)
-        .clamp(config.minWeeklyMinutes, config.maxWeeklyMinutesScaleUp);
+    return (recentMinutes * 1.10).clamp(
+      config.minWeeklyMinutes,
+      config.maxWeeklyMinutesScaleUp,
+    );
   }
 
   DateTime _startDate(List<RunActivity> activities) {

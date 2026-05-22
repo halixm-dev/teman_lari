@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 
 import '../../domain/entities/running_stats.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_theme_extensions.dart';
+import '../theme/app_typography.dart';
 
 class WeeklyVolumeChart extends StatefulWidget {
   final RunningStats stats;
@@ -57,8 +59,18 @@ class _WeeklyVolumeChartState extends State<WeeklyVolumeChart> {
     final monday = DateTime(year, month, day);
     final sunday = monday.add(const Duration(days: 6));
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     final mMon = months[monday.month - 1];
     final sMon = months[sunday.month - 1];
@@ -83,10 +95,8 @@ class _WeeklyVolumeChartState extends State<WeeklyVolumeChart> {
     final selectedKey = _selectedWeekKey;
     if (selectedKey == null) return const SizedBox();
 
-    final selectedDistance =
-        widget.stats.weeklyVolume[selectedKey] ?? 0.0;
-    final selectedMinutes =
-        widget.stats.weeklyMinutes[selectedKey] ?? 0.0;
+    final selectedDistance = widget.stats.weeklyVolume[selectedKey] ?? 0.0;
+    final selectedMinutes = widget.stats.weeklyMinutes[selectedKey] ?? 0.0;
 
     return Card(
       child: Padding(
@@ -135,8 +145,9 @@ class _WeeklySummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor =
-        isDark ? AppColors.surfaceSecondaryDark : AppColors.brandOrangeTint;
+    final bgColor = isDark
+        ? AppColors.surfaceSecondaryDark
+        : AppColors.brandOrangeTint;
 
     return Container(
       width: double.infinity,
@@ -148,10 +159,7 @@ class _WeeklySummary extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            weekLabel,
-            style: labelStyle,
-          ),
+          Text(weekLabel, style: labelStyle),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -177,19 +185,20 @@ class _SummaryItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final typoExt = Theme.of(context).extension<AppTypographyExtension>();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          style: typoExt?.statLabel ?? Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
         ),
         const SizedBox(height: 2),
         Text(
           value,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+          style: typoExt?.statValue ?? Theme.of(context).textTheme.bodyLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
         ),
@@ -230,26 +239,30 @@ class _VolumeLineChart extends StatelessWidget {
           label: 'Weekly volume chart. Tap or pan to select weeks.',
           child: GestureDetector(
             onTapDown: (details) {
-              final index =
-                  _indexFromDx(details.localPosition.dx, constraints.maxWidth);
-            onWeekSelected(entries[index].key);
-          },
-          onPanUpdate: (details) {
-            final index =
-                _indexFromDx(details.localPosition.dx, constraints.maxWidth);
-            onWeekSelected(entries[index].key);
-          },
-          child: CustomPaint(
-            size: Size(constraints.maxWidth, constraints.maxHeight),
-            painter: _VolumeLinePainter(
-              entries: entries,
-              selectedKey: selectedKey,
-              isDark: isDark,
+              final index = _indexFromDx(
+                details.localPosition.dx,
+                constraints.maxWidth,
+              );
+              onWeekSelected(entries[index].key);
+            },
+            onPanUpdate: (details) {
+              final index = _indexFromDx(
+                details.localPosition.dx,
+                constraints.maxWidth,
+              );
+              onWeekSelected(entries[index].key);
+            },
+            child: CustomPaint(
+              size: Size(constraints.maxWidth, constraints.maxHeight),
+              painter: _VolumeLinePainter(
+                entries: entries,
+                selectedKey: selectedKey,
+                isDark: isDark,
+              ),
             ),
           ),
-        ),
-      );
-    },
+        );
+      },
     );
   }
 }
@@ -277,16 +290,14 @@ class _VolumeLinePainter extends CustomPainter {
 
     if (entries.isEmpty || chartWidth <= 0 || chartHeight <= 0) return;
 
-    final maxVol =
-        entries.map((e) => e.value).reduce((a, b) => a > b ? a : b);
+    final maxVol = entries.map((e) => e.value).reduce((a, b) => a > b ? a : b);
     final effectiveMax = maxVol > 0 ? maxVol.ceilToDouble() : 1.0;
 
     final stepX = entries.length > 1
         ? chartWidth / (entries.length - 1)
         : chartWidth;
 
-    final labelColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.gray500;
+    final labelColor = isDark ? AppColors.textSecondaryDark : AppColors.gray500;
     final gridColor = isDark ? AppColors.dividerDark : AppColors.gray200;
 
     final tp = TextPainter(
@@ -310,7 +321,7 @@ class _VolumeLinePainter extends CustomPainter {
 
       tp.text = TextSpan(
         text: '$value km',
-        style: TextStyle(color: labelColor, fontSize: 10),
+        style: AppTypography.caption.copyWith(color: labelColor),
       );
       tp.layout();
       tp.paint(
@@ -323,7 +334,7 @@ class _VolumeLinePainter extends CustomPainter {
     final titleTp = TextPainter(
       text: TextSpan(
         text: 'Volume Trend',
-        style: TextStyle(color: labelColor, fontSize: 10),
+        style: AppTypography.caption.copyWith(color: labelColor),
       ),
       textDirection: TextDirection.ltr,
     );
@@ -348,10 +359,16 @@ class _VolumeLinePainter extends CustomPainter {
 
       xTp.text = TextSpan(
         text: label,
-        style: TextStyle(color: labelColor, fontSize: 9, fontWeight: FontWeight.w600),
+        style: AppTypography.caption.copyWith(
+          color: labelColor,
+          fontWeight: FontWeight.w600,
+        ),
       );
       xTp.layout();
-      xTp.paint(canvas, Offset(x - xTp.width / 2, size.height - paddingBottom + 8));
+      xTp.paint(
+        canvas,
+        Offset(x - xTp.width / 2, size.height - paddingBottom + 8),
+      );
     }
 
     // Build points
@@ -422,8 +439,18 @@ class _VolumeLinePainter extends CustomPainter {
     final day = int.tryParse(parts[2]) ?? 0;
     if (day > 7) return '';
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     if (month < 1 || month > 12) return '';
     return months[month - 1];

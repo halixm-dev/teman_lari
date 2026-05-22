@@ -118,8 +118,10 @@ class _MultiPhaseProgressPainter extends CustomPainter {
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
 
-    final totalSweep =
-        phaseArcs.fold(0.0, (sum, arc) => sum + arc.sweepFraction);
+    final totalSweep = phaseArcs.fold(
+      0.0,
+      (sum, arc) => sum + arc.sweepFraction,
+    );
     if (phaseArcs.isEmpty || totalSweep <= 0) {
       canvas.drawArc(rect, -pi / 2, 2 * pi, false, trackPaint);
       return;
@@ -152,7 +154,8 @@ class _MultiPhaseProgressPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_MultiPhaseProgressPainter oldDelegate) =>
-      oldDelegate.phaseArcs != phaseArcs || oldDelegate.trackColor != trackColor;
+      oldDelegate.phaseArcs != phaseArcs ||
+      oldDelegate.trackColor != trackColor;
 }
 
 // Keep backward-compatible single-color version
@@ -187,8 +190,9 @@ class RunTimerDisplayLegacy extends StatelessWidget {
                   size: Size.infinite,
                   painter: _CircularProgressPainter(
                     progress: progress,
-                    trackColor:
-                        theme.colorScheme.onSurface.withValues(alpha: 0.1),
+                    trackColor: theme.colorScheme.onSurface.withValues(
+                      alpha: 0.1,
+                    ),
                     progressColor: color ?? progressColor,
                   ),
                 );

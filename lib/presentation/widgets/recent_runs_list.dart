@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/utils/date_utils.dart';
-import '../../domain/entities/run_activity.dart';
 import '../providers/activities_provider.dart';
+import 'compact_activity_card.dart';
 
 class RecentRunsList extends ConsumerWidget {
   const RecentRunsList({super.key});
@@ -36,60 +35,16 @@ class RecentRunsList extends ConsumerWidget {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: displayed.length,
-                  separatorBuilder: (_, _) => const Divider(),
+                  separatorBuilder: (_, _) => const Divider(height: 16),
                   itemBuilder: (context, i) {
                     final run = displayed[i];
-                    return _RunTile(run: run);
+                    return CompactActivityCard(run: run);
                   },
                 );
               },
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _RunTile extends StatelessWidget {
-  final RunActivity run;
-
-  const _RunTile({required this.run});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  run.name,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  AppDateUtils.formatDate(run.date),
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text('${run.distanceKm.toStringAsFixed(2)} km'),
-              Text(
-                run.paceString,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }

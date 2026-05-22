@@ -30,7 +30,10 @@ class ActivityRepositoryImpl implements ActivityRepository {
     try {
       final cached = await localDataSource.getCachedActivities();
       if (cached != null) {
-        log('Fetched ${cached.length} activities from cache', name: 'ActivityRepo');
+        log(
+          'Fetched ${cached.length} activities from cache',
+          name: 'ActivityRepo',
+        );
         return _mapModelsToEntities(cached, maxHr: maxHr);
       }
     } catch (_) {}
@@ -39,11 +42,19 @@ class ActivityRepositoryImpl implements ActivityRepository {
       final remoteActivities = await remoteDataSource.getAllRunningActivities(
         monthsBack: monthsBack,
       );
-      log('Fetched ${remoteActivities.length} activities from remote', name: 'ActivityRepo');
+      log(
+        'Fetched ${remoteActivities.length} activities from remote',
+        name: 'ActivityRepo',
+      );
       await localDataSource.saveActivities(remoteActivities);
       return _mapModelsToEntities(remoteActivities, maxHr: maxHr);
     } on StravaApiException catch (e, stack) {
-      log('Failed to fetch from remote', name: 'ActivityRepo', error: e, stackTrace: stack);
+      log(
+        'Failed to fetch from remote',
+        name: 'ActivityRepo',
+        error: e,
+        stackTrace: stack,
+      );
       throw ServerFailure(e.message, e.statusCode);
     }
   }

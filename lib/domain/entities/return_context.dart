@@ -39,8 +39,6 @@ class ReturnContext {
     };
   }
 
-  factory ReturnContext.empty() => const ReturnContext(
-    gapDays: 0,
-    category: GapCategory.none,
-  );
+  factory ReturnContext.empty() =>
+      const ReturnContext(gapDays: 0, category: GapCategory.none);
 }

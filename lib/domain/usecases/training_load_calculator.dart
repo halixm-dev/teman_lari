@@ -22,21 +22,27 @@ class TrainingLoadCalculator {
     final first = DateTime(firstLocal.year, firstLocal.month, firstLocal.day);
     final now = DateTime.now();
     final last = DateTime(now.year, now.month, now.day);
-    
+
     const fitnessDecay = 1 / 42, fatigueDecay = 1 / 7;
     double fitness = 0, fatigue = 0;
     final result = <TrainingLoadPoint>[];
 
-    for (var d = first; !d.isAfter(last); d = DateTime(d.year, d.month, d.day + 1)) {
+    for (
+      var d = first;
+      !d.isAfter(last);
+      d = DateTime(d.year, d.month, d.day + 1)
+    ) {
       final tss = tssByDate[d] ?? 0;
       fitness = tss * fitnessDecay + fitness * (1 - fitnessDecay);
       fatigue = tss * fatigueDecay + fatigue * (1 - fatigueDecay);
-      result.add(TrainingLoadPoint(
-        date: d,
-        fitness: fitness,
-        fatigue: fatigue,
-        form: fitness - fatigue,
-      ));
+      result.add(
+        TrainingLoadPoint(
+          date: d,
+          fitness: fitness,
+          fatigue: fatigue,
+          form: fitness - fatigue,
+        ),
+      );
     }
 
     return result;
@@ -51,8 +57,7 @@ class TrainingLoadCalculator {
     if (hr == null) {
       return activity.movingTime.inMinutes * 0.5;
     }
-    final hrReserve =
-        (hr - restingHr) / (maxHr - restingHr);
+    final hrReserve = (hr - restingHr) / (maxHr - restingHr);
     final durationHours = activity.movingTime.inMinutes / 60.0;
     return hrReserve * hrReserve * durationHours * 100;
   }

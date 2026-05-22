@@ -20,11 +20,14 @@ class TodayWorkoutCard extends ConsumerWidget {
       error: (_, _) => const SizedBox.shrink(),
       data: (plan) {
         final today = DateTime.now();
-        final day = plan.days.where(
-          (d) => d.date.year == today.year &&
-              d.date.month == today.month &&
-              d.date.day == today.day,
-        ).firstOrNull;
+        final day = plan.days
+            .where(
+              (d) =>
+                  d.date.year == today.year &&
+                  d.date.month == today.month &&
+                  d.date.day == today.day,
+            )
+            .firstOrNull;
 
         if (day == null) return const SizedBox.shrink();
 
@@ -38,74 +41,74 @@ class TodayWorkoutCard extends ConsumerWidget {
                 : 'Start today\'s workout: ${_typeLabel(day.type)}',
             child: InkWell(
               borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            onTap: isRest
-                ? null
-                : () => context.push('/run-session', extra: day),
-            child: Padding(
-              padding: AppSpacing.cardPadding,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        _typeIcon(day.type),
-                        color: _typeColor(day.type),
-                        size: 20,
-                      ),
-                      const SizedBox(width: AppSpacing.space2),
-                      Text(
-                        "Today's Workout",
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.space3),
-                  Row(
-                    children: [
-                      _WorkoutTypeBadge(type: day.type),
-                      if (!isRest && day.targetMinutes != null) ...[
+              onTap: isRest
+                  ? null
+                  : () => context.push('/run-session', extra: day),
+              child: Padding(
+                padding: AppSpacing.cardPadding,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          _typeIcon(day.type),
+                          color: _typeColor(day.type),
+                          size: 20,
+                        ),
                         const SizedBox(width: AppSpacing.space2),
                         Text(
-                          '${day.targetMinutes} min',
-                          style: AppTypography.statValue.copyWith(
-                            fontSize: 18,
-                            color: _typeColor(day.type),
-                          ),
+                          "Today's Workout",
+                          style: Theme.of(context).textTheme.titleMedium,
                         ),
                       ],
-                    ],
-                  ),
-                  if (day.description.isNotEmpty) ...[
-                    const SizedBox(height: AppSpacing.space2),
-                    Text(
-                      day.description,
-                      style: Theme.of(context).textTheme.bodySmall,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ],
-                  if (!isRest) ...[
                     const SizedBox(height: AppSpacing.space3),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
-                        onPressed: () =>
-                            context.push('/run-session', extra: day),
-                        icon: const Icon(Icons.play_arrow_rounded),
-                        label: const Text('Start Workout'),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.brandOrange,
-                          foregroundColor: AppColors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                    Row(
+                      children: [
+                        _WorkoutTypeBadge(type: day.type),
+                        if (!isRest && day.targetMinutes != null) ...[
+                          const SizedBox(width: AppSpacing.space2),
+                          Text(
+                            '${day.targetMinutes} min',
+                            style: AppTypography.statValue.copyWith(
+                              fontSize: 18,
+                              color: _typeColor(day.type),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    if (day.description.isNotEmpty) ...[
+                      const SizedBox(height: AppSpacing.space2),
+                      Text(
+                        day.description,
+                        style: Theme.of(context).textTheme.bodySmall,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                    if (!isRest) ...[
+                      const SizedBox(height: AppSpacing.space3),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed: () =>
+                              context.push('/run-session', extra: day),
+                          icon: const Icon(Icons.play_arrow_rounded),
+                          label: const Text('Start Workout'),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppColors.brandOrange,
+                            foregroundColor: AppColors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
-          ),
           ),
         );
       },

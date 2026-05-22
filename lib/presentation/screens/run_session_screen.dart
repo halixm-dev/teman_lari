@@ -128,27 +128,26 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
     } else {
       final last = _lastPosition;
       if (last != null) {
-      final dist = Geolocator.distanceBetween(
-        last.latitude,
-        last.longitude,
-        pos.latitude,
-        pos.longitude,
-      );
-      final timeDelta = pos.timestamp
-          .difference(last.timestamp)
-          .inMilliseconds / 1000.0;
-          
-      if (dist < 200 && timeDelta > 0) {
-        final calcSpeed = dist / timeDelta;
-        if (_smoothedSpeed == 0) {
-          _smoothedSpeed = calcSpeed;
-        } else {
-          _smoothedSpeed =
-              _smoothingAlpha * calcSpeed +
-              (1 - _smoothingAlpha) * _smoothedSpeed;
+        final dist = Geolocator.distanceBetween(
+          last.latitude,
+          last.longitude,
+          pos.latitude,
+          pos.longitude,
+        );
+        final timeDelta =
+            pos.timestamp.difference(last.timestamp).inMilliseconds / 1000.0;
+
+        if (dist < 200 && timeDelta > 0) {
+          final calcSpeed = dist / timeDelta;
+          if (_smoothedSpeed == 0) {
+            _smoothedSpeed = calcSpeed;
+          } else {
+            _smoothedSpeed =
+                _smoothingAlpha * calcSpeed +
+                (1 - _smoothingAlpha) * _smoothedSpeed;
+          }
         }
       }
-    }
     }
     if (_smoothedSpeed > _minGpsSpeed) {
       _gpsPaceSeconds = (1000 / _smoothedSpeed).round();
@@ -251,8 +250,7 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
 
     final lastGps = _lastGpsUpdate;
     final gpsTimedOut =
-        lastGps == null ||
-        DateTime.now().difference(lastGps) > _gpsTimeout;
+        lastGps == null || DateTime.now().difference(lastGps) > _gpsTimeout;
     final gpsConnected = _gpsPermissionGranted && _gpsHasFix && !gpsTimedOut;
     final gpsSpeedUsable = gpsConnected && _smoothedSpeed > _minGpsSpeed;
 
@@ -318,8 +316,7 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
       _soundFx.playSplit();
       final currentPace = _state.currentPaceSecondsPerKm;
       if (_state.isAudioCoachOn && currentPace != null) {
-        _audioCoach.announceSplit(
-            currentKm, currentPace);
+        _audioCoach.announceSplit(currentKm, currentPace);
       }
     }
 
@@ -398,9 +395,9 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: SafeArea(
-            child: Stack(
-              children: [
-                AbsorbPointer(
+          child: Stack(
+            children: [
+              AbsorbPointer(
                 absorbing: _state.isLocked,
                 child: OrientationBuilder(
                   builder: (context, orientation) {
@@ -415,9 +412,7 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
               ),
               if (_state.isLocked) ...[
                 Positioned.fill(
-                  child: Container(
-                    color: Colors.black.withValues(alpha: 0.3),
-                  ),
+                  child: Container(color: Colors.black.withValues(alpha: 0.3)),
                 ),
                 Positioned(
                   top: 80,
@@ -429,42 +424,44 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
                       label: 'Unlock screen',
                       child: GestureDetector(
                         onTap: _toggleLock,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.lock,
-                              color: Theme.of(context).colorScheme.onPrimary,
-                              size: 18,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Tap to Unlock',
-                              style: TextStyle(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.lock,
                                 color: Theme.of(context).colorScheme.onPrimary,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14,
+                                size: 18,
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 6),
+                              Text(
+                                'Tap to Unlock',
+                                style: TextStyle(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
               ],
-            ),
+            ],
+          ),
         ),
       ),
     );
@@ -608,11 +605,13 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
       } else if (_state.elapsedSeconds > elapsed) {
         fill = (_state.elapsedSeconds - elapsed) / seg.durationSeconds;
       }
-      arcs.add(PhaseArc(
-        sweepFraction: sweep,
-        fillFraction: fill,
-        color: phaseColor(seg.type),
-      ));
+      arcs.add(
+        PhaseArc(
+          sweepFraction: sweep,
+          fillFraction: fill,
+          color: phaseColor(seg.type),
+        ),
+      );
       elapsed += seg.durationSeconds;
     }
     return arcs;
@@ -726,11 +725,7 @@ class _PaceSourceIndicator extends StatelessWidget {
         'Steps',
         AppColors.warning,
       ),
-      PaceSource.none => (
-        Icons.sensors_off,
-        'No Signal',
-        AppColors.danger,
-      ),
+      PaceSource.none => (Icons.sensors_off, 'No Signal', AppColors.danger),
     };
 
     return Padding(

@@ -11,9 +11,10 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      extensions: const [
+      extensions: [
         defaultSpacingExtension,
         defaultColorsExtension,
+        defaultTypographyExtension,
       ],
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.brandOrange,
@@ -138,9 +139,10 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      extensions: const [
+      extensions: [
         defaultSpacingExtension,
         defaultColorsExtension,
+        defaultTypographyExtension,
       ],
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.brandOrange,
@@ -273,7 +275,9 @@ class AppTheme {
         indicatorColor: AppColors.surfaceTertiaryDark,
         useIndicator: true,
         selectedIconTheme: const IconThemeData(color: AppColors.brandOrange),
-        unselectedIconTheme: const IconThemeData(color: AppColors.textPrimaryDark),
+        unselectedIconTheme: const IconThemeData(
+          color: AppColors.textPrimaryDark,
+        ),
         selectedLabelTextStyle: AppTypography.bodySm.copyWith(
           color: AppColors.brandOrange,
           fontWeight: FontWeight.w600,

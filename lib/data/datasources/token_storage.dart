@@ -15,7 +15,10 @@ class TokenStorage {
       const storage = FlutterSecureStorage();
       await storage.write(key: 'access_token', value: tokens.accessToken);
       await storage.write(key: 'refresh_token', value: tokens.refreshToken);
-      await storage.write(key: 'expires_at', value: tokens.expiresAt.toString());
+      await storage.write(
+        key: 'expires_at',
+        value: tokens.expiresAt.toString(),
+      );
     }
   }
 
@@ -36,7 +39,8 @@ class TokenStorage {
       expiresAt = await storage.read(key: 'expires_at');
     }
 
-    if (accessToken == null || refreshToken == null || expiresAt == null) return null;
+    if (accessToken == null || refreshToken == null || expiresAt == null)
+      return null;
     return StravaTokens(
       accessToken: accessToken,
       refreshToken: refreshToken,

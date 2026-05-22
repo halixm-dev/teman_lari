@@ -11,11 +11,11 @@ class PhaseSegment {
   const PhaseSegment({required this.type, required this.durationSeconds});
 
   WorkoutPhase get phase => switch (type) {
-        PhaseSegmentType.warmup => WorkoutPhase.warmup,
-        PhaseSegmentType.work => WorkoutPhase.work,
-        PhaseSegmentType.recovery => WorkoutPhase.work,
-        PhaseSegmentType.cooldown => WorkoutPhase.cooldown,
-      };
+    PhaseSegmentType.warmup => WorkoutPhase.warmup,
+    PhaseSegmentType.work => WorkoutPhase.work,
+    PhaseSegmentType.recovery => WorkoutPhase.work,
+    PhaseSegmentType.cooldown => WorkoutPhase.cooldown,
+  };
 }
 
 class RunSessionState {
@@ -96,10 +96,9 @@ class RunSessionState {
     final cooldown = (plan.coolDownMinutes ?? 0) * 60;
 
     if (warmup > 0) {
-      segments.add(PhaseSegment(
-        type: PhaseSegmentType.warmup,
-        durationSeconds: warmup,
-      ));
+      segments.add(
+        PhaseSegment(type: PhaseSegmentType.warmup, durationSeconds: warmup),
+      );
     }
 
     final intervals = plan.intervals;
@@ -107,28 +106,34 @@ class RunSessionState {
         intervals != null &&
         intervals.isNotEmpty) {
       for (final interval in intervals) {
-        segments.add(PhaseSegment(
-          type: interval.type == IntervalPhaseType.work
-              ? PhaseSegmentType.work
-              : PhaseSegmentType.recovery,
-          durationSeconds: interval.duration.inSeconds,
-        ));
+        segments.add(
+          PhaseSegment(
+            type: interval.type == IntervalPhaseType.work
+                ? PhaseSegmentType.work
+                : PhaseSegmentType.recovery,
+            durationSeconds: interval.duration.inSeconds,
+          ),
+        );
       }
     } else {
       final workMins = plan.workMinutes;
       if (workMins != null && workMins > 0) {
-        segments.add(PhaseSegment(
-          type: PhaseSegmentType.work,
-          durationSeconds: workMins * 60,
-        ));
+        segments.add(
+          PhaseSegment(
+            type: PhaseSegmentType.work,
+            durationSeconds: workMins * 60,
+          ),
+        );
       }
     }
 
     if (cooldown > 0) {
-      segments.add(PhaseSegment(
-        type: PhaseSegmentType.cooldown,
-        durationSeconds: cooldown,
-      ));
+      segments.add(
+        PhaseSegment(
+          type: PhaseSegmentType.cooldown,
+          durationSeconds: cooldown,
+        ),
+      );
     }
 
     return segments;

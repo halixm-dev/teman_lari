@@ -106,10 +106,7 @@ class _InfoRow extends StatelessWidget {
         Icon(icon, size: 22, color: AppColors.gray500),
         const SizedBox(width: 12),
         Expanded(
-          child: Text(
-            text,
-            style: const TextStyle(fontSize: 14, height: 1.55),
-          ),
+          child: Text(text, style: const TextStyle(fontSize: 14, height: 1.55)),
         ),
       ],
     );
@@ -147,7 +144,7 @@ class _PlanDataView extends StatelessWidget {
         _PlanHeader(plan: plan),
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             itemCount: plan.days.length,
             itemBuilder: (context, i) {
               final isFirst = i == 0;
@@ -158,22 +155,36 @@ class _PlanDataView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Padding(
-                      padding: EdgeInsets.only(left: 4, bottom: 8),
+                      padding: EdgeInsets.only(left: 4, bottom: 12),
                       child: Text(
                         'Next Workout',
                         style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 18,
                           color: AppColors.brandOrange,
+                          letterSpacing: -0.5,
                         ),
                       ),
                     ),
                     card,
+                    if (plan.days.length > 1) ...[
+                      const SizedBox(height: 16),
+                      const Padding(
+                        padding: EdgeInsets.only(left: 4, bottom: 8),
+                        child: Text(
+                          'Upcoming',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 );
               }
 
-              return Opacity(opacity: 0.55, child: card);
+              return Opacity(opacity: 0.65, child: card);
             },
           ),
         ),
@@ -189,22 +200,115 @@ class _PlanHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.all(16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Goal', style: Theme.of(context).textTheme.titleSmall),
-            Text(plan.goal, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Text(
-              plan.description,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ],
+    final theme = Theme.of(context);
+    final phaseName = plan.cyclePhase.name;
+    final formattedPhase =
+        '${phaseName[0].toUpperCase()}${phaseName.substring(1).replaceAllMapped(RegExp(r'[A-Z]'), (m) => ' ${m.group(0)}')} Phase';
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: const LinearGradient(
+          colors: [AppColors.brandOrange, AppColors.brandOrangeLight],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.brandOrange.withValues(alpha: 0.25),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -20,
+            top: -20,
+            child: Icon(
+              Icons.track_changes_rounded,
+              size: 140,
+              color: Colors.white.withValues(alpha: 0.15),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        formattedPhase,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    if (plan.weekInCycle > 0) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          'Week ${plan.weekInCycle}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Current Goal',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  plan.goal,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  plan.description,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -219,14 +323,30 @@ class _PlanDayCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isRest = day.type == WorkoutType.rest;
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      shape: isFirst
-          ? RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: const BorderSide(color: AppColors.brandOrange, width: 1.5),
-            )
-          : null,
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        border: isFirst
+            ? Border.all(color: AppColors.brandOrange, width: 1.5)
+            : Border.all(color: AppColors.gray200, width: 1),
+        boxShadow: isFirst
+            ? [
+                BoxShadow(
+                  color: AppColors.brandOrange.withValues(alpha: 0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+      ),
       child: ListTile(
         contentPadding: EdgeInsets.symmetric(
           horizontal: 16,

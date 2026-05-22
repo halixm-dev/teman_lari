@@ -15,8 +15,7 @@ class RunWalkPhase {
     required this.label,
   });
 
-  bool get isContinuous =>
-      type == RunWalkPhaseType.continuous;
+  bool get isContinuous => type == RunWalkPhaseType.continuous;
 
   static RunWalkPhase fromTotalRuns(int totalRuns) {
     if (totalRuns < 5) {

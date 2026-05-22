@@ -5,11 +5,7 @@ class HrPreferences {
   final int restingHr;
   final int? age;
 
-  const HrPreferences({
-    this.maxHr,
-    this.restingHr = 60,
-    this.age,
-  });
+  const HrPreferences({this.maxHr, this.restingHr = 60, this.age});
 }
 
 class PreferencesStorage {
@@ -81,7 +77,8 @@ class PreferencesStorage {
       changed = true;
     }
 
-    if (athleteName != null && prefs.getString(_keyAthleteName) != athleteName) {
+    if (athleteName != null &&
+        prefs.getString(_keyAthleteName) != athleteName) {
       await prefs.setString(_keyAthleteName, athleteName);
       changed = true;
     }
@@ -123,11 +120,7 @@ class PreferencesStorage {
     await prefs.setString(_keyCycleStartDate, value.toIso8601String());
   }
 
-  int? _pickBestMaxHr({
-    int? stored,
-    int? activityMaxHr,
-    double? athleteMaxHr,
-  }) {
+  int? _pickBestMaxHr({int? stored, int? activityMaxHr, double? athleteMaxHr}) {
     final values = <int>[];
     if (stored != null) values.add(stored);
     if (activityMaxHr != null) values.add(activityMaxHr);

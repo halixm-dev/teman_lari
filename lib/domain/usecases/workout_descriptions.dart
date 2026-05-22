@@ -1,3 +1,4 @@
+import '../entities/return_context.dart';
 import '../entities/run_walk_phase.dart';
 import '../entities/running_stats.dart';
 
@@ -62,23 +63,62 @@ class WorkoutDescriptions {
       'Deload week — reduced volume and easy pace only. '
       'Let your body absorb the training.';
 
-  String goal(RunningStats stats) {
-    if (stats.totalRuns < 10) {
+  String goal(RunningStats stats, {int weekInCycle = -1}) {
+    if (stats.returnContext?.isReturning == true &&
+        stats.returnContext?.category != GapCategory.extended) {
+      return 'Safely return to running';
+    }
+
+    if (stats.totalRuns < 10 ||
+        stats.recommendedPhase == CyclePhase.beginner ||
+        stats.returnContext?.category == GapCategory.extended) {
       return 'Build a consistent running base';
     }
-    if (stats.fitnessScore < 30) return 'Develop aerobic fitness';
-    if (stats.formScore < -10) return 'Recovery & consolidation week';
-    return 'Improve threshold pace & race readiness';
+
+    if (stats.recommendedPhase == CyclePhase.baseBuilding) {
+      return 'Increase aerobic capacity & volume';
+    }
+
+    if (stats.formScore < -10 || weekInCycle == 3) {
+      return 'Recovery & consolidation week';
+    }
+
+    if (stats.recommendedPhase == CyclePhase.advanced) {
+      return 'Peak performance & race readiness';
+    }
+
+    return 'Improve threshold pace & endurance';
   }
 
-  String planDescription(RunningStats stats) {
+  String planDescription(RunningStats stats, {int weekInCycle = -1}) {
     final form = stats.formScore;
-    if (form < -10) {
-      return 'You\'re currently fatigued. This week focuses on recovery with reduced volume and easy effort.';
+    final phase = stats.recommendedPhase;
+    final ctx = stats.returnContext;
+
+    if (ctx?.isReturning == true && ctx?.category != GapCategory.extended) {
+      return 'You are returning from a ${ctx?.category.name} break. We are ramping up your volume safely over the next few weeks to prevent injury.';
     }
+
+    if (weekInCycle == 3 && phase == CyclePhase.advanced) {
+      return 'This is your deload week. Volume is reduced to allow your body to absorb the training stress from the past 3 weeks.';
+    }
+
+    if (form < -15) {
+      return 'Your fatigue is very high. This week focuses heavily on recovery with reduced volume and easy efforts only to prevent overtraining.';
+    }
+
+    if (phase == CyclePhase.baseBuilding) {
+      return 'We are slowly increasing your weekly volume. Keep your easy runs strictly easy to build a solid aerobic foundation.';
+    }
+
+    if (phase == CyclePhase.advanced && weekInCycle >= 0) {
+      return 'Week ${weekInCycle + 1} of your periodized block. Volume is peaking, and quality sessions will test your threshold and VO2Max.';
+    }
+
     if (form > 10) {
-      return 'You\'re fresh and ready. This week includes a quality session to build fitness.';
+      return 'You\'re fresh and ready. This week includes challenging quality sessions to build your fitness to the next level.';
     }
-    return 'Balanced week combining easy aerobic base, quality work, and a long run.';
+
+    return 'A balanced week combining an easy aerobic base, quality interval work, and a long run to maintain your fitness.';
   }
 }

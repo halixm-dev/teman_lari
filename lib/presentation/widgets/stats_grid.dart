@@ -14,12 +14,12 @@ class StatsGrid extends StatelessWidget {
     final category = vo2max == null
         ? 'Unknown'
         : vo2max >= 56
-            ? 'Excellent'
-            : vo2max >= 51
-                ? 'Good'
-                : vo2max >= 45
-                    ? 'Fair'
-                    : 'Needs Improvement';
+        ? 'Excellent'
+        : vo2max >= 51
+        ? 'Good'
+        : vo2max >= 45
+        ? 'Fair'
+        : 'Needs Improvement';
 
     showModalBottomSheet(
       context: context,
@@ -40,7 +40,8 @@ class StatsGrid extends StatelessWidget {
           children: [
             Center(
               child: Container(
-                width: 36, height: 4,
+                width: 36,
+                height: 4,
                 decoration: BoxDecoration(
                   color: Colors.grey.shade300,
                   borderRadius: BorderRadius.circular(2),
@@ -52,9 +53,9 @@ class StatsGrid extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Your estimated VO2 Max: $vo2maxText ($category)',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 16),
             Text(
@@ -71,21 +72,30 @@ class StatsGrid extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Text('Reference ranges (men):',
-              style: Theme.of(context).textTheme.titleSmall),
+            Text(
+              'Reference ranges (men):',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
             const SizedBox(height: 4),
-            Text('• Excellent: ≥56 mL/kg/min',
-              style: Theme.of(context).textTheme.bodySmall),
-            Text('• Good: 51–55 mL/kg/min',
-              style: Theme.of(context).textTheme.bodySmall),
-            Text('• Fair: 45–50 mL/kg/min',
-              style: Theme.of(context).textTheme.bodySmall),
+            Text(
+              '• Excellent: ≥56 mL/kg/min',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            Text(
+              '• Good: 51–55 mL/kg/min',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            Text(
+              '• Fair: 45–50 mL/kg/min',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
             const SizedBox(height: 8),
-            Text('Note: Ranges vary by age, gender, '
-                  'and training history.',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontStyle: FontStyle.italic,
-              ),
+            Text(
+              'Note: Ranges vary by age, gender, '
+              'and training history.',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
             ),
           ],
         ),
@@ -165,32 +175,32 @@ class _StatCard extends StatelessWidget {
         label: '$label: $value',
         child: InkWell(
           onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: color, size: 28),
-              const SizedBox(height: 8),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: color,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: color, size: 28),
+                const SizedBox(height: 8),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: Theme.of(context).textTheme.bodySmall,
-                textAlign: TextAlign.center,
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.bodySmall,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }

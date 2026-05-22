@@ -6,11 +6,7 @@ import 'package:teman_lari/main.dart';
 
 void main() {
   testWidgets('App loads successfully', (WidgetTester tester) async {
-    await tester.pumpWidget(
-      const ProviderScope(
-        child: TemanLariApp(),
-      ),
-    );
+    await tester.pumpWidget(const ProviderScope(child: TemanLariApp()));
 
     expect(find.byType(MaterialApp), findsOneWidget);
   });

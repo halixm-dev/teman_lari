@@ -18,14 +18,19 @@ class AnalysisScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Analysis'),
         actions: [
-          IconButton(icon: const Icon(Icons.info_outline), onPressed: () => _showDataPeriodInfo(context)),
+          IconButton(
+            icon: const Icon(Icons.info_outline),
+            onPressed: () => _showDataPeriodInfo(context),
+          ),
         ],
       ),
       body: ConstrainedContent(
         child: statsAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (err, _) => Center(child: Text('Error: $err')),
-          data: (stats) => stats == null ? const Center(child: Text('No data')) : _AnalysisData(stats: stats),
+          data: (stats) => stats == null
+              ? const Center(child: Text('No data'))
+              : _AnalysisData(stats: stats),
         ),
       ),
     );
@@ -65,7 +70,10 @@ class _PaceCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Pace Progression', style: Theme.of(context).textTheme.headlineSmall),
+            Text(
+              'Pace Progression',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
             const SizedBox(height: 16),
             PaceProgressionChart(dataPoints: stats.paceProgression),
           ],
@@ -86,7 +94,10 @@ class _HrZoneCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Heart Rate Zones', style: Theme.of(context).textTheme.headlineSmall),
+            Text(
+              'Heart Rate Zones',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
             const SizedBox(height: 16),
             HrZoneDistributionChart(zoneDistribution: stats.heartRateZones),
           ],
@@ -101,9 +112,7 @@ void _showDataPeriodInfo(BuildContext context) {
     context: context,
     builder: (context) => AlertDialog(
       title: const Text('Data Period'),
-      content: const Text(
-        'Analysis based on 1 year of Strava data',
-      ),
+      content: const Text('Analysis based on 1 year of Strava data'),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
