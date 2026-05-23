@@ -5,6 +5,7 @@ on:
     branches: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
+  workflow_dispatch:
 
 jobs:
   quality_gate:
@@ -48,3 +49,9 @@ jobs:
         
       - name: Build IPA
         run: flutter build ipa --flavor prod --dart-define-from-file=config/prod.json --release --export-options-plist=ios/ExportOptions.plist
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apk
+          path: build/app/outputs/flutter-apk/app-prod-release.apk
