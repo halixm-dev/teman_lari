@@ -875,5 +875,6 @@ String typeLabel(WorkoutType type) {
     WorkoutType.longRun => 'Long Run',
     WorkoutType.rest => 'Rest',
     WorkoutType.crossTraining => 'Cross Training',
+    WorkoutType.walk => 'Walk',
   };
 }

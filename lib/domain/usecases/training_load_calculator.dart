@@ -88,4 +88,33 @@ class TrainingLoadCalculator {
     if (pct < 0.90) return 4;
     return 5;
   }
+
+  double computeAcwr(
+    List<Activity> sortedActivities, {
+    required int maxHr,
+    required int restingHr,
+    Duration? thresholdPace,
+    int minAcwrDays = 28,
+  }) {
+    if (sortedActivities.isEmpty) return 1.0;
+    final firstActivityDate = sortedActivities.first.date;
+    final now = DateTime.now();
+    if (now.difference(firstActivityDate).inDays < minAcwrDays) return 1.0;
+
+    double acuteTss = 0;
+    double chronicTss = 0;
+    for (final a in sortedActivities) {
+      final daysAgo = now.difference(a.date).inDays;
+      if (daysAgo < 28 && daysAgo >= 0) {
+        final tss = _trainingStressScore(a, maxHr: maxHr, restingHr: restingHr, thresholdPace: thresholdPace);
+        chronicTss += tss;
+        if (daysAgo < 7) {
+          acuteTss += tss;
+        }
+      }
+    }
+    final chronicAvg = chronicTss / 4;
+    if (chronicAvg == 0) return 1.0;
+    return acuteTss / chronicAvg;
+  }
 }

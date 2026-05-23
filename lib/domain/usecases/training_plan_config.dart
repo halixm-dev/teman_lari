@@ -17,11 +17,18 @@ class TrainingPlanConfig {
   final double maxWeeklyMinutesScaleUp;
 
   // --- Form thresholds ---
-  final double fatiguedThreshold;
-  final double slightlyFatiguedThreshold;
+  final double dangerTsbThreshold;
+  final double fatiguedTsbThreshold;
+  final double tiredTsbThreshold;
+  final double optimalTsbThreshold;
+
+  // --- ACWR ---
+  final int minAcwrDays;
 
   // --- Interval duration thresholds ---
   final int beginnerRunCount;
+  final int transitionRunCount;
+  final int intermediateRunCount;
   final double beginnerWeeklyKm;
   final int advancedRunCount;
   final double advancedWeeklyKm;
@@ -71,9 +78,14 @@ class TrainingPlanConfig {
     this.minWeeklyMinutes = 60.0,
     this.maxWeeklyMinutes = 600.0,
     this.maxWeeklyMinutesScaleUp = 900.0,
-    this.fatiguedThreshold = -10.0,
-    this.slightlyFatiguedThreshold = -5.0,
+    this.dangerTsbThreshold = -20.0,
+    this.fatiguedTsbThreshold = -15.0,
+    this.tiredTsbThreshold = -10.0,
+    this.optimalTsbThreshold = 5.0,
+    this.minAcwrDays = 28,
     this.beginnerRunCount = 15,
+    this.transitionRunCount = 15,
+    this.intermediateRunCount = 23,
     this.beginnerWeeklyKm = 20.0,
     this.advancedRunCount = 50,
     this.advancedWeeklyKm = 50.0,

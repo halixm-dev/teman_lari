@@ -482,6 +482,7 @@ Color typeColor(WorkoutType type) {
     WorkoutType.longRun => Colors.blue,
     WorkoutType.rest => AppColors.gray500,
     WorkoutType.crossTraining => Colors.purple,
+    WorkoutType.walk => Colors.teal,
   };
 }
 
@@ -493,6 +494,7 @@ IconData typeIcon(WorkoutType type) {
     WorkoutType.longRun => Icons.map,
     WorkoutType.rest => Icons.hotel,
     WorkoutType.crossTraining => Icons.fitness_center,
+    WorkoutType.walk => Icons.directions_walk,
   };
 }
 
@@ -504,5 +506,6 @@ String typeLabel(WorkoutType type) {
     WorkoutType.longRun => 'Long Run',
     WorkoutType.rest => 'Rest',
     WorkoutType.crossTraining => 'Cross Train',
+    WorkoutType.walk => 'Walk',
   };
 }

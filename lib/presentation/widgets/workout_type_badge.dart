@@ -36,17 +36,19 @@ Color workoutTypeColor(WorkoutType type) {
     WorkoutType.longRun => Colors.blue,
     WorkoutType.rest => AppColors.gray500,
     WorkoutType.crossTraining => Colors.purple,
+    WorkoutType.walk => Colors.teal,
   };
 }
 
 IconData workoutTypeIcon(WorkoutType type) {
   return switch (type) {
-    WorkoutType.easy => Icons.directions_walk,
+    WorkoutType.easy => Icons.directions_run,
     WorkoutType.tempo => Icons.speed,
     WorkoutType.intervals => Icons.timer,
     WorkoutType.longRun => Icons.map,
     WorkoutType.rest => Icons.hotel,
     WorkoutType.crossTraining => Icons.fitness_center,
+    WorkoutType.walk => Icons.directions_walk,
   };
 }
 
@@ -58,5 +60,6 @@ String workoutTypeLabel(WorkoutType type) {
     WorkoutType.longRun => 'Long Run',
     WorkoutType.rest => 'Rest',
     WorkoutType.crossTraining => 'Cross Train',
+    WorkoutType.walk => 'Walk',
   };
 }

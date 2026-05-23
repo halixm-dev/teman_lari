@@ -17,8 +17,8 @@ class RunWalkPhase {
 
   bool get isContinuous => type == RunWalkPhaseType.continuous;
 
-  static RunWalkPhase fromTotalRuns(int totalRuns) {
-    if (totalRuns < 5) {
+  static RunWalkPhase fromStats(int totalRuns, int daysSinceFirstRun) {
+    if (totalRuns < 5 || daysSinceFirstRun < 14) {
       return const RunWalkPhase(
         type: RunWalkPhaseType.initiation,
         runSeconds: 60,
@@ -27,7 +27,7 @@ class RunWalkPhase {
         label: 'Run 1 min, Walk 2 min',
       );
     }
-    if (totalRuns < 10) {
+    if (totalRuns < 10 || daysSinceFirstRun < 28) {
       return const RunWalkPhase(
         type: RunWalkPhaseType.development,
         runSeconds: 120,
@@ -36,7 +36,7 @@ class RunWalkPhase {
         label: 'Run 2 min, Walk 1 min',
       );
     }
-    if (totalRuns < 15) {
+    if (totalRuns < 15 || daysSinceFirstRun < 49) {
       return const RunWalkPhase(
         type: RunWalkPhaseType.endurance,
         runSeconds: 240,

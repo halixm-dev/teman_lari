@@ -1,4 +1,4 @@
-enum WorkoutType { easy, tempo, intervals, longRun, rest, crossTraining }
+enum WorkoutType { easy, tempo, intervals, longRun, rest, crossTraining, walk }
 
 enum IntervalPhaseType { work, recovery }
 

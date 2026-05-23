@@ -1,7 +1,7 @@
 import 'analyzed_activity.dart';
 import 'return_context.dart';
 
-enum CyclePhase { beginner, baseBuilding, intermediate, advanced, returning }
+enum CyclePhase { beginner, transition, baseBuilding, intermediate, advanced, returning }
 
 class PaceDataPoint {
   final DateTime date;
@@ -45,6 +45,9 @@ class RunningStats {
   final ReturnContext? returnContext;
   final CyclePhase recommendedPhase;
   final List<AnalyzedActivity> analyzedActivities;
+  final DateTime? firstActivityDate;
+  final int longestRecentRunMinutes;
+  final double acwr;
 
   const RunningStats({
     required this.totalRuns,
@@ -62,6 +65,9 @@ class RunningStats {
     this.returnContext,
     this.recommendedPhase = CyclePhase.beginner,
     this.analyzedActivities = const [],
+    this.firstActivityDate,
+    this.longestRecentRunMinutes = 0,
+    this.acwr = 1.0,
   });
 
   factory RunningStats.empty() {
@@ -81,6 +87,9 @@ class RunningStats {
       returnContext: null,
       recommendedPhase: CyclePhase.beginner,
       analyzedActivities: const [],
+      firstActivityDate: null,
+      longestRecentRunMinutes: 0,
+      acwr: 1.0,
     );
   }
 

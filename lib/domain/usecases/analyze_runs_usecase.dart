@@ -31,7 +31,11 @@ class AnalyzeRunsUseCase {
         .where((a) => a.type == ActivityType.run)
         .toList();
 
-    final sortedByDate = [...activities]
+    final relevantActivities = activities
+        .where((a) => a.type == ActivityType.run || a.type == ActivityType.walk)
+        .toList();
+
+    final sortedByDate = [...relevantActivities]
       ..sort((a, b) => a.date.compareTo(b.date));
 
     final sortedRunning = [...runningActivities]
@@ -73,7 +77,7 @@ class AnalyzeRunsUseCase {
         .round()
         .clamp(cfg.longRunMinCap, cfg.longRunMaxCap);
 
-    final analyzedActivities = activities.map((a) {
+    final analyzedActivities = relevantActivities.map((a) {
       return AnalyzedActivity(
         activity: a,
         type: _classifyActivity(
@@ -85,6 +89,23 @@ class AnalyzeRunsUseCase {
         ),
       );
     }).toList();
+
+    final acwr = _loadCalculator.computeAcwr(
+      sortedByDate,
+      maxHr: actualMaxHr,
+      restingHr: actualRestingHr,
+      thresholdPace: userThresholdPace,
+      minAcwrDays: cfg.minAcwrDays,
+    );
+
+    final now = DateTime.now();
+    int longestRecentRunMin = 0;
+    for (final a in sortedRunning.reversed) {
+      if (now.difference(a.date).inDays > 14) break;
+      if (a.movingTime.inMinutes > longestRecentRunMin) {
+        longestRecentRunMin = a.movingTime.inMinutes;
+      }
+    }
 
     return RunningStats(
       totalRuns: runningActivities.length,
@@ -113,6 +134,9 @@ class AnalyzeRunsUseCase {
         config: cfg,
       ),
       analyzedActivities: analyzedActivities,
+      firstActivityDate: sortedRunning.isNotEmpty ? sortedRunning.first.date : null,
+      longestRecentRunMinutes: longestRecentRunMin,
+      acwr: acwr,
     );
   }
 
@@ -128,9 +152,11 @@ class AnalyzeRunsUseCase {
     if (totalRuns < config.baseBuildingRunCount) {
       return CyclePhase.baseBuilding;
     }
-    if (totalRuns < config.beginnerRunCount ||
-        recentWeeklyAvgKm < config.beginnerWeeklyKm) {
+    if (totalRuns < config.transitionRunCount) {
       return CyclePhase.beginner;
+    }
+    if (totalRuns < config.intermediateRunCount) {
+      return CyclePhase.transition;
     }
     if (totalRuns >= config.advancedRunCount &&
         recentWeeklyAvgKm >= config.advancedWeeklyKm) {
@@ -291,7 +317,7 @@ class AnalyzeRunsUseCase {
     required int restingHr,
   }) {
     if (activity.type != ActivityType.run) {
-      if (activity.type == ActivityType.walk) return WorkoutType.easy;
+      if (activity.type == ActivityType.walk) return WorkoutType.walk;
       return WorkoutType.crossTraining;
     }
 

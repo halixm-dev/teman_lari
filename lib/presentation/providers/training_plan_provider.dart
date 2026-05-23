@@ -68,41 +68,24 @@ class WeekInCycleNotifier extends _$WeekInCycleNotifier {
   @override
   Future<int> build() async {
     final prefs = ref.read(preferencesStorageProvider);
-    final stored = await prefs.getWeekInCycle();
     final cycleStart = await prefs.getCycleStartDate();
     final daysSinceStart = DateTime.now().difference(cycleStart).inDays;
-
-    if (daysSinceStart >= 28) {
-      await prefs.setWeekInCycle(0);
+    
+    if (daysSinceStart < 0) {
       await prefs.setCycleStartDate(DateTime.now());
       return 0;
     }
-
-    final expectedWeek = daysSinceStart ~/ 7;
-    if (expectedWeek > stored && expectedWeek < 4) {
-      await prefs.setWeekInCycle(expectedWeek);
-      return expectedWeek;
-    }
-
-    return stored;
+    return daysSinceStart ~/ 7;
   }
 
   Future<void> advanceWeek() async {
-    final current = await future;
-    final prefs = ref.read(preferencesStorageProvider);
-    if (current < 3) {
-      final next = current + 1;
-      await prefs.setWeekInCycle(next);
-    } else {
-      await prefs.setWeekInCycle(0);
-      await prefs.setCycleStartDate(DateTime.now());
-    }
-    ref.invalidateSelf();
+    // This is no longer needed since it's computed dynamically from date,
+    // but kept for API compatibility. It could artificially bump the start date if desired.
+    // Best practice is to just let time pass.
   }
 
   Future<void> resetCycle() async {
     final prefs = ref.read(preferencesStorageProvider);
-    await prefs.setWeekInCycle(0);
     await prefs.setCycleStartDate(DateTime.now());
     ref.invalidateSelf();
   }

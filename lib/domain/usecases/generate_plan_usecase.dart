@@ -3,6 +3,7 @@ import '../entities/activity.dart';
 import '../entities/run_walk_phase.dart';
 import '../entities/running_stats.dart';
 import '../entities/training_plan.dart';
+import '../entities/tsb_state.dart';
 import 'analyze_runs_usecase.dart';
 import 'hr_zone_calculator.dart';
 import 'pace_zone_calculator.dart';
@@ -48,27 +49,68 @@ class GeneratePlanUseCase {
       restingHr: userRestingHr,
       maxHr: userMaxHr,
     );
-    final weeklyMinutes = _targetWeeklyMinutes(stats, weekInCycle: weekInCycle);
+    
+    int effectiveWeekInCycle = weekInCycle;
+    if (weekInCycle >= 0) {
+      if (stats.recommendedPhase == CyclePhase.intermediate) {
+        effectiveWeekInCycle = weekInCycle % 3;
+      } else if (stats.recommendedPhase == CyclePhase.advanced) {
+        effectiveWeekInCycle = weekInCycle % 4;
+      }
+    }
+    
+    double weeklyMinutesTarget = _targetWeeklyMinutes(stats, weekInCycle: effectiveWeekInCycle);
+
+    // 1. ACWR cap (<= 1.3 approx). Using 1.3x recent average.
+    final maxWeeklyByAcwr = stats.recentWeeklyAvgMinutes * 1.3;
+    if (maxWeeklyByAcwr > 0 && weeklyMinutesTarget > maxWeeklyByAcwr) {
+      weeklyMinutesTarget = maxWeeklyByAcwr;
+    }
+
+    // 2. Weekly volume cap (+15%)
+    final maxWeeklyByCap = stats.recentWeeklyAvgMinutes * 1.15;
+    if (maxWeeklyByCap > 0 && weeklyMinutesTarget > maxWeeklyByCap) {
+      weeklyMinutesTarget = maxWeeklyByCap;
+    }
+
+    // 3. Long run cap (+10%)
+    double longRunTarget = weeklyMinutesTarget * config.longRunFraction;
+    final maxLongRunByCap = stats.longestRecentRunMinutes * 1.10;
+    if (maxLongRunByCap > 0 && longRunTarget > maxLongRunByCap) {
+      longRunTarget = maxLongRunByCap;
+    }
+
+    // 4. Long run allocation (25-35% of final weekly total)
+    if (weeklyMinutesTarget > 0) {
+      final fraction = longRunTarget / weeklyMinutesTarget;
+      if (fraction < 0.25) {
+        longRunTarget = weeklyMinutesTarget * 0.25;
+      } else if (fraction > 0.35) {
+        longRunTarget = weeklyMinutesTarget * 0.35;
+      }
+    }
+
     final startDate = _startDate(activities);
 
     return TrainingPlan(
       startDate: startDate,
-      goal: descriptions.goal(stats, weekInCycle: weekInCycle),
+      goal: descriptions.goal(stats, weekInCycle: effectiveWeekInCycle),
       description: descriptions.planDescription(
         stats,
-        weekInCycle: weekInCycle,
+        weekInCycle: effectiveWeekInCycle,
       ),
-      weekInCycle: weekInCycle,
+      weekInCycle: effectiveWeekInCycle,
       cyclePhase: stats.recommendedPhase,
       days: _buildWeek(
         startDate: startDate,
-        weeklyMinutes: weeklyMinutes,
+        weeklyMinutes: weeklyMinutesTarget,
+        longRunMinTarget: longRunTarget,
         paceZones: paceZones,
         hrZones: hrZones,
         stats: stats,
         activities: activities,
         thresholdPace: thresholdPace,
-        weekInCycle: weekInCycle,
+        weekInCycle: effectiveWeekInCycle,
       ),
     );
   }
@@ -76,6 +118,7 @@ class GeneratePlanUseCase {
   List<TrainingDay> _buildWeek({
     required DateTime startDate,
     required double weeklyMinutes,
+    required double longRunMinTarget,
     required List<PaceZone> paceZones,
     required List<HrZone> hrZones,
     required RunningStats stats,
@@ -96,7 +139,7 @@ class GeneratePlanUseCase {
       weekInCycle: weekInCycle,
     );
 
-    final longRunMin = (weeklyMinutes * config.longRunFraction).round();
+    final longRunMin = longRunMinTarget.round();
     final easyMin = (weeklyMinutes * config.easyFraction).round();
     final tempoWorkMin = (weeklyMinutes * config.tempoFraction).round();
     final intervalMin = _intervalMinutes(stats);
@@ -133,22 +176,28 @@ class GeneratePlanUseCase {
     switch (type) {
       case WorkoutType.easy:
         final effective = easyMin.clamp(config.minEasyRunMinutes, 9999);
-        if (stats.totalRuns < config.continuousRunThreshold) {
-          final phase = RunWalkPhase.fromTotalRuns(stats.totalRuns);
-          final target = phase.totalDurationMinutes.clamp(
-            config.beginnerMinEasyMinutes,
-            effective,
-          );
-          return TrainingDay(
-            date: date,
-            type: WorkoutType.easy,
-            targetMinutes: target,
-            paceTarget: paceZones[1],
-            heartRateTarget: hrZones[1],
-            estimatedDuration: Duration(minutes: target),
-            runWalkPhase: phase,
-            description: descriptions.beginnerRunWalk(phase),
-          );
+        if (stats.recommendedPhase == CyclePhase.beginner || stats.recommendedPhase == CyclePhase.transition) {
+          final daysSinceFirstRun = stats.firstActivityDate != null
+              ? DateTime.now().difference(stats.firstActivityDate!).inDays
+              : 0;
+          final phase = RunWalkPhase.fromStats(stats.totalRuns, daysSinceFirstRun);
+          
+          if (!phase.isContinuous) {
+            final target = phase.totalDurationMinutes.clamp(
+              config.beginnerMinEasyMinutes,
+              effective,
+            );
+            return TrainingDay(
+              date: date,
+              type: WorkoutType.easy,
+              targetMinutes: target,
+              paceTarget: paceZones[1],
+              heartRateTarget: hrZones[1],
+              estimatedDuration: Duration(minutes: target),
+              runWalkPhase: phase,
+              description: descriptions.beginnerRunWalk(phase),
+            );
+          }
         }
         return TrainingDay(
           date: date,
@@ -220,6 +269,12 @@ class GeneratePlanUseCase {
           type: WorkoutType.crossTraining,
           description: descriptions.crossTraining(),
         );
+      case WorkoutType.walk:
+        return TrainingDay(
+          date: date,
+          type: WorkoutType.walk,
+          description: descriptions.easy(),
+        );
     }
   }
 
@@ -269,20 +324,48 @@ class GeneratePlanUseCase {
       );
     }
 
-    // 4. Normal form-based
-    if (stats.formScore < config.fatiguedThreshold) {
-      return (recentMinutes * 0.80).clamp(
+    // Intermediate periodization
+    if (weekInCycle >= 0 && stats.recommendedPhase == CyclePhase.intermediate) {
+      if (weekInCycle == 2) { // 3-week cycle: Week C (Recover): 80%
+        return (recentMinutes * 0.8).clamp(config.minWeeklyMinutes, config.maxWeeklyMinutes);
+      } else if (weekInCycle == 1) { // Week B (Build): 105%
+        return (recentMinutes * 1.05).clamp(config.minWeeklyMinutes, config.maxWeeklyMinutes);
+      } else { // Week A (Base): 100%
+        return recentMinutes.clamp(config.minWeeklyMinutes, config.maxWeeklyMinutes);
+      }
+    }
+
+    // Transition block
+    if (stats.recommendedPhase == CyclePhase.transition) {
+      return (recentMinutes * 1.05).clamp(
         config.minWeeklyMinutes,
-        config.maxWeeklyMinutes,
+        config.maxWeeklyMinutesScaleUp,
       );
     }
-    if (stats.formScore < config.slightlyFatiguedThreshold) {
-      return (recentMinutes * 0.95).clamp(
-        config.minWeeklyMinutes,
-        config.maxWeeklyMinutes,
-      );
+
+    // 4. Normal form-based (using TSB state)
+    final tsbState = TsbStateResolver.fromFormScore(
+      stats.formScore,
+      dangerThreshold: config.dangerTsbThreshold,
+      fatiguedThreshold: config.fatiguedTsbThreshold,
+      tiredThreshold: config.tiredTsbThreshold,
+      optimalThreshold: config.optimalTsbThreshold,
+    );
+
+    double target;
+    if (tsbState == TsbState.danger) {
+      target = recentMinutes * config.deloadVolumeFraction;
+    } else if (tsbState == TsbState.fatigued) {
+      target = recentMinutes * 0.85;
+    } else if (tsbState == TsbState.tired) {
+      target = recentMinutes * 0.90;
+    } else if (tsbState == TsbState.optimal) {
+      target = recentMinutes * 1.05;
+    } else { // fresh
+      target = recentMinutes * 1.10;
     }
-    return (recentMinutes * 1.10).clamp(
+
+    return target.clamp(
       config.minWeeklyMinutes,
       config.maxWeeklyMinutesScaleUp,
     );

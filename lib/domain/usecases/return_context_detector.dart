@@ -92,7 +92,23 @@ class ReturnContextDetector {
     final values = weekly.values.toList();
     final recentCount = values.length > 4 ? 4 : values.length;
     final recent = values.sublist(values.length - recentCount);
-    return recent.reduce((a, b) => a + b) / recentCount;
+
+    if (values.length < 2) {
+      return recent.isNotEmpty ? recent.reduce((a, b) => a + b) / recent.length : 0;
+    }
+
+    final priorCount = values.length > 12 ? 12 : values.length;
+    final prior = values.sublist(values.length - priorCount);
+    final sortedPrior = List<double>.from(prior)..sort();
+    final median = sortedPrior[sortedPrior.length ~/ 2];
+
+    final validRecent = recent.where((v) => v >= median * 0.5 && v <= median * 1.5).toList();
+    if (validRecent.isEmpty) {
+      final sortedRecent = List<double>.from(recent)..sort();
+      return sortedRecent[sortedRecent.length ~/ 2];
+    }
+    validRecent.sort();
+    return validRecent[validRecent.length ~/ 2];
   }
 
   String _weekCommencingKey(DateTime date) {

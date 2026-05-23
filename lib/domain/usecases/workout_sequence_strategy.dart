@@ -2,6 +2,7 @@ import '../entities/analyzed_activity.dart';
 import '../entities/return_context.dart';
 import '../entities/activity.dart';
 import '../entities/running_stats.dart';
+import '../entities/tsb_state.dart';
 import '../entities/workout_type.dart';
 import 'schedule_constraints.dart';
 import 'training_plan_config.dart';
@@ -51,7 +52,7 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
 
       // Active recovery substitution
       if ((next == WorkoutType.rest || next == WorkoutType.easy) &&
-          stats.formScore < config.fatiguedThreshold &&
+          stats.formScore < config.fatiguedTsbThreshold &&
           crossTrainingCount < 1 &&
           constraints.allows(WorkoutType.crossTraining)) {
         next = WorkoutType.crossTraining;
@@ -88,8 +89,13 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
     int weekInCycle,
   ) {
     // Beginner
-    if (stats.totalRuns < config.continuousRunThreshold) {
+    if (stats.recommendedPhase == CyclePhase.beginner) {
       return ScheduleConstraints.beginner;
+    }
+
+    // Transition
+    if (stats.recommendedPhase == CyclePhase.transition) {
+      return ScheduleConstraints.transition;
     }
 
     // Returning runner
@@ -105,8 +111,34 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
       return ScheduleConstraints.returnRampEasy;
     }
 
+    // TSB States
+    final tsbState = TsbStateResolver.fromFormScore(
+      stats.formScore,
+      dangerThreshold: config.dangerTsbThreshold,
+      fatiguedThreshold: config.fatiguedTsbThreshold,
+      tiredThreshold: config.tiredTsbThreshold,
+      optimalThreshold: config.optimalTsbThreshold,
+    );
+
+    if (tsbState == TsbState.danger) {
+      return ScheduleConstraints.tsbDanger;
+    }
+
+    if (tsbState == TsbState.fatigued) {
+      return ScheduleConstraints.tsbFatigued;
+    }
+
+    if (tsbState == TsbState.tired) {
+      return ScheduleConstraints.tsbTired;
+    }
+
     // Deload (advanced, week 3)
     if (weekInCycle == 3 && stats.recommendedPhase == CyclePhase.advanced) {
+      return ScheduleConstraints.deload;
+    }
+
+    // Deload (intermediate, week 2 of 3-week cycle)
+    if (weekInCycle == 2 && stats.recommendedPhase == CyclePhase.intermediate) {
       return ScheduleConstraints.deload;
     }
 

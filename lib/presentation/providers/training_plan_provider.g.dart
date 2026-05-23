@@ -265,7 +265,7 @@ final class WeekInCycleNotifierProvider
 }
 
 String _$weekInCycleNotifierHash() =>
-    r'd1a8ad2a124171ca88b1b6e54b7d0f032a3d9221';
+    r'd60591f44d22b19a70b48a0be64b5ddafb3038be';
 
 abstract class _$WeekInCycleNotifier extends $AsyncNotifier<int> {
   FutureOr<int> build();

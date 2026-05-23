@@ -52,6 +52,40 @@ class ScheduleConstraints {
     maxConsecutiveRunDays: 1,
   );
 
+  /// Transition phase (runs 15-22): easy + rest only, max 3 days/wk.
+  static const transition = ScheduleConstraints(
+    allowedTypes: {WorkoutType.easy, WorkoutType.rest},
+    maxRunsPerWeek: 3,
+    maxConsecutiveRunDays: 2,
+  );
+
+  /// TSB Danger state (< -20): deload week rules
+  static const tsbDanger = ScheduleConstraints(
+    allowedTypes: {WorkoutType.easy, WorkoutType.rest, WorkoutType.crossTraining},
+    maxRunsPerWeek: 3,
+    maxConsecutiveRunDays: 1,
+  );
+
+  /// TSB Fatigued state (< -15): Z1 only
+  static const tsbFatigued = ScheduleConstraints(
+    allowedTypes: {WorkoutType.easy, WorkoutType.rest, WorkoutType.crossTraining},
+    maxRunsPerWeek: 4,
+    maxConsecutiveRunDays: 2,
+  );
+
+  /// TSB Tired state (< -10): no intervals
+  static const tsbTired = ScheduleConstraints(
+    allowedTypes: {
+      WorkoutType.easy,
+      WorkoutType.tempo,
+      WorkoutType.longRun,
+      WorkoutType.rest,
+      WorkoutType.crossTraining,
+    },
+    maxRunsPerWeek: 4,
+    maxConsecutiveRunDays: 3,
+  );
+
   /// Normal scheduling: all workout types, 80/20 rule enforced elsewhere.
   static const normal = ScheduleConstraints(
     allowedTypes: {
