@@ -6,12 +6,14 @@ class RunPacerDisplay extends StatelessWidget {
   final int? currentPaceSecondsPerKm;
   final int fastestTargetSeconds;
   final int slowestTargetSeconds;
+  final bool isWorkPhase;
 
   const RunPacerDisplay({
     super.key,
     required this.currentPaceSecondsPerKm,
     required this.fastestTargetSeconds,
     required this.slowestTargetSeconds,
+    this.isWorkPhase = true,
   });
 
   String _formatPace(int seconds) {
@@ -86,12 +88,14 @@ class RunPacerDisplay extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Target: ${_formatPace(fastestTargetSeconds)} - ${_formatPace(slowestTargetSeconds)} /km',
-            style: theme.textTheme.bodySmall,
-          ),
-          if (hasPace) ...[
+          if (isWorkPhase) ...[
+            const SizedBox(height: 4),
+            Text(
+              'Target: ${_formatPace(fastestTargetSeconds)} - ${_formatPace(slowestTargetSeconds)} /km',
+              style: theme.textTheme.bodySmall,
+            ),
+          ],
+          if (hasPace && isWorkPhase) ...[
             const SizedBox(height: 12),
             Row(
               children: [

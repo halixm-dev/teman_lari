@@ -1,8 +1,8 @@
 import 'package:teman_lari/domain/entities/training_plan.dart';
 
-enum WorkoutPhase { warmup, work, cooldown, finished }
+enum WorkoutPhase { warmup, work, recovery, walk, cooldown, finished }
 
-enum PhaseSegmentType { warmup, work, recovery, cooldown }
+enum PhaseSegmentType { warmup, work, recovery, walk, cooldown }
 
 class PhaseSegment {
   final PhaseSegmentType type;
@@ -13,7 +13,8 @@ class PhaseSegment {
   WorkoutPhase get phase => switch (type) {
     PhaseSegmentType.warmup => WorkoutPhase.warmup,
     PhaseSegmentType.work => WorkoutPhase.work,
-    PhaseSegmentType.recovery => WorkoutPhase.work,
+    PhaseSegmentType.recovery => WorkoutPhase.recovery,
+    PhaseSegmentType.walk => WorkoutPhase.walk,
     PhaseSegmentType.cooldown => WorkoutPhase.cooldown,
   };
 }
@@ -47,21 +48,20 @@ class RunSessionState {
   int get totalSeconds => segments.fold(0, (sum, s) => sum + s.durationSeconds);
 
   int get phaseElapsedSeconds {
+    if (segments.isEmpty || phase == WorkoutPhase.finished) return 0;
     int elapsed = 0;
-    for (final seg in segments) {
-      if (seg.phase == phase) {
-        return (elapsedSeconds - elapsed).clamp(0, seg.durationSeconds);
-      }
-      elapsed += seg.durationSeconds;
+    for (int i = 0; i < currentSegmentIndex; i++) {
+      elapsed += segments[i].durationSeconds;
     }
-    return 0;
+    return (elapsedSeconds - elapsed).clamp(
+      0,
+      segments[currentSegmentIndex].durationSeconds,
+    );
   }
 
   int get phaseDurationSeconds {
-    for (final seg in segments) {
-      if (seg.phase == phase) return seg.durationSeconds;
-    }
-    return 0;
+    if (segments.isEmpty || phase == WorkoutPhase.finished) return 0;
+    return segments[currentSegmentIndex].durationSeconds;
   }
 
   double get phaseProgress => phaseDurationSeconds > 0
@@ -102,7 +102,38 @@ class RunSessionState {
     }
 
     final intervals = plan.intervals;
-    if (plan.type == WorkoutType.intervals &&
+    final runWalk = plan.runWalkPhase;
+
+    if (runWalk != null && !runWalk.isContinuous) {
+      final workMins = plan.workMinutes ?? runWalk.totalDurationMinutes;
+      if (workMins > 0) {
+        final totalWorkSeconds = workMins * 60;
+        int elapsed = 0;
+        while (elapsed < totalWorkSeconds) {
+          if (runWalk.runSeconds > 0) {
+            final remaining = totalWorkSeconds - elapsed;
+            final dur = runWalk.runSeconds < remaining
+                ? runWalk.runSeconds
+                : remaining;
+            segments.add(
+              PhaseSegment(type: PhaseSegmentType.work, durationSeconds: dur),
+            );
+            elapsed += dur;
+          }
+          if (elapsed >= totalWorkSeconds) break;
+          if (runWalk.walkSeconds > 0) {
+            final remaining = totalWorkSeconds - elapsed;
+            final dur = runWalk.walkSeconds < remaining
+                ? runWalk.walkSeconds
+                : remaining;
+            segments.add(
+              PhaseSegment(type: PhaseSegmentType.walk, durationSeconds: dur),
+            );
+            elapsed += dur;
+          }
+        }
+      }
+    } else if (plan.type == WorkoutType.intervals &&
         intervals != null &&
         intervals.isNotEmpty) {
       for (final interval in intervals) {
