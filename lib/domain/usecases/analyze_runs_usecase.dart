@@ -134,7 +134,9 @@ class AnalyzeRunsUseCase {
         config: cfg,
       ),
       analyzedActivities: analyzedActivities,
-      firstActivityDate: sortedRunning.isNotEmpty ? sortedRunning.first.date : null,
+      firstActivityDate: sortedRunning.isNotEmpty
+          ? sortedRunning.first.date
+          : null,
       longestRecentRunMinutes: longestRecentRunMin,
       acwr: acwr,
     );

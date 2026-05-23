@@ -2,7 +2,7 @@ import '../entities/activity.dart';
 import '../entities/running_stats.dart';
 
 class TrainingLoadCalculator {
-  /// Note: Running EMA from "first activity" means Fitness and Fatigue will be 
+  /// Note: Running EMA from "first activity" means Fitness and Fatigue will be
   /// heavily suppressed for the first 6-8 weeks of a user's data (cold start problem).
   /// A seed value option could be implemented in the future for users importing historical data.
   List<TrainingLoadPoint> computeLoadHistory(
@@ -17,8 +17,14 @@ class TrainingLoadCalculator {
     for (final a in sortedActivities) {
       final localDate = a.date.toLocal();
       final day = DateTime(localDate.year, localDate.month, localDate.day);
-      final double dailyTss = (tssByDate[day] ?? 0) +
-          _trainingStressScore(a, maxHr: maxHr, restingHr: restingHr, thresholdPace: thresholdPace);
+      final double dailyTss =
+          (tssByDate[day] ?? 0) +
+          _trainingStressScore(
+            a,
+            maxHr: maxHr,
+            restingHr: restingHr,
+            thresholdPace: thresholdPace,
+          );
       tssByDate[day] = dailyTss > 500.0 ? 500.0 : dailyTss;
     }
 
@@ -61,7 +67,7 @@ class TrainingLoadCalculator {
     final hr = activity.avgHeartRate;
     final durationHours = activity.movingTime.inMinutes / 60.0;
     double tss = 0.0;
-    
+
     if (hr != null) {
       final hrReserve = (hr - restingHr) / (maxHr - restingHr);
       final thresholdHrReserve = 0.85;
@@ -106,7 +112,12 @@ class TrainingLoadCalculator {
     for (final a in sortedActivities) {
       final daysAgo = now.difference(a.date).inDays;
       if (daysAgo < 28 && daysAgo >= 0) {
-        final tss = _trainingStressScore(a, maxHr: maxHr, restingHr: restingHr, thresholdPace: thresholdPace);
+        final tss = _trainingStressScore(
+          a,
+          maxHr: maxHr,
+          restingHr: restingHr,
+          thresholdPace: thresholdPace,
+        );
         chronicTss += tss;
         if (daysAgo < 7) {
           acuteTss += tss;

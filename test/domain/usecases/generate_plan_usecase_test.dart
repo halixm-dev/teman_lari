@@ -270,9 +270,9 @@ void main() {
         0,
         (s, d) => s + (d.targetMinutes ?? 0),
       );
-      // With formScore -16 (fatigued), multiplier is 0.85. 
+      // With formScore -16 (fatigued), multiplier is 0.85.
       // Average is (175 + 160 + 190 + 210) / 4 = 183.75.
-      // 183.75 * 0.85 = 156. 
+      // 183.75 * 0.85 = 156.
       // The scheduled workouts will be roughly 156 mins.
       expect(totalTarget, lessThan(190));
     });
@@ -454,7 +454,10 @@ void main() {
       final activities = [
         _activity(daysAgo: 1, minutes: 30, paceSecPerKm: 360, id: 1),
       ];
-      mockAnalyze.stats = _stats(totalRuns: 3, recommendedPhase: CyclePhase.beginner);
+      mockAnalyze.stats = _stats(
+        totalRuns: 3,
+        recommendedPhase: CyclePhase.beginner,
+      );
       final plan = useCase.generate(activities);
       expect(plan.days[0].type, WorkoutType.easy);
       expect(plan.days[1].type, WorkoutType.rest);
