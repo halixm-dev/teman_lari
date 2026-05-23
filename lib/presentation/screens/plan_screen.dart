@@ -20,6 +20,7 @@ class PlanScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.info_outline),
             color: AppColors.brandOrange,
+            tooltip: 'How your plan works',
             onPressed: () => _showInfoSheet(context),
           ),
         ],
