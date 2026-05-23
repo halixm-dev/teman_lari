@@ -83,6 +83,7 @@ Color phaseColor(PhaseSegmentType type) {
     PhaseSegmentType.warmup => AppColors.success,
     PhaseSegmentType.work => AppColors.brandOrange,
     PhaseSegmentType.recovery => const Color(0xFFF59E0B),
+    PhaseSegmentType.walk => const Color(0xFF14B8A6),
     PhaseSegmentType.cooldown => AppColors.info,
   };
 }
@@ -92,6 +93,7 @@ String phaseLabelFromType(PhaseSegmentType type) {
     PhaseSegmentType.warmup => 'Warm Up',
     PhaseSegmentType.work => 'Run',
     PhaseSegmentType.recovery => 'Recovery Jog',
+    PhaseSegmentType.walk => 'Walk',
     PhaseSegmentType.cooldown => 'Cool Down',
   };
 }
@@ -131,12 +133,21 @@ class _MultiPhaseProgressPainter extends CustomPainter {
     final availableSweep = 2 * pi - gapAngle * phaseArcs.length;
     double currentAngle = -pi / 2;
 
+    double? activeProgressEndAngle;
+    Color? activeProgressColor;
+
     for (final arc in phaseArcs) {
       if (arc.sweepFraction <= 0) continue;
 
       final sweepAngle = (arc.sweepFraction / totalSweep) * availableSweep;
 
-      canvas.drawArc(rect, currentAngle, sweepAngle, false, trackPaint);
+      final segmentTrackPaint = Paint()
+        ..color = arc.color.withValues(alpha: 0.2)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.butt;
+
+      canvas.drawArc(rect, currentAngle, sweepAngle, false, segmentTrackPaint);
 
       final fillAngle = sweepAngle * arc.fillFraction.clamp(0.0, 1.0);
       if (fillAngle > 0) {
@@ -144,11 +155,23 @@ class _MultiPhaseProgressPainter extends CustomPainter {
           ..color = arc.color
           ..style = PaintingStyle.stroke
           ..strokeWidth = strokeWidth
-          ..strokeCap = StrokeCap.round;
+          ..strokeCap = StrokeCap.butt;
         canvas.drawArc(rect, currentAngle, fillAngle, false, progressPaint);
+
+        activeProgressEndAngle = currentAngle + fillAngle;
+        activeProgressColor = arc.color;
       }
 
       currentAngle += sweepAngle + gapAngle;
+    }
+
+    if (activeProgressEndAngle != null && activeProgressColor != null) {
+      final capPaint = Paint()
+        ..color = activeProgressColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.round;
+      canvas.drawArc(rect, activeProgressEndAngle, 0, false, capPaint);
     }
   }
 

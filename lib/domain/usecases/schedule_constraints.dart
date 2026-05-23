@@ -52,13 +52,6 @@ class ScheduleConstraints {
     maxConsecutiveRunDays: 1,
   );
 
-  /// Transition phase (runs 15-22): easy + rest only, max 3 days/wk.
-  static const transition = ScheduleConstraints(
-    allowedTypes: {WorkoutType.easy, WorkoutType.rest},
-    maxRunsPerWeek: 3,
-    maxConsecutiveRunDays: 2,
-  );
-
   /// TSB Danger state (< -20): deload week rules
   static const tsbDanger = ScheduleConstraints(
     allowedTypes: {

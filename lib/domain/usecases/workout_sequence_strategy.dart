@@ -9,6 +9,7 @@ import 'training_plan_config.dart';
 
 abstract class WorkoutSequenceStrategy {
   List<WorkoutType> determineSequence({
+    required ScheduleConstraints constraints,
     required RunningStats stats,
     required TrainingPlanConfig config,
     required List<Activity> recentActivities,
@@ -21,6 +22,7 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
 
   @override
   List<WorkoutType> determineSequence({
+    required ScheduleConstraints constraints,
     required RunningStats stats,
     required TrainingPlanConfig config,
     required List<Activity> recentActivities,
@@ -30,8 +32,6 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
     final startDate = _hasRunToday(recentActivities)
         ? now.add(const Duration(days: 1))
         : now;
-
-    final constraints = _resolveConstraints(stats, config, weekInCycle);
 
     // Load recent classification history
     List<WorkoutType> history = _buildContinuousHistory(
@@ -80,70 +80,6 @@ class DynamicWorkoutSequenceStrategy implements WorkoutSequenceStrategy {
     }
 
     return nextWeek;
-  }
-
-  /// Select the appropriate constraints based on user segment.
-  ScheduleConstraints _resolveConstraints(
-    RunningStats stats,
-    TrainingPlanConfig config,
-    int weekInCycle,
-  ) {
-    // Beginner
-    if (stats.recommendedPhase == CyclePhase.beginner) {
-      return ScheduleConstraints.beginner;
-    }
-
-    // Transition
-    if (stats.recommendedPhase == CyclePhase.transition) {
-      return ScheduleConstraints.transition;
-    }
-
-    // Returning runner
-    final returnCtx = stats.returnContext;
-    if (returnCtx != null && returnCtx.isReturning) {
-      // Extended gap → beginner constraints
-      if (returnCtx.category == GapCategory.extended) {
-        return ScheduleConstraints.beginner;
-      }
-      // All returning runners get easy-only constraints.
-      // The original design always used rampWeek 1 (easy-only);
-      // full ramp progression can be added when we track current ramp week.
-      return ScheduleConstraints.returnRampEasy;
-    }
-
-    // TSB States
-    final tsbState = TsbStateResolver.fromFormScore(
-      stats.formScore,
-      dangerThreshold: config.dangerTsbThreshold,
-      fatiguedThreshold: config.fatiguedTsbThreshold,
-      tiredThreshold: config.tiredTsbThreshold,
-      optimalThreshold: config.optimalTsbThreshold,
-    );
-
-    if (tsbState == TsbState.danger) {
-      return ScheduleConstraints.tsbDanger;
-    }
-
-    if (tsbState == TsbState.fatigued) {
-      return ScheduleConstraints.tsbFatigued;
-    }
-
-    if (tsbState == TsbState.tired) {
-      return ScheduleConstraints.tsbTired;
-    }
-
-    // Deload (advanced, week 3)
-    if (weekInCycle == 3 && stats.recommendedPhase == CyclePhase.advanced) {
-      return ScheduleConstraints.deload;
-    }
-
-    // Deload (intermediate, week 2 of 3-week cycle)
-    if (weekInCycle == 2 && stats.recommendedPhase == CyclePhase.intermediate) {
-      return ScheduleConstraints.deload;
-    }
-
-    // Normal
-    return ScheduleConstraints.normal;
   }
 
   WorkoutType _pickNextWorkout(

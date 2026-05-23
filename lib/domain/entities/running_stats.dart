@@ -1,14 +1,7 @@
 import 'analyzed_activity.dart';
 import 'return_context.dart';
 
-enum CyclePhase {
-  beginner,
-  transition,
-  baseBuilding,
-  intermediate,
-  advanced,
-  returning,
-}
+enum CyclePhase { beginner, baseBuilding, intermediate, advanced, returning }
 
 class PaceDataPoint {
   final DateTime date;

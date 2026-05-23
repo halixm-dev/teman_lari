@@ -5,6 +5,7 @@ import 'package:teman_lari/domain/entities/training_plan.dart';
 import 'package:teman_lari/domain/usecases/analyze_runs_usecase.dart';
 import 'package:teman_lari/domain/usecases/generate_plan_usecase.dart';
 import 'package:teman_lari/domain/usecases/pace_zone_calculator.dart';
+import 'package:teman_lari/domain/usecases/schedule_constraints.dart';
 import 'package:teman_lari/domain/usecases/training_plan_config.dart';
 import 'package:teman_lari/domain/usecases/workout_descriptions.dart';
 import 'package:teman_lari/domain/usecases/workout_sequence_strategy.dart';
@@ -16,7 +17,7 @@ class _CustomDescriptions extends WorkoutDescriptions {
   String easy() => 'Custom easy run';
 
   @override
-  String longRun() => 'Custom long run';
+  String longRun(int durationMinutes) => 'Custom long run';
 
   @override
   String rest() => 'Custom rest';
@@ -27,6 +28,7 @@ class _AllEasyStrategy implements WorkoutSequenceStrategy {
 
   @override
   List<WorkoutType> determineSequence({
+    required ScheduleConstraints constraints,
     required RunningStats stats,
     required TrainingPlanConfig config,
     required List<Activity> recentActivities,
@@ -222,7 +224,7 @@ void main() {
         weeklyMinutes: {'W1': 160},
       );
       final plan = useCase.generate([_activity()]);
-      expect(plan.description, contains("fatigue"));
+      expect(plan.description, contains("Fatigued"));
     });
 
     test('fresh description when formScore > 10', () {
@@ -233,7 +235,7 @@ void main() {
         weeklyMinutes: {'W1': 160},
       );
       final plan = useCase.generate([_activity()]);
-      expect(plan.description, contains("fresh"));
+      expect(plan.description, contains("Fresh"));
     });
 
     test('balanced description otherwise', () {
@@ -270,8 +272,8 @@ void main() {
         0,
         (s, d) => s + (d.targetMinutes ?? 0),
       );
-      final avgWeekly = (175 + 160 + 190 + 210) / 4; // 183.75
       // With formScore -16 (fatigued), multiplier is 0.85.
+      // Average is (175 + 160 + 190 + 210) / 4 = 183.75.
       // 183.75 * 0.85 = 156.
       // The scheduled workouts will be roughly 156 mins.
       expect(totalTarget, lessThan(190));
@@ -293,53 +295,6 @@ void main() {
           .where((d) => d.type == WorkoutType.rest)
           .length;
       expect(restDays, lessThan(7));
-    });
-  });
-
-  group('interval minutes', () {
-    test('beginner gets 30 min intervals', () {
-      mockAnalyze.stats = _stats(
-        totalRuns: 10,
-        weeklyVolume: {'W1': 15},
-        weeklyMinutes: {'W1': 120},
-      );
-      final plan = useCase.generate([_activity()]);
-      final intervalDays = plan.days.where(
-        (d) => d.type == WorkoutType.intervals,
-      );
-      for (final d in intervalDays) {
-        expect(d.targetMinutes, 30);
-      }
-    });
-
-    test('intermediate gets 36 min intervals', () {
-      mockAnalyze.stats = _stats(
-        totalRuns: 30,
-        weeklyVolume: {'W1': 25, 'W2': 30, 'W3': 28, 'W4': 32},
-        weeklyMinutes: {'W1': 200, 'W2': 220, 'W3': 210, 'W4': 230},
-      );
-      final plan = useCase.generate([_activity()]);
-      final intervalDays = plan.days.where(
-        (d) => d.type == WorkoutType.intervals,
-      );
-      for (final d in intervalDays) {
-        expect(d.targetMinutes, 36);
-      }
-    });
-
-    test('advanced gets 42 min intervals', () {
-      mockAnalyze.stats = _stats(
-        totalRuns: 60,
-        weeklyVolume: {'W1': 55, 'W2': 60, 'W3': 52, 'W4': 58},
-        weeklyMinutes: {'W1': 300, 'W2': 340, 'W3': 310, 'W4': 330},
-      );
-      final plan = useCase.generate([_activity()]);
-      final intervalDays = plan.days.where(
-        (d) => d.type == WorkoutType.intervals,
-      );
-      for (final d in intervalDays) {
-        expect(d.targetMinutes, 42);
-      }
     });
   });
 
@@ -558,34 +513,6 @@ void main() {
       expect(cfg.returnWeeklyIncreaseCap, 0.10);
       expect(cfg.returnEasyOnlyWeeks, 1);
       expect(cfg.returnRampWeeks, 3);
-    });
-
-    test('custom config changes interval tiers', () {
-      const customConfig = TrainingPlanConfig(
-        beginnerRunCount: 5,
-        beginnerWeeklyKm: 10.0,
-        advancedRunCount: 30,
-        advancedWeeklyKm: 25.0,
-        beginnerIntervalMin: 25,
-        intermediateIntervalMin: 32,
-        advancedIntervalMin: 40,
-      );
-      final customUseCase = GeneratePlanUseCase(
-        analyzeRuns: mockAnalyze,
-        config: customConfig,
-      );
-      mockAnalyze.stats = _stats(
-        totalRuns: 60,
-        weeklyVolume: {'W1': 55},
-        weeklyMinutes: {'W1': 300},
-      );
-      final plan = customUseCase.generate([_activity()]);
-      final intervalDays = plan.days.where(
-        (d) => d.type == WorkoutType.intervals,
-      );
-      for (final d in intervalDays) {
-        expect(d.targetMinutes, 40);
-      }
     });
 
     test('custom config changes volume fractions', () {

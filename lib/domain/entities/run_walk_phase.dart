@@ -1,4 +1,12 @@
-enum RunWalkPhaseType { initiation, development, endurance, continuous }
+enum RunWalkPhaseType {
+  phase1,
+  phase2,
+  phase3,
+  phase4,
+  phase5,
+  phase6,
+  continuous,
+}
 
 class RunWalkPhase {
   final RunWalkPhaseType type;
@@ -18,31 +26,58 @@ class RunWalkPhase {
   bool get isContinuous => type == RunWalkPhaseType.continuous;
 
   static RunWalkPhase fromStats(int totalRuns, int daysSinceFirstRun) {
-    if (totalRuns < 5 || daysSinceFirstRun < 14) {
+    if (totalRuns < 3 || daysSinceFirstRun < 7) {
       return const RunWalkPhase(
-        type: RunWalkPhaseType.initiation,
+        type: RunWalkPhaseType.phase1,
         runSeconds: 60,
         walkSeconds: 120,
-        totalDurationMinutes: 15,
-        label: 'Run 1 min, Walk 2 min',
+        totalDurationMinutes: 16,
+        label: 'Run 1 min, Walk 2 min (6x)',
       );
     }
-    if (totalRuns < 10 || daysSinceFirstRun < 28) {
+    if (totalRuns < 6 || daysSinceFirstRun < 14) {
       return const RunWalkPhase(
-        type: RunWalkPhaseType.development,
+        type: RunWalkPhaseType.phase2,
         runSeconds: 120,
         walkSeconds: 60,
-        totalDurationMinutes: 20,
-        label: 'Run 2 min, Walk 1 min',
+        totalDurationMinutes: 17,
+        label: 'Run 2 min, Walk 1 min (6x)',
       );
     }
-    if (totalRuns < 15 || daysSinceFirstRun < 49) {
+    if (totalRuns < 9 || daysSinceFirstRun < 21) {
       return const RunWalkPhase(
-        type: RunWalkPhaseType.endurance,
+        type: RunWalkPhaseType.phase3,
         runSeconds: 240,
         walkSeconds: 60,
-        totalDurationMinutes: 25,
-        label: 'Run 4 min, Walk 1 min',
+        totalDurationMinutes: 19,
+        label: 'Run 4 min, Walk 1 min (4x)',
+      );
+    }
+    if (totalRuns < 12 || daysSinceFirstRun < 28) {
+      return const RunWalkPhase(
+        type: RunWalkPhaseType.phase4,
+        runSeconds: 360,
+        walkSeconds: 120,
+        totalDurationMinutes: 22,
+        label: 'Run 6 min, Walk 2 min (3x)',
+      );
+    }
+    if (totalRuns < 15 || daysSinceFirstRun < 35) {
+      return const RunWalkPhase(
+        type: RunWalkPhaseType.phase5,
+        runSeconds: 480,
+        walkSeconds: 120,
+        totalDurationMinutes: 18,
+        label: 'Run 8 min, Walk 2 min (2x)',
+      );
+    }
+    if (totalRuns < 18 || daysSinceFirstRun < 42) {
+      return const RunWalkPhase(
+        type: RunWalkPhaseType.phase6,
+        runSeconds: 720,
+        walkSeconds: 120,
+        totalDurationMinutes: 26,
+        label: 'Run 12 min, Walk 2 min (2x)',
       );
     }
     return const RunWalkPhase(

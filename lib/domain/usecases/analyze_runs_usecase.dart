@@ -154,11 +154,8 @@ class AnalyzeRunsUseCase {
     if (totalRuns < config.baseBuildingRunCount) {
       return CyclePhase.baseBuilding;
     }
-    if (totalRuns < config.transitionRunCount) {
-      return CyclePhase.beginner;
-    }
     if (totalRuns < config.intermediateRunCount) {
-      return CyclePhase.transition;
+      return CyclePhase.beginner;
     }
     if (totalRuns >= config.advancedRunCount &&
         recentWeeklyAvgKm >= config.advancedWeeklyKm) {

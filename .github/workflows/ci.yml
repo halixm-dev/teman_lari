@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  quality_gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze --fatal-warnings
+
+      - name: Format Check
+        run: dart format --set-exit-if-changed .
+
+      - name: Run Tests
+        run: flutter test --coverage
+
+  build:
+    name: Build APK
+    needs: quality_gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Create prod config
+        run: |
+          mkdir -p config
+          cat > config/prod.json << EOF
+          {
+            "STRAVA_CLIENT_ID": "${{ secrets.STRAVA_CLIENT_ID }}",
+            "STRAVA_CLIENT_SECRET": "${{ secrets.STRAVA_CLIENT_SECRET }}",
+            "STRAVA_REDIRECT_URI": "${{ secrets.STRAVA_REDIRECT_URI }}"
+          }
+          EOF
+
+      - name: Build APK
+        run: flutter build apk --flavor prod --dart-define-from-file=config/prod.json --release
+        
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apk
+          path: build/app/outputs/flutter-apk/app-prod-release.apk

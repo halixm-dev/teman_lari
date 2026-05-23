@@ -424,11 +424,7 @@ class _DaySubtitle extends StatelessWidget {
       children: [
         const SizedBox(height: 4),
         if (!isRest && day.targetMinutes != null)
-          day.warmUpMinutes != null
-              ? Text(
-                  'Warmup ${day.warmUpMinutes} min + Run ${day.workMinutes} min + Cooldown ${day.coolDownMinutes} min',
-                )
-              : Text('${day.targetMinutes} min'),
+          Text(_buildDurationString(day)),
         if (paceTarget != null)
           Text(
             '${_paceStr(paceTarget.fastestPace)} - ${_paceStr(paceTarget.slowestPace)} /km',
@@ -440,6 +436,62 @@ class _DaySubtitle extends StatelessWidget {
         Text(day.description, style: Theme.of(context).textTheme.bodySmall),
       ],
     );
+  }
+
+  String _buildDurationString(TrainingDay day) {
+    if (day.warmUpMinutes == null || day.warmUpMinutes == 0) {
+      return '${day.targetMinutes} min';
+    }
+
+    final warmup = '${day.warmUpMinutes}m warmup';
+    final cooldown = '${day.coolDownMinutes ?? 0}m cooldown';
+
+    String core;
+    if (day.type == WorkoutType.intervals &&
+        day.intervals != null &&
+        day.intervals!.isNotEmpty) {
+      final workDur = day.intervals!
+          .firstWhere((i) => i.type == IntervalPhaseType.work)
+          .duration;
+      final recDur = day.intervals!
+          .firstWhere((i) => i.type == IntervalPhaseType.recovery)
+          .duration;
+      final reps = day.intervals!.length ~/ 2;
+
+      final workStr = workDur.inSeconds >= 60 && workDur.inSeconds % 60 == 0
+          ? '${workDur.inMinutes}m'
+          : '${workDur.inSeconds}s';
+      final recStr = recDur.inSeconds >= 60 && recDur.inSeconds % 60 == 0
+          ? '${recDur.inMinutes}m'
+          : '${recDur.inSeconds}s';
+
+      core = '${reps}x($workStr run / $recStr jog)';
+    } else if (day.runWalkPhase != null && !day.runWalkPhase!.isContinuous) {
+      final rwp = day.runWalkPhase!;
+      final workStr = rwp.runSeconds >= 60 && rwp.runSeconds % 60 == 0
+          ? '${rwp.runSeconds ~/ 60}m'
+          : '${rwp.runSeconds}s';
+      final walkStr = rwp.walkSeconds >= 60 && rwp.walkSeconds % 60 == 0
+          ? '${rwp.walkSeconds ~/ 60}m'
+          : '${rwp.walkSeconds}s';
+
+      final workSec = (day.workMinutes ?? 0) * 60;
+      final cycleSec = rwp.runSeconds + rwp.walkSeconds;
+      if (cycleSec > 0) {
+        final reps = (workSec - rwp.runSeconds) ~/ cycleSec;
+        if (reps > 0) {
+          core = '${reps}x($workStr run / $walkStr walk) + $workStr run';
+        } else {
+          core = '${day.workMinutes}m run';
+        }
+      } else {
+        core = '${day.workMinutes}m run';
+      }
+    } else {
+      core = '${day.workMinutes}m run';
+    }
+
+    return '$warmup + $core + $cooldown';
   }
 
   String _paceStr(Duration pace) {
