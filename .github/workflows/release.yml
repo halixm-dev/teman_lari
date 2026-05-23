@@ -1,0 +1,52 @@
+name: Build & Release APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Release APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Create prod config
+        run: |
+          mkdir -p config
+          cat > config/prod.json << EOF
+          {
+            "STRAVA_CLIENT_ID": "${{ secrets.STRAVA_CLIENT_ID }}",
+            "STRAVA_CLIENT_SECRET": "${{ secrets.STRAVA_CLIENT_SECRET }}",
+            "STRAVA_REDIRECT_URI": "${{ secrets.STRAVA_REDIRECT_URI }}"
+          }
+          EOF
+
+      - name: Build APK
+        run: flutter build apk --flavor prod --dart-define-from-file=config/prod.json --release
+
+      - name: Rename APK
+        run: |
+          mv build/app/outputs/flutter-apk/app-prod-release.apk \
+             build/app/outputs/flutter-apk/teman-lari-${{ github.ref_name }}.apk
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Teman Lari ${{ github.ref_name }}"
+          body: |
+            ## Installation
+            1. Download the APK below
+            2. Enable **Install from unknown sources** on your Android phone
+            3. Open the APK to install
+          files: build/app/outputs/flutter-apk/teman-lari-${{ github.ref_name }}.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
