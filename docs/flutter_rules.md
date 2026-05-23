@@ -18,7 +18,7 @@
 
 ## Code Style & Quality
 * **Naming:** `PascalCase` (Types), `camelCase` (Members), `snake_case` (Files).
-* **Conciseness:** Functions <20 lines. Avoid verbosity.
+* **Conciseness:** Functions <50 lines. Avoid verbosity.
 * **Null Safety:** NO `!` operator. Use `?` and flow analysis (e.g. `if (x != null)`).
 * **Async:** Use `async/await` for Futures. Catch all errors with `try-catch`.
 * **Logging:** Use `dart:developer` `log()` locally. NEVER use `print`.
