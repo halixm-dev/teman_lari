@@ -3,7 +3,11 @@ import '../entities/activity.dart';
 import '../entities/run_walk_phase.dart';
 import '../entities/running_stats.dart';
 import '../entities/training_plan.dart';
-import '../entities/tsb_state.dart';
+import 'segment_strategies/segment_plan_strategy.dart';
+import 'segment_strategies/beginner_plan_strategy.dart';
+import 'segment_strategies/intermediate_plan_strategy.dart';
+import 'segment_strategies/advanced_plan_strategy.dart';
+import 'segment_strategies/return_plan_strategy.dart';
 import 'analyze_runs_usecase.dart';
 import 'hr_zone_calculator.dart';
 import 'pace_zone_calculator.dart';
@@ -59,9 +63,26 @@ class GeneratePlanUseCase {
       }
     }
 
-    double weeklyMinutesTarget = _targetWeeklyMinutes(
+    SegmentPlanStrategy strategy;
+    if (stats.returnContext != null && stats.returnContext!.isReturning) {
+      if (stats.returnContext!.category == GapCategory.extended) {
+        strategy = BeginnerPlanStrategy();
+      } else {
+        strategy = ReturnPlanStrategy();
+      }
+    } else if (stats.recommendedPhase == CyclePhase.beginner ||
+        stats.recommendedPhase == CyclePhase.baseBuilding) {
+      strategy = BeginnerPlanStrategy();
+    } else if (stats.recommendedPhase == CyclePhase.intermediate) {
+      strategy = IntermediatePlanStrategy();
+    } else {
+      strategy = AdvancedPlanStrategy();
+    }
+
+    double weeklyMinutesTarget = strategy.calculateTargetWeeklyMinutes(
       stats,
-      weekInCycle: effectiveWeekInCycle,
+      effectiveWeekInCycle,
+      config,
     );
 
     // 1. ACWR cap (<= 1.3 approx). Using 1.3x recent average.
@@ -95,6 +116,12 @@ class GeneratePlanUseCase {
 
     final startDate = _startDate(activities);
 
+    final sortedActivities = [...activities]
+      ..sort((a, b) => b.date.compareTo(a.date));
+    final recentNonRest = sortedActivities
+        .where((a) => a.movingTime.inMinutes >= config.minRunDuration)
+        .toList();
+
     return TrainingPlan(
       startDate: startDate,
       goal: descriptions.goal(stats, weekInCycle: effectiveWeekInCycle),
@@ -104,290 +131,20 @@ class GeneratePlanUseCase {
       ),
       weekInCycle: effectiveWeekInCycle,
       cyclePhase: stats.recommendedPhase,
-      days: _buildWeek(
-        startDate: startDate,
-        weeklyMinutes: weeklyMinutesTarget,
+      days: strategy.buildWeek(
+        finalWeeklyMinutes: weeklyMinutesTarget,
         longRunMinTarget: longRunTarget,
+        startDate: startDate,
+        stats: stats,
+        recentActivities: recentNonRest,
         paceZones: paceZones,
         hrZones: hrZones,
-        stats: stats,
-        activities: activities,
         thresholdPace: thresholdPace,
+        config: config,
         weekInCycle: effectiveWeekInCycle,
+        descriptions: descriptions,
+        sequenceStrategy: sequenceStrategy,
       ),
-    );
-  }
-
-  List<TrainingDay> _buildWeek({
-    required DateTime startDate,
-    required double weeklyMinutes,
-    required double longRunMinTarget,
-    required List<PaceZone> paceZones,
-    required List<HrZone> hrZones,
-    required RunningStats stats,
-    required List<Activity> activities,
-    required int thresholdPace,
-    int weekInCycle = -1,
-  }) {
-    final sorted = [...activities]..sort((a, b) => b.date.compareTo(a.date));
-
-    final recentNonRest = sorted
-        .where((a) => a.movingTime.inMinutes >= config.minRunDuration)
-        .toList();
-
-    final sequence = sequenceStrategy.determineSequence(
-      stats: stats,
-      config: config,
-      recentActivities: recentNonRest,
-      weekInCycle: weekInCycle,
-    );
-
-    final longRunMin = longRunMinTarget.round();
-    final easyMin = (weeklyMinutes * config.easyFraction).round();
-    final tempoWorkMin = (weeklyMinutes * config.tempoFraction).round();
-    final intervalMin = _intervalMinutes(stats);
-
-    return List.generate(7, (i) {
-      final date = startDate.add(Duration(days: i));
-      return _buildDay(
-        type: sequence[i],
-        date: date,
-        easyMin: easyMin,
-        tempoWorkMin: tempoWorkMin,
-        intervalMin: intervalMin,
-        longRunMin: longRunMin,
-        paceZones: paceZones,
-        hrZones: hrZones,
-        stats: stats,
-        weekInCycle: weekInCycle,
-      );
-    });
-  }
-
-  TrainingDay _buildDay({
-    required WorkoutType type,
-    required DateTime date,
-    required int easyMin,
-    required int tempoWorkMin,
-    required int intervalMin,
-    required int longRunMin,
-    required List<PaceZone> paceZones,
-    required List<HrZone> hrZones,
-    required RunningStats stats,
-    int weekInCycle = -1,
-  }) {
-    switch (type) {
-      case WorkoutType.easy:
-        final effective = easyMin.clamp(config.minEasyRunMinutes, 9999);
-        if (stats.recommendedPhase == CyclePhase.beginner ||
-            stats.recommendedPhase == CyclePhase.transition) {
-          final daysSinceFirstRun = stats.firstActivityDate != null
-              ? DateTime.now().difference(stats.firstActivityDate!).inDays
-              : 0;
-          final phase = RunWalkPhase.fromStats(
-            stats.totalRuns,
-            daysSinceFirstRun,
-          );
-
-          if (!phase.isContinuous) {
-            final target = phase.totalDurationMinutes.clamp(
-              config.beginnerMinEasyMinutes,
-              effective,
-            );
-            return TrainingDay(
-              date: date,
-              type: WorkoutType.easy,
-              targetMinutes: target,
-              paceTarget: paceZones[1],
-              heartRateTarget: hrZones[1],
-              estimatedDuration: Duration(minutes: target),
-              runWalkPhase: phase,
-              description: descriptions.beginnerRunWalk(phase),
-            );
-          }
-        }
-        return TrainingDay(
-          date: date,
-          type: WorkoutType.easy,
-          targetMinutes: effective,
-          paceTarget: paceZones[1],
-          heartRateTarget: hrZones[1],
-          estimatedDuration: Duration(minutes: effective),
-          description: descriptions.easy(),
-        );
-      case WorkoutType.intervals:
-        final desc = weekInCycle >= 0
-            ? descriptions.intervalsCycle(stats, weekInCycle)
-            : descriptions.intervals(stats);
-        return TrainingDay(
-          date: date,
-          type: WorkoutType.intervals,
-          targetMinutes: intervalMin,
-          warmUpMinutes: 10,
-          coolDownMinutes: 10,
-          paceTarget: paceZones[4],
-          heartRateTarget: hrZones[4],
-          estimatedDuration: Duration(minutes: intervalMin),
-          description: desc,
-        );
-      case WorkoutType.tempo:
-        return TrainingDay(
-          date: date,
-          type: WorkoutType.tempo,
-          targetMinutes: tempoWorkMin + 20,
-          warmUpMinutes: 10,
-          coolDownMinutes: 10,
-          paceTarget: paceZones[3],
-          heartRateTarget: hrZones[3],
-          estimatedDuration: Duration(minutes: tempoWorkMin + 20),
-          description: descriptions.tempo(tempoWorkMin),
-        );
-      case WorkoutType.longRun:
-        int effectiveLongRun = longRunMin;
-        if (stats.recommendedPhase == CyclePhase.advanced &&
-            weekInCycle >= 0 &&
-            weekInCycle < 3) {
-          effectiveLongRun = (longRunMin * (1.0 + weekInCycle * 0.10)).round();
-        } else if (weekInCycle == 3 &&
-            stats.recommendedPhase == CyclePhase.advanced) {
-          effectiveLongRun = (longRunMin * config.deloadLongRunFraction)
-              .round();
-        }
-        return TrainingDay(
-          date: date,
-          type: WorkoutType.longRun,
-          targetMinutes: effectiveLongRun,
-          paceTarget: paceZones[1],
-          heartRateTarget: hrZones[1],
-          estimatedDuration: Duration(minutes: effectiveLongRun),
-          description: weekInCycle == 3
-              ? descriptions.deload()
-              : descriptions.longRun(),
-        );
-      case WorkoutType.rest:
-        return TrainingDay(
-          date: date,
-          type: WorkoutType.rest,
-          description: descriptions.rest(),
-        );
-      case WorkoutType.crossTraining:
-        return TrainingDay(
-          date: date,
-          type: WorkoutType.crossTraining,
-          description: descriptions.crossTraining(),
-        );
-      case WorkoutType.walk:
-        return TrainingDay(
-          date: date,
-          type: WorkoutType.walk,
-          description: descriptions.easy(),
-        );
-    }
-  }
-
-  int _intervalMinutes(RunningStats stats) {
-    final totalRuns = stats.totalRuns;
-    final weeklyKm = stats.recentWeeklyAvgKm;
-    if (totalRuns < config.beginnerRunCount ||
-        weeklyKm < config.beginnerWeeklyKm) {
-      return config.beginnerIntervalMin;
-    }
-    if (totalRuns > config.advancedRunCount ||
-        weeklyKm > config.advancedWeeklyKm) {
-      return config.advancedIntervalMin;
-    }
-    return config.intermediateIntervalMin;
-  }
-
-  double _targetWeeklyMinutes(RunningStats stats, {int weekInCycle = -1}) {
-    final recentMinutes = stats.recentWeeklyAvgMinutes;
-    final returnCtx = stats.returnContext;
-
-    // 1. Extended return → beginner volume
-    if (returnCtx != null && returnCtx.category == GapCategory.extended) {
-      return config.beginnerWeeklyMinTarget.toDouble();
-    }
-
-    // 2. Active return ramp
-    if (returnCtx != null &&
-        returnCtx.isReturning &&
-        returnCtx.preGapAvgMin > 0) {
-      final volume = returnCtx.startVolumeFraction * returnCtx.preGapAvgMin;
-      return volume.clamp(config.minWeeklyMinutes, config.maxWeeklyMinutes);
-    }
-
-    // 3. Periodized advanced
-    if (weekInCycle >= 0 && stats.recommendedPhase == CyclePhase.advanced) {
-      if (weekInCycle == 3) {
-        return (recentMinutes * config.deloadVolumeFraction).clamp(
-          config.minWeeklyMinutes,
-          config.maxWeeklyMinutes,
-        );
-      }
-      final factor = 1.0 + (weekInCycle * config.buildWeekVolumeIncrement);
-      return (recentMinutes * factor).clamp(
-        config.minWeeklyMinutes,
-        config.maxWeeklyMinutesScaleUp,
-      );
-    }
-
-    // Intermediate periodization
-    if (weekInCycle >= 0 && stats.recommendedPhase == CyclePhase.intermediate) {
-      if (weekInCycle == 2) {
-        // 3-week cycle: Week C (Recover): 80%
-        return (recentMinutes * 0.8).clamp(
-          config.minWeeklyMinutes,
-          config.maxWeeklyMinutes,
-        );
-      } else if (weekInCycle == 1) {
-        // Week B (Build): 105%
-        return (recentMinutes * 1.05).clamp(
-          config.minWeeklyMinutes,
-          config.maxWeeklyMinutes,
-        );
-      } else {
-        // Week A (Base): 100%
-        return recentMinutes.clamp(
-          config.minWeeklyMinutes,
-          config.maxWeeklyMinutes,
-        );
-      }
-    }
-
-    // Transition block
-    if (stats.recommendedPhase == CyclePhase.transition) {
-      return (recentMinutes * 1.05).clamp(
-        config.minWeeklyMinutes,
-        config.maxWeeklyMinutesScaleUp,
-      );
-    }
-
-    // 4. Normal form-based (using TSB state)
-    final tsbState = TsbStateResolver.fromFormScore(
-      stats.formScore,
-      dangerThreshold: config.dangerTsbThreshold,
-      fatiguedThreshold: config.fatiguedTsbThreshold,
-      tiredThreshold: config.tiredTsbThreshold,
-      optimalThreshold: config.optimalTsbThreshold,
-    );
-
-    double target;
-    if (tsbState == TsbState.danger) {
-      target = recentMinutes * config.deloadVolumeFraction;
-    } else if (tsbState == TsbState.fatigued) {
-      target = recentMinutes * 0.85;
-    } else if (tsbState == TsbState.tired) {
-      target = recentMinutes * 0.90;
-    } else if (tsbState == TsbState.optimal) {
-      target = recentMinutes * 1.05;
-    } else {
-      // fresh
-      target = recentMinutes * 1.10;
-    }
-
-    return target.clamp(
-      config.minWeeklyMinutes,
-      config.maxWeeklyMinutesScaleUp,
     );
   }
 

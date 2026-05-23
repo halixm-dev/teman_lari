@@ -27,7 +27,6 @@ class TrainingPlanConfig {
 
   // --- Interval duration thresholds ---
   final int beginnerRunCount;
-  final int transitionRunCount;
   final int intermediateRunCount;
   final double beginnerWeeklyKm;
   final int advancedRunCount;
@@ -84,8 +83,7 @@ class TrainingPlanConfig {
     this.optimalTsbThreshold = 5.0,
     this.minAcwrDays = 28,
     this.beginnerRunCount = 15,
-    this.transitionRunCount = 15,
-    this.intermediateRunCount = 23,
+    this.intermediateRunCount = 22,
     this.beginnerWeeklyKm = 20.0,
     this.advancedRunCount = 50,
     this.advancedWeeklyKm = 50.0,
