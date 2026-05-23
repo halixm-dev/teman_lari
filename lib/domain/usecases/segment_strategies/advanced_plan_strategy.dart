@@ -138,7 +138,7 @@ class AdvancedPlanStrategy extends SegmentPlanStrategy {
             estimatedDuration: Duration(minutes: effectiveLongRun),
             description: weekInCycle == 3
                 ? descriptions.deload()
-                : descriptions.longRun(),
+                : descriptions.longRun(effectiveLongRun),
           );
 
         case WorkoutType.rest:

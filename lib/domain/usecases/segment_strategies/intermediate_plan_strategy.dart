@@ -134,7 +134,7 @@ class IntermediatePlanStrategy extends SegmentPlanStrategy {
             estimatedDuration: Duration(minutes: longRunMin),
             description: weekInCycle == 2
                 ? descriptions.deload()
-                : descriptions.longRun(),
+                : descriptions.longRun(longRunMin),
           );
 
         case WorkoutType.rest:
