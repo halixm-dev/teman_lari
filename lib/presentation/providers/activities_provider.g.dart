@@ -283,4 +283,4 @@ final class RunningStatsProvider
   }
 }
 
-String _$runningStatsHash() => r'28d70edad2cb5dad61cd521a3662e5f451743b03';
+String _$runningStatsHash() => r'd67490ea6370f48e4d2fdbb9900b17da47cb6b42';

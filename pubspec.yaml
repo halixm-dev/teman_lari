@@ -5,7 +5,7 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.11.5
+  sdk: ^3.12.0
 
 dependencies:
   flutter:
@@ -28,13 +28,13 @@ dependencies:
 
   # Local Storage
   hive_flutter: ^1.1.0
-  shared_preferences: ^2.5.0
+  shared_preferences: ^2.5.5
 
   # Charts
   fl_chart: ^1.2.0
 
   # GPS & Sensors
-  geolocator: ^14.0.1
+  geolocator: ^14.0.2
   pedometer: ^4.2.0
 
   # Navigation
@@ -61,7 +61,7 @@ dev_dependencies:
   riverpod_generator: ^4.0.3
   mockito: ^5.6.4
   flutter_lints: ^6.0.0
-  flutter_launcher_icons: ^0.13.1
+  flutter_launcher_icons: ^0.14.4
 
 flutter_launcher_icons:
   android: "launcher_icon"

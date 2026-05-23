@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-FLUTTER_VERSION="3.41.9"
+FLUTTER_VERSION="3.44.0"
 CACHE_DIR="/vercel/.cache"
 FLUTTER_DIR="$CACHE_DIR/flutter"
 PUB_CACHE_DIR="node_modules/.pub-cache"

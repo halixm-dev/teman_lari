@@ -2,7 +2,7 @@ Strava running analyzer with training plan generation (Flutter/Dart).
 
 ## Setup
 
-- Flutter 3.41.9
+- Flutter 3.44.0
 - `flutter pub get` — install deps
 - `flutter run` — local dev
 
