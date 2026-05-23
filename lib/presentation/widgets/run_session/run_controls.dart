@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class RunControls extends StatefulWidget {
   final bool isRunning;
@@ -39,12 +40,14 @@ class _RunControlsState extends State<RunControls> {
 
   void _onLongPressStart() {
     if (!widget.isRunning) return;
+    HapticFeedback.lightImpact();
     _holdProgress.value = 0.0;
     _holdTimer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
       _holdProgress.value = (timer.tick * 16) / 500;
       if (_holdProgress.value >= 1.0) {
         timer.cancel();
         _holdTimer = null;
+        HapticFeedback.heavyImpact();
         widget.onToggleRunning();
       }
     });
@@ -90,7 +93,12 @@ class _RunControlsState extends State<RunControls> {
               button: true,
               label: widget.isRunning ? 'Pause workout' : 'Start workout',
               child: GestureDetector(
-                onTap: widget.isRunning ? null : widget.onToggleRunning,
+                onTap: widget.isRunning
+                    ? null
+                    : () {
+                        HapticFeedback.mediumImpact();
+                        widget.onToggleRunning();
+                      },
                 onLongPressStart: (_) => _onLongPressStart(),
                 onLongPressEnd: (_) => _onLongPressEnd(),
                 onLongPressCancel: _onLongPressCancel,
@@ -175,7 +183,12 @@ class _IconButton extends StatelessWidget {
           button: true,
           label: semanticLabel,
           child: InkWell(
-            onTap: onPressed,
+            onTap: onPressed == null
+                ? null
+                : () {
+                    HapticFeedback.lightImpact();
+                    onPressed!();
+                  },
             customBorder: const CircleBorder(),
             child: Icon(
               icon,
