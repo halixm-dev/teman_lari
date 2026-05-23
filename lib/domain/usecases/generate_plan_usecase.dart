@@ -49,7 +49,7 @@ class GeneratePlanUseCase {
       restingHr: userRestingHr,
       maxHr: userMaxHr,
     );
-    
+
     int effectiveWeekInCycle = weekInCycle;
     if (weekInCycle >= 0) {
       if (stats.recommendedPhase == CyclePhase.intermediate) {
@@ -58,8 +58,11 @@ class GeneratePlanUseCase {
         effectiveWeekInCycle = weekInCycle % 4;
       }
     }
-    
-    double weeklyMinutesTarget = _targetWeeklyMinutes(stats, weekInCycle: effectiveWeekInCycle);
+
+    double weeklyMinutesTarget = _targetWeeklyMinutes(
+      stats,
+      weekInCycle: effectiveWeekInCycle,
+    );
 
     // 1. ACWR cap (<= 1.3 approx). Using 1.3x recent average.
     final maxWeeklyByAcwr = stats.recentWeeklyAvgMinutes * 1.3;
@@ -176,12 +179,16 @@ class GeneratePlanUseCase {
     switch (type) {
       case WorkoutType.easy:
         final effective = easyMin.clamp(config.minEasyRunMinutes, 9999);
-        if (stats.recommendedPhase == CyclePhase.beginner || stats.recommendedPhase == CyclePhase.transition) {
+        if (stats.recommendedPhase == CyclePhase.beginner ||
+            stats.recommendedPhase == CyclePhase.transition) {
           final daysSinceFirstRun = stats.firstActivityDate != null
               ? DateTime.now().difference(stats.firstActivityDate!).inDays
               : 0;
-          final phase = RunWalkPhase.fromStats(stats.totalRuns, daysSinceFirstRun);
-          
+          final phase = RunWalkPhase.fromStats(
+            stats.totalRuns,
+            daysSinceFirstRun,
+          );
+
           if (!phase.isContinuous) {
             final target = phase.totalDurationMinutes.clamp(
               config.beginnerMinEasyMinutes,
@@ -326,12 +333,24 @@ class GeneratePlanUseCase {
 
     // Intermediate periodization
     if (weekInCycle >= 0 && stats.recommendedPhase == CyclePhase.intermediate) {
-      if (weekInCycle == 2) { // 3-week cycle: Week C (Recover): 80%
-        return (recentMinutes * 0.8).clamp(config.minWeeklyMinutes, config.maxWeeklyMinutes);
-      } else if (weekInCycle == 1) { // Week B (Build): 105%
-        return (recentMinutes * 1.05).clamp(config.minWeeklyMinutes, config.maxWeeklyMinutes);
-      } else { // Week A (Base): 100%
-        return recentMinutes.clamp(config.minWeeklyMinutes, config.maxWeeklyMinutes);
+      if (weekInCycle == 2) {
+        // 3-week cycle: Week C (Recover): 80%
+        return (recentMinutes * 0.8).clamp(
+          config.minWeeklyMinutes,
+          config.maxWeeklyMinutes,
+        );
+      } else if (weekInCycle == 1) {
+        // Week B (Build): 105%
+        return (recentMinutes * 1.05).clamp(
+          config.minWeeklyMinutes,
+          config.maxWeeklyMinutes,
+        );
+      } else {
+        // Week A (Base): 100%
+        return recentMinutes.clamp(
+          config.minWeeklyMinutes,
+          config.maxWeeklyMinutes,
+        );
       }
     }
 
@@ -361,7 +380,8 @@ class GeneratePlanUseCase {
       target = recentMinutes * 0.90;
     } else if (tsbState == TsbState.optimal) {
       target = recentMinutes * 1.05;
-    } else { // fresh
+    } else {
+      // fresh
       target = recentMinutes * 1.10;
     }
 

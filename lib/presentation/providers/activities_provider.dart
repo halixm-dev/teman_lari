@@ -96,8 +96,8 @@ Future<RunningStats?> runningStats(Ref ref) async {
   }
 
   final useCase = ref.read(analyzeRunsUseCaseProvider);
-  final userThresholdPace = prefs.thresholdPaceSeconds != null 
-      ? Duration(seconds: prefs.thresholdPaceSeconds!) 
+  final userThresholdPace = prefs.thresholdPaceSeconds != null
+      ? Duration(seconds: prefs.thresholdPaceSeconds!)
       : null;
 
   final stats = kIsWeb
