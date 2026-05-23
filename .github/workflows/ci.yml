@@ -47,9 +47,6 @@ jobs:
       - name: Build APK
         run: flutter build apk --flavor prod --dart-define-from-file=config/prod.json --release
         
-      - name: Build IPA
-        run: flutter build ipa --flavor prod --dart-define-from-file=config/prod.json --release --export-options-plist=ios/ExportOptions.plist
-
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
