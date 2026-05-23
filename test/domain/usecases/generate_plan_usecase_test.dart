@@ -17,7 +17,7 @@ class _CustomDescriptions extends WorkoutDescriptions {
   String easy() => 'Custom easy run';
 
   @override
-  String longRun() => 'Custom long run';
+  String longRun(int durationMinutes) => 'Custom long run';
 
   @override
   String rest() => 'Custom rest';
@@ -224,7 +224,7 @@ void main() {
         weeklyMinutes: {'W1': 160},
       );
       final plan = useCase.generate([_activity()]);
-      expect(plan.description, contains("fatigue"));
+      expect(plan.description, contains("Fatigued"));
     });
 
     test('fresh description when formScore > 10', () {
@@ -235,7 +235,7 @@ void main() {
         weeklyMinutes: {'W1': 160},
       );
       final plan = useCase.generate([_activity()]);
-      expect(plan.description, contains("fresh"));
+      expect(plan.description, contains("Fresh"));
     });
 
     test('balanced description otherwise', () {
@@ -297,8 +297,6 @@ void main() {
       expect(restDays, lessThan(7));
     });
   });
-
-
 
   group('HR zones', () {
     test('uses default zones when no HR data in activities', () {
@@ -516,8 +514,6 @@ void main() {
       expect(cfg.returnEasyOnlyWeeks, 1);
       expect(cfg.returnRampWeeks, 3);
     });
-
-
 
     test('custom config changes volume fractions', () {
       const customConfig = TrainingPlanConfig(
