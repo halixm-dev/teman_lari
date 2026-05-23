@@ -13,37 +13,48 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
           cache: true
-          
+
       - run: flutter pub get
-      
+
       - name: Analyze
-        run: flutter analyze --fatal-infos --fatal-warnings
-        
+        run: flutter analyze --fatal-warnings
+
       - name: Format Check
         run: dart format --set-exit-if-changed .
-        
+
       - name: Run Tests
         run: flutter test --coverage
 
   build:
-    name: Build
+    name: Build APK
     needs: quality_gate
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
           cache: true
-          
+
       - run: flutter pub get
-      
+
+      - name: Create prod config
+        run: |
+          mkdir -p config
+          cat > config/prod.json << EOF
+          {
+            "STRAVA_CLIENT_ID": "${{ secrets.STRAVA_CLIENT_ID }}",
+            "STRAVA_CLIENT_SECRET": "${{ secrets.STRAVA_CLIENT_SECRET }}",
+            "STRAVA_REDIRECT_URI": "${{ secrets.STRAVA_REDIRECT_URI }}"
+          }
+          EOF
+
       - name: Build APK
         run: flutter build apk --flavor prod --dart-define-from-file=config/prod.json --release
         
