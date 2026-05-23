@@ -21,6 +21,7 @@ class AnalysisScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.info_outline),
+            tooltip: 'Data period information',
             onPressed: () => _showDataPeriodInfo(context),
           ),
         ],

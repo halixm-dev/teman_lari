@@ -24,6 +24,7 @@ class DashboardScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
+            tooltip: 'Refresh activities',
             onPressed: () => ref.read(activitiesProvider.notifier).refresh(),
           ),
         ],

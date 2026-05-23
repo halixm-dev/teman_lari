@@ -831,6 +831,7 @@ class _Header extends StatelessWidget {
           IconButton(
             onPressed: onExit,
             icon: Icon(Icons.close, color: theme.colorScheme.onSurface),
+            tooltip: 'Exit workout',
             style: IconButton.styleFrom(
               backgroundColor: theme.colorScheme.surfaceContainerHighest,
               minimumSize: const Size(44, 44),
