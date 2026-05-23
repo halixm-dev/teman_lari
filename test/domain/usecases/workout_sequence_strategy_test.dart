@@ -5,6 +5,7 @@ import 'package:teman_lari/domain/entities/activity.dart';
 import 'package:teman_lari/domain/entities/running_stats.dart';
 import 'package:teman_lari/domain/entities/workout_type.dart';
 import 'package:teman_lari/domain/usecases/training_plan_config.dart';
+import 'package:teman_lari/domain/usecases/schedule_constraints.dart';
 import 'package:teman_lari/domain/usecases/workout_sequence_strategy.dart';
 
 void main() {
@@ -101,10 +102,10 @@ void main() {
       ];
 
       final sequence = strategy.determineSequence(
+        constraints: ScheduleConstraints.beginner,
         stats: beginnerStats(totalRuns: 5, activities: activities),
         config: config,
         recentActivities: activities,
-
         weekInCycle: -1,
       );
 
@@ -126,10 +127,10 @@ void main() {
       ];
 
       final sequence = strategy.determineSequence(
+        constraints: ScheduleConstraints.beginner,
         stats: beginnerStats(totalRuns: 5, activities: activities),
         config: config,
         recentActivities: activities,
-
         weekInCycle: -1,
       );
 
@@ -150,10 +151,10 @@ void main() {
       ];
 
       final sequence = strategy.determineSequence(
+        constraints: ScheduleConstraints.beginner,
         stats: beginnerStats(totalRuns: 5, activities: activities),
         config: config,
         recentActivities: activities,
-
         weekInCycle: -1,
       );
 
@@ -177,10 +178,10 @@ void main() {
       ];
 
       final sequence = strategy.determineSequence(
+        constraints: ScheduleConstraints.beginner,
         stats: beginnerStats(totalRuns: 5, activities: activities),
         config: config,
         recentActivities: activities,
-
         weekInCycle: -1,
       );
 
@@ -207,6 +208,7 @@ void main() {
       final activities = [activity(date: today)];
 
       final sequence = strategy.determineSequence(
+        constraints: ScheduleConstraints.returnRampEasy,
         stats: beginnerStats(
           totalRuns: 20,
           returnCtx: returnCtx,
@@ -214,7 +216,6 @@ void main() {
         ),
         config: config,
         recentActivities: activities,
-
         weekInCycle: -1,
       );
 
@@ -237,10 +238,10 @@ void main() {
       ];
 
       final sequence = strategy.determineSequence(
+        constraints: ScheduleConstraints.deload,
         stats: advancedStats(activities: activities),
         config: config,
         recentActivities: activities,
-
         weekInCycle: 3,
       );
 

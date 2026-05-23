@@ -55,19 +55,27 @@ A primary injury-prevention metric used alongside the Form score, heavily favore
 
 ## User Segmentation
 
-3 segments: Beginner (<15 runs), Intermediate (15-49), Advanced (50+ runs & 50+ km/wk). Determines workout types, volume, periodization.
+3 main segments: Beginner (<22 runs), Intermediate (22-49), Advanced (50+ runs & 50+ km/wk). Determines workout types, volume, periodization. There is also a distinct Return context.
 
-Ref: `GeneratePlanUseCase`, `DynamicWorkoutSequenceStrategy`
+Ref: `GeneratePlanUseCase`, `SegmentPlanStrategy` (and its concrete implementations), `DynamicWorkoutSequenceStrategy`
 
-## Beginner Protocol (totalRuns < 15)
+## Beginner Protocol (totalRuns < 22)
 
-No tempo or interval workouts — hard-locked at `WorkoutSequenceStrategy` to Z1/Z2 only.
+No tempo or interval workouts — governed by `BeginnerPlanStrategy` and locked to Z1/Z2 only.
 
-Walk/run ratios use time-gates alongside run counts: Phase 1 (runs 1-4): 1min run / 2min walk; Phase 2 (5-9 & >2 wks): 2/1; Phase 3 (10-14 & >4 wks): 4/1; Phase 4 (15+ & >6 wks): continuous.
+Walk/run ratios use time-gates alongside run counts. Every session is flanked by a **5-minute warmup** and **5-minute cooldown**. The interval loop terminates precisely after the final "run" segment, meaning the last walk is intentionally omitted and seamlessly replaced by the 5-minute cooldown.
+
+- W1 `phase1` (runs 1-3): 5m warmup + (5x 1m run / 2m walk) + 1m run + 5m cooldown. Total 26m
+- W2 `phase2` (runs 4-6 & >1 wks): 5m warmup + (5x 2m run / 1m walk) + 2m run + 5m cooldown. Total 27m
+- W3 `phase3` (runs 7-9 & >3 wks): 5m warmup + (3x 4m run / 1m walk) + 4m run + 5m cooldown. Total 29m
+- W4 `phase4` (runs 10-12 & >4 wks): 5m warmup + (2x 6m run / 2m walk) + 6m run + 5m cooldown. Total 32m
+- W5 `phase5` (runs 13-15 & >5 wks): 5m warmup + (1x 8m run / 2m walk) + 8m run + 5m cooldown. Total 28m
+- W6 `phase6` (runs 16-18 & >6 wks): 5m warmup + (1x 12m run / 2m walk) + 12m run + 5m cooldown. Total 36m
+- W7 `continuous` (runs 19-21 & >7 wks): 5m warmup + 20m continuous run + 5m cooldown. Total 30m
 
 Max 3 running days/week; `minEasyRunMinutes = 10`; `weeklyMinTarget = 45`.
 
-Ref: `RunWalkPhase.fromTotalRuns()`
+Ref: `RunWalkPhase.fromStats()`, `BeginnerPlanStrategy`
 
 ## Returning Runner Protocol
 
@@ -86,7 +94,7 @@ Ref: `ReturnContextDetector`, `_returnRampSequence()`
 
 **Intermediate (3-week cycle):** Week A (Base 100%), Week B (Build 105%), Week C (Recover 80%).
 **Advanced (4-week cycle):** Build 1 (90% vol), Build 2 (100%), Build 3 (110%), Deload (50%).
-**Transition:** Dedicated recovery phase limiting athletes to 3 days/week with easy runs and rest only.
+*(Note: The legacy Transition phase was removed; Beginners now graduate directly to Intermediate after the 7-week ramp).*
 
 Deload: forced, no skip; easy only + 50% long run at Zone 1.
 
@@ -98,19 +106,14 @@ Cycle boundary relative to `cycleStartDate` (persisted), not calendar-aligned.
 
 ## Weekly Plan Generation Algorithm
 
-The plan generator executes a deterministic sequence each week to establish the targeted load and distribute it across workouts.
+The plan generator delegates weekly target computation and workout scheduling to the `SegmentPlanStrategy` implementation assigned to the user (Beginner, Intermediate, Advanced, or Return).
 
-### Step 1: Establish Base Volume Target (Duration or TSS)
-The engine determines the baseline target for the upcoming week based on priority:
-1. **Extended Return:** Defaults to beginner baseline (45 min/wk).
-2. **Active Return Ramp:** Applies a fraction to the pre-gap volume (55-85% depending on gap length).
-3. **Periodized Cycle:** Applies cycle multiplier (e.g. Build 110%, Deload 50%) based on the phase (Intermediate or Advanced).
-4. **Normal Progression:** Uses Form (TSB) to scale recent average volume:
-   - Fresh (TSB > +5): `Target = Last Week × 1.10`
-   - Optimal (TSB -10 to +5): `Target = Last Week × 1.05`
-   - Tired (TSB -15 to -10): `Target = Last Week × 0.90`
-   - Fatigued (TSB -20 to -15): `Target = Last Week × 0.85`
-   - Danger (TSB < -20): `Target = Last Week × 0.50`
+### Step 1: Establish Base Volume Target (Duration)
+`GeneratePlanUseCase` uses the designated `SegmentPlanStrategy` to compute the un-capped weekly minute target:
+- `BeginnerPlanStrategy`: Fixed to the configuration baseline (`weeklyMinTarget` = 45 mins).
+- `ReturnPlanStrategy`: Scales volume based on pre-gap average and gap severity.
+- `IntermediatePlanStrategy`: Applies 3-week block cycle multipliers (100%, 105%, 80%) or defaults to recent average.
+- `AdvancedPlanStrategy`: Applies 4-week block cycle multipliers (build increments or 50% deload).
 
 ### Step 2: Enforce Strict Constraint Hierarchy
 Physical constraints are applied top-down:

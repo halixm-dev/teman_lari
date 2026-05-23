@@ -6,62 +6,63 @@ class WorkoutDescriptions {
   const WorkoutDescriptions();
 
   String easy() =>
-      'Easy recovery run. Conversational pace throughout. '
-      'Focus on form, not speed.';
+      'Today\'s goal is active recovery. Keep a conversational pace throughout in strictly Zone 2. Focus on your running form rather than speed.';
 
   String intervals(RunningStats stats) {
     final totalRuns = stats.totalRuns;
     final weeklyKm = stats.recentWeeklyAvgKm;
     if (totalRuns < 15 || weeklyKm < 20) {
-      return '10 min warm-up @ Zone 2, then 4x90s @ Zone 5 with 90s recovery jogs, 10 min cool-down.';
+      return 'This workout boosts your VO2Max. Push hard during the 4 sets of 90-second Zone 5 intervals, and focus on catching your breath and maintaining form during the recovery jogs.';
     }
     if (totalRuns > 50 || weeklyKm > 50) {
-      return '10 min warm-up @ Zone 2, then 8x90s @ Zone 5 with 90s recovery jogs, 10 min cool-down.';
+      return 'This workout boosts your VO2Max. Push hard during the 8 sets of 90-second Zone 5 intervals, and focus on catching your breath and maintaining form during the recovery jogs.';
     }
-    return '10 min warm-up @ Zone 2, then 6x90s @ Zone 5 with 90s recovery jogs, 10 min cool-down.';
+    return 'This workout boosts your VO2Max. Push hard during the 6 sets of 90-second Zone 5 intervals, and focus on catching your breath and maintaining form during the recovery jogs.';
   }
 
   String intervalsCycle(RunningStats stats, int weekInCycle) {
     if (weekInCycle >= 3) {
-      return 'No intervals — deload week. Easy running only.';
+      return 'This is your deload week, so there are no intervals scheduled. Stick to easy running only.';
     }
     switch (weekInCycle) {
       case 0:
-        return '10 min warm-up, then 5x1km @ Threshold pace with 2 min jog recovery, 10 min cool-down.';
+        return 'This session builds your aerobic power. Push through 5 sets of 1km at Threshold pace, and use the 2-minute jogs to recover fully.';
       case 1:
-        return '10 min warm-up, then 8x600m @ VO2max pace with 90s jog recovery, 10 min cool-down.';
+        return 'This session targets your maximum aerobic capacity. Hit your VO2max pace for 8 sets of 600m, and focus on quick recovery during the 90-second jogs.';
       case 2:
-        return '10 min warm-up, then 12x400m @ VO2max pace with 90s jog recovery, 10 min cool-down.';
+        return 'This is a high-intensity VO2max session. Push hard for 12 sets of 400m, and focus on catching your breath during the 90-second recovery jogs.';
       default:
         return intervals(stats);
     }
   }
 
   String tempo(int tempoWorkMin) =>
-      '10 min warm-up, $tempoWorkMin min @ '
-      'threshold pace (Zone 4), 10 min cool-down. '
-      'Comfortably hard - you can speak in short sentences.';
+      'This session builds your lactate threshold. Run for $tempoWorkMin minutes at a comfortably hard Zone 4 pace where you can still speak in short sentences.';
 
-  String longRun() =>
-      'Long easy run - the most important run of the week. '
-      'Stay strictly in Zone 2. Walk breaks are fine. '
-      'Hydrate every 20-30 min.';
+  String longRun(int durationMinutes) {
+    var desc =
+        'This long, easy run is the most important session of your week. Stay strictly in Zone 2 to build endurance, and feel free to take walk breaks if needed.';
+    if (durationMinutes >= 60) {
+      desc +=
+          ' Since you\'ll be out for a while, make sure to hydrate every 20-30 minutes.';
+    }
+    return desc;
+  }
 
-  String rest() => 'Rest day. Let your body recover.';
+  String rest() =>
+      'Today is a rest day. Let your body recover and absorb the training from previous days.';
 
-  String crossTraining() => 'Cross-training day.';
+  String crossTraining() =>
+      'Today is for cross-training. Engage in a low-impact activity like cycling, swimming, or strength training to build resilience.';
 
   String beginnerRunWalk(RunWalkPhase phase) =>
-      '${phase.label}. Repeat for ${phase.totalDurationMinutes} min. '
-      'Focus on form, keep it easy.';
+      'This session uses intervals to safely build your running endurance. Follow the ${phase.label} structure and keep your effort easy.';
 
   String returningRamp(int rampWeek) =>
-      'Week $rampWeek of your return ramp. '
-      'Rebuilding base — keep it easy, listen to your body.';
+      'You are in week $rampWeek of your return ramp. We are safely rebuilding your base, so keep the pace very easy and listen closely to your body.';
 
   String deload() =>
-      'Deload week — reduced volume and easy pace only. '
-      'Let your body absorb the training.';
+      'This is a deload week. Volume is intentionally reduced and all paces should be kept easy to let your body recover fully.';
 
   String goal(RunningStats stats, {int weekInCycle = -1}) {
     if (stats.returnContext?.isReturning == true &&
@@ -96,29 +97,29 @@ class WorkoutDescriptions {
     final ctx = stats.returnContext;
 
     if (ctx?.isReturning == true && ctx?.category != GapCategory.extended) {
-      return 'You are returning from a ${ctx?.category.name} break. We are ramping up your volume safely over the next few weeks to prevent injury.';
+      return 'You are returning from a ${ctx?.category.name} break. We are safely ramping up your volume over the coming weeks. Your current form is slightly detrained, so focus on consistency rather than speed.';
     }
 
     if (weekInCycle == 3 && phase == CyclePhase.advanced) {
-      return 'This is your deload week. Volume is reduced to allow your body to absorb the training stress from the past 3 weeks.';
+      return 'This is a Recovery & Consolidation week. We are focusing on reduced volume and easy efforts only to shed fatigue. Your current form indicates you are carrying high cumulative stress, so please prioritize rest.';
     }
 
     if (form < -15) {
-      return 'Your fatigue is very high. This week focuses heavily on recovery with reduced volume and easy efforts only to prevent overtraining.';
+      return 'This week is focused heavily on recovery. Your current form indicates you are Very Fatigued, so we have reduced volume and kept all efforts easy to prevent overtraining.';
     }
 
     if (phase == CyclePhase.baseBuilding) {
-      return 'We are slowly increasing your weekly volume. Keep your easy runs strictly easy to build a solid aerobic foundation.';
+      return 'This is a Base Building week. We are focusing on gradually increasing your weekly volume. Your training load is well-balanced, so keep your easy runs strictly easy to build a solid aerobic foundation.';
     }
 
     if (phase == CyclePhase.advanced && weekInCycle >= 0) {
-      return 'Week ${weekInCycle + 1} of your periodized block. Volume is peaking, and quality sessions will test your threshold and VO2Max.';
+      return 'This is Week ${weekInCycle + 1} of your periodized block. Your form is peaking, so we are introducing challenging quality sessions to test your threshold and VO2Max.';
     }
 
     if (form > 10) {
-      return 'You\'re fresh and ready. This week includes challenging quality sessions to build your fitness to the next level.';
+      return 'You are Fresh and ready to push. This week includes challenging quality sessions designed to take your fitness to the next level while maintaining a strong aerobic base.';
     }
 
-    return 'A balanced week combining an easy aerobic base, quality interval work, and a long run to maintain your fitness.';
+    return 'This is a balanced week combining an easy aerobic base, quality interval work, and a long run. Your form is Optimal and your training load is well-balanced to safely maintain and build your fitness.';
   }
 }

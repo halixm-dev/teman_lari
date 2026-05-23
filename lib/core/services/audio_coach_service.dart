@@ -32,6 +32,8 @@ class AudioCoachService {
     final msg = switch (phase) {
       WorkoutPhase.warmup => 'Starting warm up',
       WorkoutPhase.work => 'Start running',
+      WorkoutPhase.recovery => 'Recovery jog',
+      WorkoutPhase.walk => 'Start walking',
       WorkoutPhase.cooldown => 'Begin cool down',
       WorkoutPhase.finished => 'Workout complete',
     };

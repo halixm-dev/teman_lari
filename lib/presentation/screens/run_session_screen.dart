@@ -512,6 +512,7 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
                   currentPaceSecondsPerKm: _state.currentPaceSecondsPerKm,
                   fastestTargetSeconds: _state.fastestTarget.inSeconds,
                   slowestTargetSeconds: _state.slowestTarget.inSeconds,
+                  isWorkPhase: _state.phase == WorkoutPhase.work,
                 ),
                 _PaceSourceIndicator(source: _paceSource),
                 RunSecondaryMetrics(
@@ -569,6 +570,7 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
             currentPaceSecondsPerKm: _state.currentPaceSecondsPerKm,
             fastestTargetSeconds: _state.fastestTarget.inSeconds,
             slowestTargetSeconds: _state.slowestTarget.inSeconds,
+            isWorkPhase: _state.phase == WorkoutPhase.work,
           ),
           _PaceSourceIndicator(source: _paceSource),
           RunSecondaryMetrics(
@@ -843,6 +845,8 @@ class _Header extends StatelessWidget {
     return switch (phase) {
       WorkoutPhase.warmup => 'Warm Up',
       WorkoutPhase.work => 'Run',
+      WorkoutPhase.recovery => 'Recovery Jog',
+      WorkoutPhase.walk => 'Walk',
       WorkoutPhase.cooldown => 'Cool Down',
       WorkoutPhase.finished => 'Complete',
     };
@@ -853,6 +857,8 @@ Color _phaseColor(WorkoutPhase phase) {
   return switch (phase) {
     WorkoutPhase.warmup => AppColors.success,
     WorkoutPhase.work => AppColors.brandOrange,
+    WorkoutPhase.recovery => const Color(0xFFF59E0B),
+    WorkoutPhase.walk => const Color(0xFF14B8A6),
     WorkoutPhase.cooldown => AppColors.info,
     WorkoutPhase.finished => AppColors.success,
   };
@@ -862,6 +868,8 @@ Color _phaseColorLight(WorkoutPhase phase) {
   return switch (phase) {
     WorkoutPhase.warmup => const Color(0xFF6EE7A0),
     WorkoutPhase.work => AppColors.brandOrangeLight,
+    WorkoutPhase.recovery => const Color(0xFFFCD34D),
+    WorkoutPhase.walk => const Color(0xFF5EEAD4),
     WorkoutPhase.cooldown => const Color(0xFF7CB3F8),
     WorkoutPhase.finished => const Color(0xFF6EE7A0),
   };
