@@ -61,14 +61,22 @@ class ScheduleConstraints {
 
   /// TSB Danger state (< -20): deload week rules
   static const tsbDanger = ScheduleConstraints(
-    allowedTypes: {WorkoutType.easy, WorkoutType.rest, WorkoutType.crossTraining},
+    allowedTypes: {
+      WorkoutType.easy,
+      WorkoutType.rest,
+      WorkoutType.crossTraining,
+    },
     maxRunsPerWeek: 3,
     maxConsecutiveRunDays: 1,
   );
 
   /// TSB Fatigued state (< -15): Z1 only
   static const tsbFatigued = ScheduleConstraints(
-    allowedTypes: {WorkoutType.easy, WorkoutType.rest, WorkoutType.crossTraining},
+    allowedTypes: {
+      WorkoutType.easy,
+      WorkoutType.rest,
+      WorkoutType.crossTraining,
+    },
     maxRunsPerWeek: 4,
     maxConsecutiveRunDays: 2,
   );

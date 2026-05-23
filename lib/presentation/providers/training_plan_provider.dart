@@ -45,7 +45,7 @@ Future<TrainingPlan> trainingPlan(Ref ref) async {
   final weekInCycle = await ref.watch(weekInCycleProvider.future);
   final prefs = await ref.watch(hrPreferencesProvider.future);
   final generateUseCase = ref.read(generatePlanUseCaseProvider);
-  
+
   return kIsWeb
       ? generateUseCase.generate(
           activities,
@@ -70,7 +70,7 @@ class WeekInCycleNotifier extends _$WeekInCycleNotifier {
     final prefs = ref.read(preferencesStorageProvider);
     final cycleStart = await prefs.getCycleStartDate();
     final daysSinceStart = DateTime.now().difference(cycleStart).inDays;
-    
+
     if (daysSinceStart < 0) {
       await prefs.setCycleStartDate(DateTime.now());
       return 0;
