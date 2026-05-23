@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  quality_gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+          
+      - run: flutter pub get
+      
+      - name: Analyze
+        run: flutter analyze --fatal-infos --fatal-warnings
+        
+      - name: Format Check
+        run: dart format --set-exit-if-changed .
+        
+      - name: Run Tests
+        run: flutter test --coverage
+
+  build:
+    name: Build
+    needs: quality_gate
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+          
+      - run: flutter pub get
+      
+      - name: Build APK
+        run: flutter build apk --flavor prod --dart-define-from-file=config/prod.json --release
+        
+      - name: Build IPA
+        run: flutter build ipa --flavor prod --dart-define-from-file=config/prod.json --release --export-options-plist=ios/ExportOptions.plist
