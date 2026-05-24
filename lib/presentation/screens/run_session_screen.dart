@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 
@@ -629,77 +631,137 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
   }
 
   void _showExitSheet(BuildContext context) {
+    HapticFeedback.mediumImpact();
     showModalBottomSheet(
       context: context,
-      backgroundColor: Theme.of(context).cardTheme.color,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? AppColors.surfaceSecondaryDark
+          : AppColors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (sheetContext) {
         final theme = Theme.of(context);
-        return Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 32,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'End Workout?',
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Your progress so far will be saved.',
-                style: theme.textTheme.bodySmall,
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.of(sheetContext).pop(),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: theme.colorScheme.onSurface,
-                        side: BorderSide(
-                          color: theme.colorScheme.onSurface.withValues(
-                            alpha: 0.12,
+        final isDark = theme.brightness == Brightness.dark;
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 24,
+              right: 24,
+              top: 12,
+              bottom: MediaQuery.of(context).padding.bottom + 20,
+            ),
+            child:
+                Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Center(
+                          child: Container(
+                            width: 36,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? AppColors.surfaceTertiaryDark
+                                  : AppColors.gray300,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
                           ),
                         ),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      child: const Text('Resume'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: FilledButton(
-                      onPressed: () {
-                        Navigator.of(sheetContext).pop();
-                        _endWorkout();
-                        context.pop();
-                      },
-                      style: FilledButton.styleFrom(
-                        backgroundColor: theme.colorScheme.error,
-                        foregroundColor: theme.colorScheme.onError,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      child: const Text('End'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-            ],
+                        const SizedBox(height: 24),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: AppColors.danger.withValues(alpha: 0.12),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.warning_amber_rounded,
+                            color: AppColors.danger,
+                            size: 32,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'End Workout Early?',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Are you sure you want to stop your current workout session? Your stats and run history will be recorded.',
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: isDark
+                                ? AppColors.textSecondaryDark
+                                : AppColors.gray700,
+                            height: 1.4,
+                          ),
+                        ),
+                        const SizedBox(height: 28),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  HapticFeedback.lightImpact();
+                                  Navigator.of(sheetContext).pop();
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: isDark
+                                      ? AppColors.textPrimaryDark
+                                      : AppColors.gray900,
+                                  side: BorderSide(
+                                    color: isDark
+                                        ? AppColors.surfaceTertiaryDark
+                                        : AppColors.gray300,
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Resume',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: FilledButton(
+                                onPressed: () {
+                                  HapticFeedback.heavyImpact();
+                                  Navigator.of(sheetContext).pop();
+                                  _endWorkout();
+                                  context.pop();
+                                },
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: AppColors.danger,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'End Workout',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    )
+                    .animate()
+                    .fade(duration: 250.ms)
+                    .slideY(begin: 0.08, curve: Curves.easeOutCubic),
           ),
         );
       },
