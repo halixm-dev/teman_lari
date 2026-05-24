@@ -9,7 +9,6 @@ import '../../domain/entities/activity.dart';
 import '../../domain/entities/running_stats.dart';
 import '../../domain/repositories/activity_repository.dart';
 import '../../domain/usecases/analyze_runs_usecase.dart';
-import '../../domain/usecases/get_activities_usecase.dart';
 import 'core_provider.dart';
 import 'preferences_provider.dart';
 
@@ -30,11 +29,6 @@ ActivityRepository activityRepository(Ref ref) {
 }
 
 @Riverpod(keepAlive: true)
-GetActivitiesUseCase getActivitiesUseCase(Ref ref) {
-  return GetActivitiesUseCase(ref.read(activityRepositoryProvider));
-}
-
-@Riverpod(keepAlive: true)
 AnalyzeRunsUseCase analyzeRunsUseCase(Ref ref) {
   return AnalyzeRunsUseCase();
 }
@@ -43,13 +37,16 @@ AnalyzeRunsUseCase analyzeRunsUseCase(Ref ref) {
 class ActivitiesNotifier extends _$ActivitiesNotifier {
   @override
   Future<List<Activity>> build() async {
-    return ref.read(getActivitiesUseCaseProvider).execute(monthsBack: 12);
+    return ref
+        .read(activityRepositoryProvider)
+        .getAllActivities(monthsBack: 12);
   }
 
   Future<void> refresh() async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(
-      () => ref.read(getActivitiesUseCaseProvider).execute(monthsBack: 12),
+      () =>
+          ref.read(activityRepositoryProvider).getAllActivities(monthsBack: 12),
     );
   }
 }

@@ -8,6 +8,7 @@ import '../providers/training_plan_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
+import 'scale_on_press.dart';
 import 'workout_type_badge.dart';
 
 class TodayWorkoutCard extends ConsumerWidget {
@@ -35,22 +36,21 @@ class TodayWorkoutCard extends ConsumerWidget {
 
         final isRest = day.type == WorkoutType.rest;
 
-        return Card(
-          child: Semantics(
-            button: !isRest,
-            label: isRest
-                ? 'Rest day. No workout today.'
-                : 'Start today\'s workout: ${workoutTypeLabel(day.type)}',
-            child: InkWell(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-              onTap: isRest
-                  ? null
-                  : () {
-                      HapticFeedback.lightImpact();
-                      context.push('/run-session', extra: day);
-                    },
+        return ScaleOnPress(
+          onTap: isRest
+              ? null
+              : () {
+                  HapticFeedback.lightImpact();
+                  context.push('/run-session', extra: day);
+                },
+          child: Card(
+            child: Semantics(
+              button: !isRest,
+              label: isRest
+                  ? 'Rest day. No workout today.'
+                  : 'Start today\'s workout: ${workoutTypeLabel(day.type)}',
               child: Padding(
-                padding: AppSpacing.cardPadding,
+                padding: const EdgeInsets.all(AppSpacing.space6),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -62,10 +62,7 @@ class TodayWorkoutCard extends ConsumerWidget {
                           size: 20,
                         ),
                         const SizedBox(width: AppSpacing.space2),
-                        Text(
-                          "Today's Workout",
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
+                        Text("Today's Workout", style: AppTypography.headingLg),
                       ],
                     ),
                     const SizedBox(height: AppSpacing.space3),

@@ -5,6 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../core/utils/responsive.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
 import '../../domain/entities/running_stats.dart';
 import '../providers/activities_provider.dart';
 import '../widgets/pace_chart.dart';
@@ -55,16 +56,16 @@ class _AnalysisData extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.space6),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children:
             [
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.space6),
                   StatsGrid(stats: stats, showVo2Max: true),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.space6),
                   _PaceCard(stats: stats),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.space6),
                   _HrZoneCard(stats: stats),
                 ]
                 .animate(interval: 100.ms)
