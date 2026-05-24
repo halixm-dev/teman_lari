@@ -56,6 +56,7 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
   final _voiceCoach = VoiceCoachService();
   final _soundFx = SoundEffectsService();
   WorkoutPhase? _lastPhase;
+  bool _midpointAnnounced = false;
 
   static const double _smoothingAlpha = 0.25;
   static const Duration _gpsTimeout = Duration(seconds: 10);
@@ -305,6 +306,12 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
         newPhase != WorkoutPhase.finished) {
       if (_state.isAudioCoachOn) _voiceCoach.announcePhaseChange(newPhase);
     }
+
+    if (!_midpointAnnounced && total > 0 && newElapsed >= total ~/ 2 && newPhase != WorkoutPhase.finished) {
+      if (_state.isAudioCoachOn) _voiceCoach.announceMidpoint();
+      _midpointAnnounced = true;
+    }
+
     _lastPhase = newPhase;
 
     setState(() {
