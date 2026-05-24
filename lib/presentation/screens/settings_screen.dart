@@ -210,11 +210,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       'Zone 5 - VO2max',
     ];
     const colors = [
-      Colors.blue,
-      Colors.green,
-      Colors.orange,
+      AppColors.info,
+      AppColors.success,
+      AppColors.warning,
       AppColors.brandOrange,
-      Colors.red,
+      AppColors.danger,
     ];
 
     return List.generate(5, (i) {
@@ -237,6 +237,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       appBar: AppBar(title: const Text('Settings')),
       body: ConstrainedContent(
         child: ListView(
+          padding: const EdgeInsets.only(top: 8, bottom: 24),
           children: [
             HeartRateCard(
               restingHrController: _restingHrController,

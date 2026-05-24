@@ -30,13 +30,13 @@ class WorkoutTypeBadge extends StatelessWidget {
 
 Color workoutTypeColor(WorkoutType type) {
   return switch (type) {
-    WorkoutType.easy => Colors.green,
-    WorkoutType.tempo => Colors.orange,
-    WorkoutType.intervals => Colors.red,
-    WorkoutType.longRun => Colors.blue,
+    WorkoutType.easy => AppColors.success,
+    WorkoutType.tempo => AppColors.warning,
+    WorkoutType.intervals => AppColors.danger,
+    WorkoutType.longRun => AppColors.info,
     WorkoutType.rest => AppColors.gray500,
-    WorkoutType.crossTraining => Colors.purple,
-    WorkoutType.walk => Colors.teal,
+    WorkoutType.crossTraining => AppColors.pr,
+    WorkoutType.walk => AppColors.hike,
   };
 }
 

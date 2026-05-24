@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -44,7 +45,10 @@ class TodayWorkoutCard extends ConsumerWidget {
               borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
               onTap: isRest
                   ? null
-                  : () => context.push('/run-session', extra: day),
+                  : () {
+                      HapticFeedback.lightImpact();
+                      context.push('/run-session', extra: day);
+                    },
               child: Padding(
                 padding: AppSpacing.cardPadding,
                 child: Column(
@@ -94,8 +98,10 @@ class TodayWorkoutCard extends ConsumerWidget {
                       SizedBox(
                         width: double.infinity,
                         child: FilledButton.icon(
-                          onPressed: () =>
-                              context.push('/run-session', extra: day),
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            context.push('/run-session', extra: day);
+                          },
                           icon: const Icon(Icons.play_arrow_rounded),
                           label: const Text('Start Workout'),
                           style: FilledButton.styleFrom(

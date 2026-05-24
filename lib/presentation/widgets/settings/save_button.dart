@@ -18,6 +18,11 @@ class SettingsSaveButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final disabledBgColor = isDark
+        ? AppColors.surfaceTertiaryDark
+        : AppColors.gray200;
+
     return SizedBox(
       width: double.infinity,
       height: 48,
@@ -25,15 +30,15 @@ class SettingsSaveButton extends StatelessWidget {
         onPressed: canSave ? onSave : null,
         style: FilledButton.styleFrom(
           backgroundColor: AppColors.brandOrange,
-          disabledBackgroundColor: AppColors.gray200,
+          disabledBackgroundColor: disabledBgColor,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        child: _buildChild(),
+        child: _buildChild(context),
       ),
     );
   }
 
-  Widget _buildChild() {
+  Widget _buildChild(BuildContext context) {
     if (isSaving) {
       return const SizedBox(
         height: 24,
@@ -61,12 +66,17 @@ class SettingsSaveButton extends StatelessWidget {
         ],
       );
     }
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final disabledTextColor = isDark
+        ? AppColors.textTertiaryDark
+        : AppColors.gray500;
+
     return Text(
       'Save Changes',
       style: TextStyle(
         fontWeight: FontWeight.bold,
         fontSize: 16,
-        color: canSave ? Colors.white : AppColors.gray500,
+        color: canSave ? Colors.white : disabledTextColor,
       ),
     );
   }

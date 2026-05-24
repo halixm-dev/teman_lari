@@ -4,6 +4,7 @@ import 'package:teman_lari/presentation/theme/app_theme_extensions.dart';
 import 'package:teman_lari/core/utils/date_utils.dart';
 import 'package:teman_lari/domain/entities/activity.dart';
 import 'package:teman_lari/presentation/widgets/workout_type_badge.dart';
+import 'kudos_button.dart';
 
 class CompactActivityCard extends StatelessWidget {
   final AnalyzedActivity analyzedRun;
@@ -44,6 +45,7 @@ class CompactActivityCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Expanded(
                 child: _StatColumn(
@@ -69,6 +71,10 @@ class CompactActivityCard extends StatelessWidget {
                   value: _formatDuration(run.movingTime),
                   typoExt: typoExt,
                 ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: KudosButton(initialCount: run.id % 7),
               ),
             ],
           ),

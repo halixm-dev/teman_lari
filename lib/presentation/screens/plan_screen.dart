@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -6,6 +7,7 @@ import '../../core/utils/responsive.dart';
 import '../../domain/entities/training_plan.dart';
 import '../providers/training_plan_provider.dart';
 import '../theme/app_colors.dart';
+import '../widgets/workout_type_badge.dart';
 
 class PlanScreen extends ConsumerWidget {
   const PlanScreen({super.key});
@@ -324,14 +326,17 @@ class _PlanDayCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isRest = day.type == WorkoutType.rest;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final borderColor = isFirst
+        ? AppColors.brandOrange
+        : (isDark ? AppColors.surfaceTertiaryDark : AppColors.gray200);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: isFirst
-            ? Border.all(color: AppColors.brandOrange, width: 1.5)
-            : Border.all(color: AppColors.gray200, width: 1),
+        border: Border.all(color: borderColor, width: isFirst ? 1.5 : 1.0),
         boxShadow: isFirst
             ? [
                 BoxShadow(
@@ -357,7 +362,12 @@ class _PlanDayCard extends StatelessWidget {
         title: _DayTitle(day: day, isFirst: isFirst),
         subtitle: _DaySubtitle(day: day, isRest: isRest),
         trailing: isRest ? null : const Icon(Icons.chevron_right),
-        onTap: isRest ? null : () => context.push('/run-session', extra: day),
+        onTap: isRest
+            ? null
+            : () {
+                HapticFeedback.lightImpact();
+                context.push('/run-session', extra: day);
+              },
       ),
     );
   }
@@ -369,8 +379,8 @@ class _DayIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CircleAvatar(
-      backgroundColor: typeColor(type).withValues(alpha: 0.15),
-      child: Icon(typeIcon(type), color: typeColor(type)),
+      backgroundColor: workoutTypeColor(type).withValues(alpha: 0.15),
+      child: Icon(workoutTypeIcon(type), color: workoutTypeColor(type)),
     );
   }
 }
@@ -387,7 +397,7 @@ class _DayTitle extends StatelessWidget {
       children: [
         Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
         const SizedBox(width: 8),
-        _WorkoutTypeBadge(type: day.type),
+        WorkoutTypeBadge(type: day.type),
         if (!isFirst) ...[
           const SizedBox(width: 6),
           Container(
@@ -500,65 +510,4 @@ class _DaySubtitle extends StatelessWidget {
     final s = pace.inSeconds % 60;
     return '$m:${s.toString().padLeft(2, '0')}';
   }
-}
-
-class _WorkoutTypeBadge extends StatelessWidget {
-  final WorkoutType type;
-
-  const _WorkoutTypeBadge({required this.type});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: typeColor(type).withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        typeLabel(type),
-        style: TextStyle(
-          color: typeColor(type),
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-}
-
-Color typeColor(WorkoutType type) {
-  return switch (type) {
-    WorkoutType.easy => Colors.green,
-    WorkoutType.tempo => Colors.orange,
-    WorkoutType.intervals => Colors.red,
-    WorkoutType.longRun => Colors.blue,
-    WorkoutType.rest => AppColors.gray500,
-    WorkoutType.crossTraining => Colors.purple,
-    WorkoutType.walk => Colors.teal,
-  };
-}
-
-IconData typeIcon(WorkoutType type) {
-  return switch (type) {
-    WorkoutType.easy => Icons.directions_walk,
-    WorkoutType.tempo => Icons.speed,
-    WorkoutType.intervals => Icons.timer,
-    WorkoutType.longRun => Icons.map,
-    WorkoutType.rest => Icons.hotel,
-    WorkoutType.crossTraining => Icons.fitness_center,
-    WorkoutType.walk => Icons.directions_walk,
-  };
-}
-
-String typeLabel(WorkoutType type) {
-  return switch (type) {
-    WorkoutType.easy => 'Easy',
-    WorkoutType.tempo => 'Tempo',
-    WorkoutType.intervals => 'Intervals',
-    WorkoutType.longRun => 'Long Run',
-    WorkoutType.rest => 'Rest',
-    WorkoutType.crossTraining => 'Cross Train',
-    WorkoutType.walk => 'Walk',
-  };
 }

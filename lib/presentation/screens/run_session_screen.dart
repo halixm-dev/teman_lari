@@ -858,7 +858,7 @@ Color _phaseColor(WorkoutPhase phase) {
   return switch (phase) {
     WorkoutPhase.warmup => AppColors.success,
     WorkoutPhase.work => AppColors.brandOrange,
-    WorkoutPhase.recovery => const Color(0xFFF59E0B),
+    WorkoutPhase.recovery => AppColors.warning,
     WorkoutPhase.walk => const Color(0xFF14B8A6),
     WorkoutPhase.cooldown => AppColors.info,
     WorkoutPhase.finished => AppColors.success,

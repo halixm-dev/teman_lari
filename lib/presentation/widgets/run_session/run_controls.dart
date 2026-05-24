@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class RunControls extends StatefulWidget {
   final bool isRunning;
@@ -29,6 +30,7 @@ class RunControls extends StatefulWidget {
 class _RunControlsState extends State<RunControls> {
   final _holdProgress = ValueNotifier<double>(0.0);
   Timer? _holdTimer;
+  final GlobalKey<TooltipState> _tooltipKey = GlobalKey<TooltipState>();
 
   @override
   void dispose() {
@@ -75,6 +77,7 @@ class _RunControlsState extends State<RunControls> {
             onPressed: widget.isFinished ? null : widget.onToggleLock,
             isActive: widget.isLocked,
             semanticLabel: widget.isLocked ? 'Unlock screen' : 'Lock screen',
+            tooltip: widget.isLocked ? 'Unlock Screen' : 'Lock Screen',
           ),
           _IconButton(
             icon: widget.isAudioCoachOn ? Icons.volume_up : Icons.volume_off,
@@ -83,61 +86,72 @@ class _RunControlsState extends State<RunControls> {
             semanticLabel: widget.isAudioCoachOn
                 ? 'Disable audio coach'
                 : 'Enable audio coach',
+            tooltip: widget.isAudioCoachOn ? 'Mute Coach' : 'Unmute Coach',
           ),
           // Play / Pause FAB
           if (!widget.isFinished)
-            Semantics(
-              button: true,
-              label: widget.isRunning ? 'Pause workout' : 'Start workout',
-              child: GestureDetector(
-                onTap: widget.isRunning ? null : widget.onToggleRunning,
-                onLongPressStart: (_) => _onLongPressStart(),
-                onLongPressEnd: (_) => _onLongPressEnd(),
-                onLongPressCancel: _onLongPressCancel,
-                onLongPress: widget.isRunning ? null : null,
-                child: ValueListenableBuilder<double>(
-                  valueListenable: _holdProgress,
-                  builder: (context, progress, _) {
-                    final primaryColor = theme.colorScheme.primary;
-                    return Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: primaryColor,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: primaryColor.withValues(alpha: 0.3),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          if (progress > 0)
-                            SizedBox(
-                              width: 80,
-                              height: 80,
-                              child: CircularProgressIndicator(
-                                value: progress,
-                                color: theme.colorScheme.onPrimary.withValues(
-                                  alpha: 0.6,
-                                ),
-                                strokeWidth: 4,
-                                backgroundColor: Colors.transparent,
-                              ),
+            Tooltip(
+              key: _tooltipKey,
+              message: widget.isRunning ? 'Hold to Pause' : 'Tap to Start',
+              triggerMode: TooltipTriggerMode.manual,
+              child: Semantics(
+                button: true,
+                label: widget.isRunning ? 'Pause workout' : 'Start workout',
+                child: GestureDetector(
+                  onTap: widget.isRunning
+                      ? () {
+                          HapticFeedback.mediumImpact();
+                          _tooltipKey.currentState?.ensureTooltipVisible();
+                        }
+                      : widget.onToggleRunning,
+                  onLongPressStart: (_) => _onLongPressStart(),
+                  onLongPressEnd: (_) => _onLongPressEnd(),
+                  onLongPressCancel: _onLongPressCancel,
+                  onLongPress: widget.isRunning ? null : null,
+                  child: ValueListenableBuilder<double>(
+                    valueListenable: _holdProgress,
+                    builder: (context, progress, _) {
+                      final primaryColor = theme.colorScheme.primary;
+                      return Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: primaryColor,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: primaryColor.withValues(alpha: 0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
                             ),
-                          Icon(
-                            widget.isRunning ? Icons.pause : Icons.play_arrow,
-                            color: theme.colorScheme.onPrimary,
-                            size: 36,
-                          ),
-                        ],
-                      ),
-                    );
-                  },
+                          ],
+                        ),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            if (progress > 0)
+                              SizedBox(
+                                width: 80,
+                                height: 80,
+                                child: CircularProgressIndicator(
+                                  value: progress,
+                                  color: theme.colorScheme.onPrimary.withValues(
+                                    alpha: 0.6,
+                                  ),
+                                  strokeWidth: 4,
+                                  backgroundColor: Colors.transparent,
+                                ),
+                              ),
+                            Icon(
+                              widget.isRunning ? Icons.pause : Icons.play_arrow,
+                              color: theme.colorScheme.onPrimary,
+                              size: 36,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
@@ -152,37 +166,42 @@ class _IconButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool isActive;
   final String semanticLabel;
+  final String tooltip;
 
   const _IconButton({
     required this.icon,
     required this.onPressed,
     required this.isActive,
     required this.semanticLabel,
+    required this.tooltip,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return SizedBox(
-      width: 56,
-      height: 56,
-      child: Material(
-        color: isActive
-            ? theme.colorScheme.primary.withValues(alpha: 0.15)
-            : theme.colorScheme.surfaceContainerHighest,
-        shape: const CircleBorder(),
-        child: Semantics(
-          button: true,
-          label: semanticLabel,
-          child: InkWell(
-            onTap: onPressed,
-            customBorder: const CircleBorder(),
-            child: Icon(
-              icon,
-              color: isActive
-                  ? theme.colorScheme.primary
-                  : theme.colorScheme.onSurface,
-              size: 24,
+    return Tooltip(
+      message: tooltip,
+      child: SizedBox(
+        width: 56,
+        height: 56,
+        child: Material(
+          color: isActive
+              ? theme.colorScheme.primary.withValues(alpha: 0.15)
+              : theme.colorScheme.surfaceContainerHighest,
+          shape: const CircleBorder(),
+          child: Semantics(
+            button: true,
+            label: semanticLabel,
+            child: InkWell(
+              onTap: onPressed,
+              customBorder: const CircleBorder(),
+              child: Icon(
+                icon,
+                color: isActive
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurface,
+                size: 24,
+              ),
             ),
           ),
         ),

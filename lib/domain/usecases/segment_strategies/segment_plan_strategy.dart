@@ -1,8 +1,6 @@
 import '../../entities/activity.dart';
 import '../../entities/running_stats.dart';
 import '../../entities/training_plan.dart';
-import '../hr_zone_calculator.dart';
-import '../pace_zone_calculator.dart';
 import '../training_plan_config.dart';
 import '../workout_descriptions.dart';
 import '../workout_sequence_strategy.dart';

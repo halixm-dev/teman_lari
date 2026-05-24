@@ -10,7 +10,7 @@ class ZonesPreviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -73,11 +73,11 @@ class _ZoneRow extends StatelessWidget {
               ),
               Text(
                 '${zone['min']} - ${zone['max']} bpm',
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'JetBrains Mono',
                   fontWeight: FontWeight.bold,
                   fontSize: 13,
-                  color: AppColors.brandOrange,
+                  color: zone['color'],
                 ),
               ),
             ],

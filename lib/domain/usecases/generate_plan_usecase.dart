@@ -1,6 +1,5 @@
 import '../entities/return_context.dart';
 import '../entities/activity.dart';
-import '../entities/run_walk_phase.dart';
 import '../entities/running_stats.dart';
 import '../entities/training_plan.dart';
 import 'segment_strategies/segment_plan_strategy.dart';

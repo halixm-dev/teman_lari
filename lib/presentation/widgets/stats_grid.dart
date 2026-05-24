@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../domain/entities/running_stats.dart';
+import '../theme/app_colors.dart';
 
 class StatsGrid extends StatelessWidget {
   final RunningStats stats;
@@ -119,27 +120,27 @@ class StatsGrid extends StatelessWidget {
                   icon: Icons.run_circle,
                   label: 'Total Runs',
                   value: '${stats.totalRuns}',
-                  color: Colors.blue,
+                  color: AppColors.run,
                 ),
                 _StatCard(
                   icon: Icons.straighten,
                   label: 'Total Distance',
                   value: '${stats.totalDistanceKm.toStringAsFixed(1)} km',
-                  color: Colors.green,
+                  color: AppColors.success,
                 ),
                 _StatCard(
                   icon: Icons.speed,
                   label: 'Avg Pace',
                   value:
-                      '${stats.averagePace.inMinutes}:${(stats.averagePace.inSeconds % 60).toString().padLeft(2, '0')}',
-                  color: Colors.orange,
+                      '${stats.averagePace.inMinutes}:${(stats.averagePace.inSeconds % 60).toString().padLeft(2, '0')} /km',
+                  color: AppColors.warning,
                 ),
                 if (showVo2Max)
                   _StatCard(
                     icon: Icons.favorite,
                     label: 'VO2 Max',
                     value: stats.vo2MaxEstimate?.toStringAsFixed(1) ?? 'N/A',
-                    color: Colors.purple,
+                    color: AppColors.pr,
                     onTap: () => _showVo2MaxInfo(context),
                   )
                 else
@@ -147,7 +148,7 @@ class StatsGrid extends StatelessWidget {
                     icon: Icons.show_chart,
                     label: 'Weekly Avg',
                     value: '${stats.recentWeeklyAvgKm.toStringAsFixed(1)} km',
-                    color: Colors.purple,
+                    color: AppColors.pr,
                   ),
               ]
               .animate(interval: 50.ms)

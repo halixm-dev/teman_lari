@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/utils/responsive.dart';
@@ -43,7 +45,7 @@ class LoginScreen extends ConsumerWidget {
                       color: AppColors.gray500,
                       fontWeight: FontWeight.bold,
                     ),
-                  ),
+                  ).animate().fade(delay: 650.ms, duration: 600.ms),
                 ],
               ),
             ),
@@ -62,22 +64,36 @@ class _LoginHeader extends StatelessWidget {
     return Column(
       children: [
         const ImageIcon(
-          AssetImage('assets/icons/Icon.png'),
-          size: 100,
-          color: AppColors.brandOrange,
-        ),
+              AssetImage('assets/icons/Icon.png'),
+              size: 100,
+              color: AppColors.brandOrange,
+            )
+            .animate()
+            .fade(duration: 800.ms)
+            .scale(delay: 100.ms, duration: 600.ms, curve: Curves.easeOutBack),
         const SizedBox(height: 32),
         Text(
-          'Teman Lari',
-          style: theme.textTheme.headlineMedium,
-          textAlign: TextAlign.center,
-        ),
+              'Teman Lari',
+              style: theme.textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+                letterSpacing: -1.0,
+              ),
+              textAlign: TextAlign.center,
+            )
+            .animate()
+            .fade(delay: 200.ms, duration: 600.ms)
+            .slideY(begin: 0.15, end: 0, curve: Curves.easeOutQuad),
         const SizedBox(height: 16),
         Text(
-          'Analyze your running history and generate personalized training plans',
-          style: theme.textTheme.bodyLarge,
-          textAlign: TextAlign.center,
-        ),
+              'Analyze your running history and generate personalized training plans',
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.7),
+              ),
+              textAlign: TextAlign.center,
+            )
+            .animate()
+            .fade(delay: 350.ms, duration: 600.ms)
+            .slideY(begin: 0.15, end: 0, curve: Curves.easeOutQuad),
       ],
     );
   }
@@ -96,7 +112,7 @@ class _LoginError extends StatelessWidget {
         textAlign: TextAlign.center,
         style: TextStyle(color: Theme.of(context).colorScheme.error),
       ),
-    );
+    ).animate().fade().shake(hz: 4, curve: Curves.easeInOutCubic);
   }
 }
 
@@ -106,14 +122,25 @@ class _LoginButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return FilledButton.icon(
-      onPressed: isLoading
-          ? null
-          : () => ref.read(authProvider.notifier).login(),
-      icon: const Icon(Icons.login),
-      label: const Text('Connect with Strava'),
-      style: FilledButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-      ),
-    );
+          onPressed: isLoading
+              ? null
+              : () {
+                  HapticFeedback.mediumImpact();
+                  ref.read(authProvider.notifier).login();
+                },
+          icon: const Icon(Icons.login),
+          label: const Text('Connect with Strava'),
+          style: FilledButton.styleFrom(
+            backgroundColor: AppColors.brandOrange,
+            foregroundColor: AppColors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        )
+        .animate()
+        .fade(delay: 500.ms, duration: 600.ms)
+        .slideY(begin: 0.2, end: 0, curve: Curves.easeOutQuad);
   }
 }

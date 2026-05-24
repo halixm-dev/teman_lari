@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../core/utils/responsive.dart';
 import '../../domain/entities/running_stats.dart';
@@ -91,15 +92,19 @@ class _DashboardData extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            FitnessFormCard(stats: stats),
-            const SizedBox(height: 16),
-            const TodayWorkoutCard(),
-            const SizedBox(height: 16),
-            WeeklyVolumeChart(stats: stats),
-            const SizedBox(height: 16),
-            const RecentActivitiesList(),
-          ],
+          children:
+              [
+                    FitnessFormCard(stats: stats),
+                    const SizedBox(height: 16),
+                    const TodayWorkoutCard(),
+                    const SizedBox(height: 16),
+                    WeeklyVolumeChart(stats: stats),
+                    const SizedBox(height: 16),
+                    const RecentActivitiesList(),
+                  ]
+                  .animate(interval: 80.ms)
+                  .fade(duration: 450.ms)
+                  .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad),
         ),
       ),
     );

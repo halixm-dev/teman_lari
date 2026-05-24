@@ -82,7 +82,7 @@ Color phaseColor(PhaseSegmentType type) {
   return switch (type) {
     PhaseSegmentType.warmup => AppColors.success,
     PhaseSegmentType.work => AppColors.brandOrange,
-    PhaseSegmentType.recovery => const Color(0xFFF59E0B),
+    PhaseSegmentType.recovery => AppColors.warning,
     PhaseSegmentType.walk => const Color(0xFF14B8A6),
     PhaseSegmentType.cooldown => AppColors.info,
   };
