@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../theme/app_colors.dart';
 
@@ -23,7 +24,9 @@ class ZonesPreviewCard extends StatelessWidget {
               style: TextStyle(fontSize: 12, color: AppColors.gray500),
             ),
             const SizedBox(height: 16),
-            ...zones.map((z) => _ZoneRow(zone: z)),
+            ...zones.asMap().entries.map(
+              (entry) => _ZoneRow(zone: entry.value, index: entry.key),
+            ),
           ],
         ),
       ),
@@ -51,8 +54,9 @@ class _Header extends StatelessWidget {
 
 class _ZoneRow extends StatelessWidget {
   final Map<String, dynamic> zone;
+  final int index;
 
-  const _ZoneRow({required this.zone});
+  const _ZoneRow({required this.zone, required this.index});
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +87,7 @@ class _ZoneRow extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 6),
-          _ZoneBar(color: zone['color']),
+          _ZoneBar(color: zone['color'], index: index),
         ],
       ),
     );
@@ -92,11 +96,13 @@ class _ZoneRow extends StatelessWidget {
 
 class _ZoneBar extends StatelessWidget {
   final Color color;
+  final int index;
 
-  const _ZoneBar({required this.color});
+  const _ZoneBar({required this.color, required this.index});
 
   @override
   Widget build(BuildContext context) {
+    final widthFactor = (index + 1) / 5.0;
     return Container(
       height: 8,
       width: double.infinity,
@@ -107,7 +113,7 @@ class _ZoneBar extends StatelessWidget {
       child: Align(
         alignment: Alignment.centerLeft,
         child: FractionallySizedBox(
-          widthFactor: 1.0,
+          widthFactor: widthFactor,
           child: Container(
             height: 8,
             decoration: BoxDecoration(
@@ -117,6 +123,11 @@ class _ZoneBar extends StatelessWidget {
           ),
         ),
       ),
+    ).animate().scaleX(
+      duration: 400.ms,
+      delay: (index * 80).ms,
+      curve: Curves.easeOutCubic,
+      alignment: Alignment.centerLeft,
     );
   }
 }

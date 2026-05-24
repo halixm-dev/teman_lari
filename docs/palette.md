@@ -50,3 +50,12 @@ Action:
 - **Shimmering Settings Save**: Upgraded the save success state in `SettingsSaveButton` with a spring scale-up and a white shimmering shine sweep. Connected a satisfying medium haptic impact trigger inside `SettingsScreen` when settings are committed successfully.
 - **Haptic Stats Grid & High-Fidelity VO2 Max Sheet**: Added tactile light haptics on taps to any interactive stat card in the `StatsGrid`. Completely overhauled the VO2 Max estimation sheet with an outstanding summary card, colored category status pills (Excellent, Good, Fair, Needs Work), dynamic ranges (with color-coded dots), and spring-loaded animations.
 
+## 2026-05-24 - [Premium Settings Refresh: Cascading Staircase Zones & High-Fidelity Custom About Cards]
+Learning: A premium athlete dashboard must carry visual delight all the way into utility views like settings. Static text and generic list tiles should be replaced with custom, micro-animated widgets that offer visual context and complete access safety. Physiological progression, such as heart rate zones, becomes instantly understandable when presented as an ascending, intensity-scaled cascading staircase that animates into view. Additionally, embedding rich details like real-time connection status indicators, local sandbox data security labels, and interactive modal-based policies with physical haptics transforms utility pages into a memorable extension of the brand experience.
+Action:
+- **Cascading Staircase Zones**: Redesigned `ZonesPreviewCard` to render dynamic intensity-scaled progress bars (from 20% to 100% width factor) matching Zone 1 to Zone 5 physiological load levels. Added a cascading entrance build animation (`flutter_animate` staggered horizontal scale-out) that plays beautifully upon rendering.
+- **High-Fidelity Custom About Card**: Completely replaced `AboutCard` with a premium sports-brand design featuring a spring-scaling run icon, structured code and secure-data labels, active connection status indicators (with success green dots), and interactive text-links with hover highlights.
+- **Local Policy Sheets**: Wired the "Privacy Policy" and "Terms of Service" links to launch customized modal bottom sheets with smooth entrances, satisfying tactile haptics, and concise local sandbox descriptions.
+- **Accessible Disconnect Tile**: Upgraded `DisconnectStravaCard` with semantic button wrappers, screen-reader accessibility hints, custom spacing, a themed red logout container (`AppColors.danger`), and trailing navigation indicators.
+
+
