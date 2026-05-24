@@ -86,9 +86,9 @@ class _RunControlsState extends State<RunControls> {
             onPressed: widget.isFinished ? null : widget.onToggleAudioCoach,
             isActive: widget.isAudioCoachOn,
             semanticLabel: widget.isAudioCoachOn
-                ? 'Disable audio coach'
-                : 'Enable audio coach',
-            tooltip: widget.isAudioCoachOn ? 'Mute Coach' : 'Unmute Coach',
+                ? 'Mute audio'
+                : 'Unmute audio',
+            tooltip: widget.isAudioCoachOn ? 'Mute' : 'Unmute',
           ),
           // Play / Pause FAB
           if (!widget.isFinished)
