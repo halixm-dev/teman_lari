@@ -8,6 +8,7 @@ import 'package:teman_lari/core/utils/date_utils.dart';
 import 'package:teman_lari/domain/entities/activity.dart';
 import 'package:teman_lari/presentation/widgets/workout_type_badge.dart';
 import 'kudos_button.dart';
+import 'scale_on_press.dart';
 
 class CompactActivityCard extends StatefulWidget {
   final AnalyzedActivity analyzedRun;
@@ -49,99 +50,102 @@ class _CompactActivityCardState extends State<CompactActivityCard> {
     final typoExt = Theme.of(context).extension<AppTypographyExtension>();
     final run = widget.analyzedRun.activity;
 
-    return GestureDetector(
-      onDoubleTap: _handleDoubleTap,
-      behavior: HitTestBehavior.opaque,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        run.name,
-                        style: Theme.of(context).textTheme.titleSmall,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+    return ScaleOnPress(
+      onTap: () {}, // Empty tap for scale feedback
+      child: GestureDetector(
+        onDoubleTap: _handleDoubleTap,
+        behavior: HitTestBehavior.opaque,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          run.name,
+                          style: Theme.of(context).textTheme.titleSmall,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                    WorkoutTypeBadge(type: widget.analyzedRun.type),
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  AppDateUtils.formatDate(run.date),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      WorkoutTypeBadge(type: widget.analyzedRun.type),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      child: _StatColumn(
-                        label: 'DISTANCE',
-                        value: '${run.distanceKm.toStringAsFixed(2)} km',
-                        typoExt: typoExt,
-                      ),
+                  const SizedBox(height: 2),
+                  Text(
+                    AppDateUtils.formatDate(run.date),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
-                    Expanded(
-                      child: _StatColumn(
-                        label: 'PACE',
-                        value:
-                            (run.type == ActivityType.run ||
-                                run.type == ActivityType.walk)
-                            ? run.paceString
-                            : '--',
-                        typoExt: typoExt,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: _StatColumn(
+                          label: 'DISTANCE',
+                          value: '${run.distanceKm.toStringAsFixed(2)} km',
+                          typoExt: typoExt,
+                        ),
                       ),
-                    ),
-                    Expanded(
-                      child: _StatColumn(
-                        label: 'TIME',
-                        value: _formatDuration(run.movingTime),
-                        typoExt: typoExt,
+                      Expanded(
+                        child: _StatColumn(
+                          label: 'PACE',
+                          value:
+                              (run.type == ActivityType.run ||
+                                  run.type == ActivityType.walk)
+                              ? run.paceString
+                              : '--',
+                          typoExt: typoExt,
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8),
-                      child: KudosButton(
-                        key: _kudosKey,
-                        initialCount: run.id % 7,
+                      Expanded(
+                        child: _StatColumn(
+                          label: 'TIME',
+                          value: _formatDuration(run.movingTime),
+                          typoExt: typoExt,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          if (_showDoubleTapBurst)
-            Positioned.fill(
-              child: Center(
-                child:
-                    Icon(
-                          Icons.thumb_up_rounded,
-                          color: AppColors.brandOrange.withValues(alpha: 0.9),
-                          size: 56,
-                        )
-                        .animate()
-                        .scale(
-                          duration: 350.ms,
-                          curve: Curves.elasticOut,
-                          begin: const Offset(0.2, 0.2),
-                          end: const Offset(1.2, 1.2),
-                        )
-                        .fadeOut(delay: 350.ms, duration: 200.ms),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: KudosButton(
+                          key: _kudosKey,
+                          initialCount: run.id % 7,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-        ],
+            if (_showDoubleTapBurst)
+              Positioned.fill(
+                child: Center(
+                  child:
+                      Icon(
+                            Icons.thumb_up_rounded,
+                            color: AppColors.brandOrange.withValues(alpha: 0.9),
+                            size: 56,
+                          )
+                          .animate()
+                          .scale(
+                            duration: 350.ms,
+                            curve: Curves.elasticOut,
+                            begin: const Offset(0.2, 0.2),
+                            end: const Offset(1.2, 1.2),
+                          )
+                          .fadeOut(delay: 350.ms, duration: 200.ms),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

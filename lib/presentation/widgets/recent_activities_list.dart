@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/activities_provider.dart';
+import '../theme/app_typography.dart';
 import 'compact_activity_card.dart';
 
 class RecentActivitiesList extends ConsumerStatefulWidget {
@@ -21,14 +22,11 @@ class _RecentActivitiesListState extends ConsumerState<RecentActivitiesList> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Recent Activities',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text('Recent Activities', style: AppTypography.headingLg),
             const SizedBox(height: 8),
             statsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),

@@ -89,17 +89,17 @@ class _DashboardData extends ConsumerWidget {
       onRefresh: () => ref.read(activitiesProvider.notifier).refresh(),
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children:
               [
                     FitnessFormCard(stats: stats),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
                     const TodayWorkoutCard(),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
                     WeeklyVolumeChart(stats: stats),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
                     const RecentActivitiesList(),
                   ]
                   .animate(interval: 80.ms)

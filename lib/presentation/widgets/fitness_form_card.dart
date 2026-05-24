@@ -5,6 +5,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_theme_extensions.dart';
 import '../theme/app_typography.dart';
+import 'scale_on_press.dart';
 
 class FitnessFormCard extends StatelessWidget {
   final RunningStats stats;
@@ -23,25 +24,21 @@ class FitnessFormCard extends StatelessWidget {
         ? AppColors.danger
         : AppColors.warning;
 
-    return Card(
-      child: Semantics(
-        button: true,
-        label: 'View Training Status Details',
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-          onTap: () => _showDetailsSheet(context),
+    return ScaleOnPress(
+      onTap: () => _showDetailsSheet(context),
+      child: Card(
+        child: Semantics(
+          button: true,
+          label: 'View Training Status Details',
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Training Status',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
+                    Text('Training Status', style: AppTypography.headingLg),
                     Icon(
                       Icons.info_outline,
                       size: 18,

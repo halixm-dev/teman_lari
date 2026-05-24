@@ -105,54 +105,6 @@ final class ActivityRepositoryProvider
 String _$activityRepositoryHash() =>
     r'15698b476e9d32742968a27914774ab0a74ec3c3';
 
-@ProviderFor(getActivitiesUseCase)
-final getActivitiesUseCaseProvider = GetActivitiesUseCaseProvider._();
-
-final class GetActivitiesUseCaseProvider
-    extends
-        $FunctionalProvider<
-          GetActivitiesUseCase,
-          GetActivitiesUseCase,
-          GetActivitiesUseCase
-        >
-    with $Provider<GetActivitiesUseCase> {
-  GetActivitiesUseCaseProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'getActivitiesUseCaseProvider',
-        isAutoDispose: false,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$getActivitiesUseCaseHash();
-
-  @$internal
-  @override
-  $ProviderElement<GetActivitiesUseCase> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  GetActivitiesUseCase create(Ref ref) {
-    return getActivitiesUseCase(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(GetActivitiesUseCase value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<GetActivitiesUseCase>(value),
-    );
-  }
-}
-
-String _$getActivitiesUseCaseHash() =>
-    r'69e104c9736132dc7a4aedb5fcc85a98ade5b19f';
-
 @ProviderFor(analyzeRunsUseCase)
 final analyzeRunsUseCaseProvider = AnalyzeRunsUseCaseProvider._();
 
@@ -226,7 +178,7 @@ final class ActivitiesNotifierProvider
 }
 
 String _$activitiesNotifierHash() =>
-    r'331a2bb86c976229818f1dbc737bb590bb97c4cf';
+    r'a865e468088998374c8102d65856ddd193f0de0c';
 
 abstract class _$ActivitiesNotifier extends $AsyncNotifier<List<Activity>> {
   FutureOr<List<Activity>> build();
