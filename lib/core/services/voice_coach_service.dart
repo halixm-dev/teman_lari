@@ -17,6 +17,10 @@ class VoiceCoachService {
     await _play(file);
   }
 
+  Future<void> announceMidpoint() async {
+    await _play('voice_midpoint.wav');
+  }
+
   Future<void> announceWorkoutComplete() async {
     await _play('voice_complete.wav');
   }
