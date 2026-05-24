@@ -9,10 +9,10 @@ class KudosButton extends StatefulWidget {
   const KudosButton({super.key, this.initialCount = 0, this.onKudosChanged});
 
   @override
-  State<KudosButton> createState() => _KudosButtonState();
+  State<KudosButton> createState() => KudosButtonState();
 }
 
-class _KudosButtonState extends State<KudosButton>
+class KudosButtonState extends State<KudosButton>
     with TickerProviderStateMixin {
   late int _kudosCount;
   bool _isKudosed = false;
@@ -80,6 +80,12 @@ class _KudosButtonState extends State<KudosButton>
     _scaleController.dispose();
     _floatController.dispose();
     super.dispose();
+  }
+
+  void externalKudos() {
+    if (!_isKudosed) {
+      _onTap();
+    }
   }
 
   void _onTap() {

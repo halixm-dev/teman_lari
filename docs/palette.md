@@ -35,3 +35,9 @@ Action:
 - **Play/Pause Tap Haptic & Visual Warning**: Upgraded the Play/Pause button in `RunControls` to trigger a medium haptic impact and programmatically reveal a manual 'Hold to Pause' Tooltip when the athlete accidentally quick-taps it while the run session is active.
 - **Control Tooltips**: Integrated dynamic and semantic tooltips ('Unlock Screen' / 'Lock Screen' and 'Mute Coach' / 'Unmute Coach') to the lock and audio controls in `RunControls`, ensuring complete clarity and assistive compatibility.
 
+## 2026-05-24 - [Double-Tap to Kudos Social Micro-Interaction]
+Learning: Designing delightful social platforms requires rewarding natural, intuitive behaviors with visual feedback. The "double-tap to like" (or kudos) pattern pioneered by popular social networks can be beautifully translated to an athlete's feed. Implementing an elastic thumbs-up icon burst overlay with medium haptic feedback makes the feed feel responsive, high-fidelity, and celebratory.
+Action:
+- **Stateful Activity Cards**: Converted `CompactActivityCard` from a `StatelessWidget` to a `StatefulWidget` to maintain local double-tap animation state and support key-based interaction.
+- **Double-Tap Gesture Detector**: Wrapped `CompactActivityCard` in a `GestureDetector` that intercepts `onDoubleTap`, triggering a medium haptic impact and programmatically firing `externalKudos()` on the child `KudosButtonState` using a `GlobalKey`.
+- **Elastic Thumbs-Up Burst Overlay**: Programmed a beautiful, orange thumbs-up icon overlay using `flutter_animate` that springs into view with elastic scale physics (`Curves.elasticOut`) and fades away smoothly when an athlete double-taps anywhere on the activity card.
