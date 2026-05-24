@@ -8,6 +8,7 @@ import '../../core/utils/responsive.dart';
 import '../../domain/entities/training_plan.dart';
 import '../providers/training_plan_provider.dart';
 import '../theme/app_colors.dart';
+import '../widgets/scale_on_press.dart';
 import '../widgets/workout_type_badge.dart';
 
 class PlanScreen extends ConsumerWidget {
@@ -430,7 +431,7 @@ class _PlanDayCard extends StatelessWidget {
         ? AppColors.brandOrange
         : (isDark ? AppColors.surfaceTertiaryDark : AppColors.gray200);
 
-    return Container(
+    final cardWidget = Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
@@ -461,13 +462,19 @@ class _PlanDayCard extends StatelessWidget {
         title: _DayTitle(day: day, isFirst: isFirst),
         subtitle: _DaySubtitle(day: day, isRest: isRest),
         trailing: isRest ? null : const Icon(Icons.chevron_right),
-        onTap: isRest
-            ? null
-            : () {
-                HapticFeedback.lightImpact();
-                context.push('/run-session', extra: day);
-              },
       ),
+    );
+
+    if (isRest) {
+      return cardWidget;
+    }
+
+    return ScaleOnPress(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        context.push('/run-session', extra: day);
+      },
+      child: cardWidget,
     );
   }
 }

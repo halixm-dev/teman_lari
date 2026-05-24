@@ -18,69 +18,77 @@ class CompactActivityCard extends StatelessWidget {
 
     return ScaleOnPress(
       onTap: () {}, // Empty tap for scale feedback
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        child: Stack(
-          alignment: Alignment.center,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          run.name,
-                          style: Theme.of(context).textTheme.titleSmall,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      WorkoutTypeBadge(type: analyzedRun.type),
-                    ],
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    run.name,
+                    style: Theme.of(context).textTheme.titleSmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    AppDateUtils.formatDate(run.date),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 16,
-                    runSpacing: 8,
-                    children: [
-                      _CompactStat(
-                        icon: Icons.route_outlined,
-                        value: '${run.distanceKm.toStringAsFixed(2)} km',
-                        typoExt: typoExt,
-                      ),
-                      _CompactStat(
-                        icon: Icons.timer_outlined,
-                        value: _formatDuration(run.movingTime),
-                        typoExt: typoExt,
-                      ),
-                      if (run.type == ActivityType.run ||
-                          run.type == ActivityType.walk)
-                        _CompactStat(
-                          icon: Icons.speed_outlined,
-                          value: run.paceString,
-                          typoExt: typoExt,
-                        ),
-                      if (run.avgHeartRate != null)
-                        _CompactStat(
-                          icon: Icons.favorite_border_outlined,
-                          value: '${run.avgHeartRate!.round()} bpm',
-                          typoExt: typoExt,
-                        ),
-                    ],
-                  ),
-                ],
+                ),
+                WorkoutTypeBadge(type: analyzedRun.type),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Text(
+              AppDateUtils.formatDate(run.date),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
+            ),
+            const SizedBox(height: 8),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final statsWidgets = [
+                  _CompactStat(
+                    icon: Icons.route_outlined,
+                    value: '${run.distanceKm.toStringAsFixed(2)} km',
+                    typoExt: typoExt,
+                  ),
+                  _CompactStat(
+                    icon: Icons.timer_outlined,
+                    value: _formatDuration(run.movingTime),
+                    typoExt: typoExt,
+                  ),
+                  if (run.type == ActivityType.run ||
+                      run.type == ActivityType.walk)
+                    _CompactStat(
+                      icon: Icons.speed_outlined,
+                      value: run.paceString,
+                      typoExt: typoExt,
+                    ),
+                  if (run.avgHeartRate != null)
+                    _CompactStat(
+                      icon: Icons.favorite_border_outlined,
+                      value: '${run.avgHeartRate!.round()} bpm',
+                      typoExt: typoExt,
+                    ),
+                ];
+
+                if (constraints.maxWidth < 280) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: statsWidgets
+                        .map(
+                          (w) => Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: w,
+                          ),
+                        )
+                        .toList(),
+                  );
+                }
+
+                return Wrap(spacing: 16, runSpacing: 8, children: statsWidgets);
+              },
             ),
           ],
         ),

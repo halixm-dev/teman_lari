@@ -1,5 +1,12 @@
 # Palette's Journal
 
+## 2026-05-24 - [Kudos Social Restoration, Bouncy Plan Cards, & Premium Exit Drawer]
+Learning: Social features and tactile micro-interactions can co-exist beautifully with compact, clean layouts if we leverage structured row distribution. When introducing destructive sports interactions (like pausing or quitting an active run), designing warning sheets with custom colored brand-specific badges (`AppColors.danger`), haptic steps (medium for opening sheets, heavy for finalizing), and fluid vertical entry motion (`flutter_animate` slide-and-fade) creates a premium athletic cockpit that respects user intent and prevents accidental loss of progress.
+Action:
+- **Kudos Social Restoration**: Re-implemented statefulness, double-tap gesture intercept, and thumbs-up elastic overlay bursts inside `CompactActivityCard`, laying it out as a responsive `Row` to keep the compact icon-wrap stats intact while restoring delight.
+- **Bouncy Plan Cards**: Integrated `ScaleOnPress` tactile bouncy physics on all active training day cards inside `PlanScreen`, matching the dynamic response system used across the main dashboard.
+- **Premium Exit Drawer**: Fully overhauled `_showExitSheet` in `RunSessionScreen` with a custom-styled warning badge, dark-mode aware surface configurations, medium haptic alerts on drawer open, heavy haptics on exit confirmation, and staggered vertical animation physics.
+
 ## 2026-05-24 - [Accessible Icon Buttons]
 Learning: In Flutter, `IconButton` widgets without text labels are completely invisible to screen readers unless they are wrapped in `Semantics` or provided a `tooltip` property. Using the `tooltip` property is a quick, built-in way to add both a visual hover hint and a semantic label for TalkBack/VoiceOver simultaneously.
 Action: Added `tooltip` properties to icon-only app bar actions and close buttons across `DashboardScreen`, `AnalysisScreen`, `PlanScreen`, and `RunSessionScreen` to ensure these critical actions are identifiable by assistive technologies.
