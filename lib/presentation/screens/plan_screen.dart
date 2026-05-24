@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -38,56 +39,116 @@ class PlanScreen extends ConsumerWidget {
   }
 
   void _showInfoSheet(BuildContext context) {
+    HapticFeedback.lightImpact();
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.gray300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'How Your Plan Works',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    height: 1.35,
+        final theme = Theme.of(context);
+        final isDark = theme.brightness == Brightness.dark;
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 24,
+              right: 24,
+              top: 12,
+              bottom: MediaQuery.of(context).padding.bottom + 24,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? AppColors.surfaceTertiaryDark
+                          : AppColors.gray300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              _InfoRow(
-                icon: Icons.history,
-                text:
-                    'Your training plan is generated from your workout history and performance analysis.',
-              ),
-              const SizedBox(height: 16),
-              _InfoRow(
-                icon: Icons.auto_awesome,
-                text:
-                    'It dynamically updates each time you log a new run, adapting to your current fitness and recovery.',
-              ),
-              const SizedBox(height: 16),
-              _InfoRow(
-                icon: Icons.calendar_today,
-                text:
-                    'Your next workout is confirmed based on your latest data. Later days are projected and may adjust as you train.',
-              ),
-            ],
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.brandOrange.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.track_changes_rounded,
+                        color: AppColors.brandOrange,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'How Your Plan Works',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                _InfoRow(
+                  icon: Icons.history_rounded,
+                  iconColor: AppColors.brandOrange,
+                  title: 'Workout History Sync',
+                  text:
+                      'Your training plan is dynamically calibrated from your actual Strava running history and physical stats.',
+                ),
+                const SizedBox(height: 16),
+                _InfoRow(
+                  icon: Icons.auto_awesome_rounded,
+                  iconColor: AppColors.success,
+                  title: 'Adaptive Calibration',
+                  text:
+                      'The plan updates automatically after each run you complete, adjusting targets based on your pace and heart rate.',
+                ),
+                const SizedBox(height: 16),
+                _InfoRow(
+                  icon: Icons.calendar_today_rounded,
+                  iconColor: AppColors.info,
+                  title: 'Projected Schedules',
+                  text:
+                      'Your next workout is locked in based on current recovery. Future days are projections that refine as you train.',
+                ),
+                const SizedBox(height: 28),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      Navigator.of(context).pop();
+                    },
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.brandOrange,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'Got it',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ).animate().fade(duration: 250.ms).slideY(begin: 0.08, curve: Curves.easeOutCubic),
           ),
         );
       },
@@ -97,19 +158,57 @@ class PlanScreen extends ConsumerWidget {
 
 class _InfoRow extends StatelessWidget {
   final IconData icon;
+  final Color iconColor;
+  final String title;
   final String text;
 
-  const _InfoRow({required this.icon, required this.text});
+  const _InfoRow({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.text,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 22, color: AppColors.gray500),
-        const SizedBox(width: 12),
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: iconColor.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 20, color: iconColor),
+        ),
+        const SizedBox(width: 14),
         Expanded(
-          child: Text(text, style: const TextStyle(fontSize: 14, height: 1.55)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                text,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: isDark
+                      ? AppColors.textSecondaryDark
+                      : AppColors.gray700,
+                  height: 1.45,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );

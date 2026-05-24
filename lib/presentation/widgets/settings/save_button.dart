@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../theme/app_colors.dart';
 
@@ -50,21 +51,28 @@ class SettingsSaveButton extends StatelessWidget {
       );
     }
     if (showSuccess) {
-      return const Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.check, color: Colors.white),
-          SizedBox(width: 8),
-          Text(
-            'Saved Successfully',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: Colors.white,
-            ),
-          ),
-        ],
-      );
+      return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Icon(Icons.check, color: Colors.white),
+              SizedBox(width: 8),
+              Text(
+                'Saved Successfully',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          )
+          .animate()
+          .scale(duration: 250.ms, curve: Curves.easeOutBack)
+          .then(delay: 50.ms)
+          .shimmer(
+            duration: 400.ms,
+            color: Colors.white.withValues(alpha: 0.45),
+          );
     }
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final disabledTextColor = isDark
