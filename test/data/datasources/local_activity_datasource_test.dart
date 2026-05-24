@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:checks/checks.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:teman_lari/data/datasources/local_activity_datasource.dart';
 import 'package:teman_lari/data/models/activity_model.dart';
@@ -69,11 +70,11 @@ void main() {
         await dataSource.saveActivities(mockActivities);
 
         final cached = await dataSource.getCachedActivities();
-        expect(cached, isNotNull);
-        expect(cached!.length, equals(2));
+        check(cached).isNotNull();
+        check(cached!.length).equals(2);
         // Should be sorted by ID DESC: 102 first, then 101
-        expect(cached[0].id, equals(102));
-        expect(cached[1].id, equals(101));
+        check(cached[0].id).equals(102);
+        check(cached[1].id).equals(101);
       },
     );
 
@@ -93,7 +94,7 @@ void main() {
         });
 
         final cached = await dataSource.getCachedActivities();
-        expect(cached, isNull);
+        check(cached).isNull();
       },
     );
 
@@ -104,8 +105,8 @@ void main() {
         await dataSource.saveHeartRateStream(101, streamData);
 
         final cached = await dataSource.getCachedHeartRateStreams();
-        expect(cached, contains(101));
-        expect(cached[101], equals(streamData));
+        check(cached).containsKey(101);
+        check(cached[101]).equals(streamData);
       },
     );
 
@@ -125,7 +126,7 @@ void main() {
         });
 
         final cached = await dataSource.getCachedHeartRateStreams();
-        expect(cached, isNot(contains(101)));
+        check(cached).not((it) => it.containsKey(101));
       },
     );
 
@@ -137,10 +138,10 @@ void main() {
 
       // Check boxes directly or via dataSource
       final cachedActivities = await dataSource.getCachedActivities();
-      expect(cachedActivities, isNull);
+      check(cachedActivities).isNull();
 
       final cachedStreams = await dataSource.getCachedHeartRateStreams();
-      expect(cachedStreams, isEmpty);
+      check(cachedStreams).isEmpty();
     });
   });
 }

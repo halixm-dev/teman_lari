@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 
@@ -21,16 +22,16 @@ import '../widgets/run_session/run_timer_display.dart';
 
 enum PaceSource { gps, pedometer, none }
 
-class RunSessionScreen extends StatefulWidget {
+class RunSessionScreen extends ConsumerStatefulWidget {
   final TrainingDay day;
 
   const RunSessionScreen({super.key, required this.day});
 
   @override
-  State<RunSessionScreen> createState() => _RunSessionScreenState();
+  ConsumerState<RunSessionScreen> createState() => _RunSessionScreenState();
 }
 
-class _RunSessionScreenState extends State<RunSessionScreen> {
+class _RunSessionScreenState extends ConsumerState<RunSessionScreen> {
   late RunSessionState _state;
   Timer? _timer;
 
@@ -53,7 +54,6 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
 
   PaceSource _paceSource = PaceSource.none;
 
-  final _voiceCoach = VoiceCoachService();
   final _soundFx = SoundEffectsService();
   WorkoutPhase? _lastPhase;
   bool _midpointAnnounced = false;
@@ -81,7 +81,6 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
     _timer?.cancel();
     _gpsSubscription?.cancel();
     _pedometerSubscription?.cancel();
-    _voiceCoach.dispose();
     _soundFx.dispose();
     super.dispose();
   }
@@ -301,14 +300,25 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
       }
     }
 
-    if (_lastPhase != null &&
-        newPhase != _lastPhase &&
-        newPhase != WorkoutPhase.finished) {
-      if (_state.isAudioCoachOn) _voiceCoach.announcePhaseChange(newPhase);
+    if (newPhase != _lastPhase) {
+      if (newPhase == WorkoutPhase.finished) {
+        if (_state.isAudioCoachOn) {
+          ref.read(voiceCoachProvider).announceWorkoutComplete();
+        }
+      } else {
+        if (_state.isAudioCoachOn) {
+          ref.read(voiceCoachProvider).announcePhaseChange(newPhase);
+        }
+      }
     }
 
-    if (!_midpointAnnounced && total > 0 && newElapsed >= total ~/ 2 && newPhase != WorkoutPhase.finished) {
-      if (_state.isAudioCoachOn) _voiceCoach.announceMidpoint();
+    if (!_midpointAnnounced &&
+        total > 0 &&
+        newElapsed >= total ~/ 2 &&
+        newPhase != WorkoutPhase.finished) {
+      if (_state.isAudioCoachOn) {
+        ref.read(voiceCoachProvider).announceMidpoint();
+      }
       _midpointAnnounced = true;
     }
 
@@ -363,7 +373,9 @@ class _RunSessionScreenState extends State<RunSessionScreen> {
 
   void _endWorkout() {
     _timer?.cancel();
-    if (_state.isAudioCoachOn) _voiceCoach.announceWorkoutComplete();
+    if (_state.isAudioCoachOn) {
+      ref.read(voiceCoachProvider).announceWorkoutComplete();
+    }
     setState(() {
       _state = RunSessionState(
         plan: _state.plan,

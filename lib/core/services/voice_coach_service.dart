@@ -1,6 +1,16 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../presentation/widgets/run_session/run_session_state.dart';
+
+part 'voice_coach_service.g.dart';
+
+@riverpod
+VoiceCoachService voiceCoach(Ref ref) {
+  final service = VoiceCoachService();
+  ref.onDispose(() => service.dispose());
+  return service;
+}
 
 class VoiceCoachService {
   final AudioPlayer _player = AudioPlayer();

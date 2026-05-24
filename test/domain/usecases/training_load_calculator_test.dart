@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:checks/checks.dart';
 import 'package:teman_lari/domain/entities/activity.dart';
 import 'package:teman_lari/domain/usecases/training_load_calculator.dart';
 
@@ -16,7 +17,7 @@ void main() {
         maxHr: 190,
         restingHr: 60,
       );
-      expect(result, isEmpty);
+      check(result).isEmpty();
     });
 
     test(
@@ -51,7 +52,7 @@ void main() {
         );
 
         // Verify history has points for each day up to today
-        expect(result.length, equals(4));
+        check(result.length).equals(4);
 
         // Day 0: Monday (run day)
         // Standard Coggan decay factor is 1/42 for CTL and 1/7 for ATL.

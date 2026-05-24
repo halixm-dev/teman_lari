@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:checks/checks.dart';
 import 'package:teman_lari/domain/entities/activity.dart';
 import 'package:teman_lari/domain/entities/running_stats.dart';
 import 'package:teman_lari/domain/entities/training_plan.dart';
@@ -114,7 +115,7 @@ void main() {
   group('empty activities', () {
     test('returns TrainingPlan.empty()', () {
       final plan = useCase.generate([]);
-      expect(plan.days, isEmpty);
+      check(plan.days).isEmpty();
       expect(plan.goal, 'No data available');
       expect(
         plan.description,
@@ -139,14 +140,14 @@ void main() {
     test('returns 7-day plan', () {
       final activities = [_activity(daysAgo: 1)];
       final plan = useCase.generate(activities);
-      expect(plan.days.length, 7);
+      check(plan.days.length).equals(7);
     });
 
     test('each day has sequential dates', () {
       final activities = [_activity(daysAgo: 1)];
       final plan = useCase.generate(activities);
       for (int i = 0; i < 7; i++) {
-        expect(plan.days[i].date.difference(plan.startDate).inDays, i);
+        check(plan.days[i].date.difference(plan.startDate).inDays).equals(i);
       }
     });
 
@@ -224,7 +225,7 @@ void main() {
         weeklyMinutes: {'W1': 160},
       );
       final plan = useCase.generate([_activity()]);
-      expect(plan.description, contains("Fatigued"));
+      check(plan.description).contains("Fatigued");
     });
 
     test('fresh description when formScore > 10', () {
@@ -235,7 +236,7 @@ void main() {
         weeklyMinutes: {'W1': 160},
       );
       final plan = useCase.generate([_activity()]);
-      expect(plan.description, contains("Fresh"));
+      check(plan.description).contains("Fresh");
     });
 
     test('balanced description otherwise', () {
@@ -246,7 +247,7 @@ void main() {
         weeklyMinutes: {'W1': 160},
       );
       final plan = useCase.generate([_activity()]);
-      expect(plan.description, contains("balanced"));
+      check(plan.description).contains("balanced");
     });
   });
 
@@ -258,7 +259,7 @@ void main() {
         0,
         (s, d) => s + (d.targetMinutes ?? 0),
       );
-      expect(totalTarget, greaterThan(0));
+      check(totalTarget).isGreaterThan(0);
     });
 
     test('scales down when formScore < -15', () {
@@ -276,7 +277,7 @@ void main() {
       // Average is (175 + 160 + 190 + 210) / 4 = 183.75.
       // 183.75 * 0.85 = 156.
       // The scheduled workouts will be roughly 156 mins.
-      expect(totalTarget, lessThan(190));
+      check(totalTarget).isLessThan(190);
     });
 
     test('scales up when formScore >= -5', () {
@@ -290,11 +291,11 @@ void main() {
         0,
         (s, d) => s + (d.targetMinutes ?? 0),
       );
-      expect(totalTarget, greaterThan(0));
+      check(totalTarget).isGreaterThan(0);
       final restDays = plan.days
           .where((d) => d.type == WorkoutType.rest)
           .length;
-      expect(restDays, lessThan(7));
+      check(restDays).isLessThan(7);
     });
   });
 
@@ -308,8 +309,10 @@ void main() {
             d.type != WorkoutType.rest && d.type != WorkoutType.crossTraining,
       );
       for (final day in nonRest) {
-        expect(day.heartRateTarget, isNotNull);
-        expect(day.heartRateTarget!.zoneNumber, inInclusiveRange(1, 5));
+        check(day.heartRateTarget).isNotNull();
+        check(day.heartRateTarget!.zoneNumber)
+          ..isGreaterOrEqual(1)
+          ..isLessOrEqual(5);
       }
     });
 
@@ -321,8 +324,8 @@ void main() {
           .where((d) => d.heartRateTarget != null)
           .map((d) => d.heartRateTarget!);
       for (final z in zones) {
-        expect(z.minBpm, greaterThanOrEqualTo(35));
-        expect(z.maxBpm, lessThanOrEqualTo(195));
+        check(z.minBpm).isGreaterOrEqual(35);
+        check(z.maxBpm).isLessOrEqual(195);
       }
     });
   });
@@ -356,7 +359,7 @@ void main() {
       ];
       mockAnalyze.stats = _stats(totalRuns: 20, formScore: 0);
       final plan = useCase.generate(activities);
-      expect(plan.days.length, 7);
+      check(plan.days.length).equals(7);
       // After 5+ rest days, non-beginner should start with a run
       expect(plan.days[0].type, isNot(WorkoutType.rest));
       // Verify hard workouts are followed by rest or easy
@@ -387,7 +390,7 @@ void main() {
       ];
       mockAnalyze.stats = _stats(totalRuns: 10);
       final plan = useCase.generate(activities);
-      expect(plan.days.length, 7);
+      check(plan.days.length).equals(7);
       for (int i = 0; i < plan.days.length - 1; i++) {
         final current = plan.days[i].type;
         final next = plan.days[i + 1].type;
@@ -430,7 +433,7 @@ void main() {
         coolDownMinutes: 10,
         description: 'test',
       );
-      expect(day.workMinutes, 25);
+      check(day.workMinutes).equals(25);
     });
 
     test('returns null when targetMinutes is null', () {
@@ -439,14 +442,14 @@ void main() {
         type: WorkoutType.rest,
         description: 'rest',
       );
-      expect(day.workMinutes, isNull);
+      check(day.workMinutes).isNull();
     });
   });
 
   group('TrainingPlan.empty()', () {
     test('creates plan with empty days and no-data message', () {
       final empty = TrainingPlan.empty();
-      expect(empty.days, isEmpty);
+      check(empty.days).isEmpty();
       expect(empty.goal, 'No data available');
     });
   });
@@ -454,9 +457,9 @@ void main() {
   group('PaceZoneCalculator', () {
     test('fromThresholdPace returns 5 zones', () {
       final zones = PaceZoneCalculator.fromThresholdPace(300);
-      expect(zones.length, 5);
-      expect(zones[0].label, contains('Zone 1'));
-      expect(zones[4].label, contains('Zone 5'));
+      check(zones.length).equals(5);
+      check(zones[0].label).contains('Zone 1');
+      check(zones[4].label).contains('Zone 5');
     });
 
     test('zones have increasing speed (decreasing seconds)', () {
@@ -476,43 +479,43 @@ void main() {
       expect(cfg.longRunFraction, 0.30);
       expect(cfg.easyFraction, 0.20);
       expect(cfg.tempoFraction, 0.15);
-      expect(cfg.minRunDuration, 10);
+      check(cfg.minRunDuration).equals(10);
       expect(cfg.longRunMultiplier, 1.5);
-      expect(cfg.longRunMinCap, 20);
-      expect(cfg.longRunMaxCap, 120);
-      expect(cfg.minEasyRunMinutes, 20);
+      check(cfg.longRunMinCap).equals(20);
+      check(cfg.longRunMaxCap).equals(120);
+      check(cfg.minEasyRunMinutes).equals(20);
       expect(cfg.minWeeklyMinutes, 60.0);
       expect(cfg.maxWeeklyMinutes, 600.0);
       expect(cfg.maxWeeklyMinutesScaleUp, 900.0);
       expect(cfg.fatiguedTsbThreshold, -15.0);
       expect(cfg.tiredTsbThreshold, -10.0);
-      expect(cfg.beginnerRunCount, 15);
+      check(cfg.beginnerRunCount).equals(15);
       expect(cfg.beginnerWeeklyKm, 20.0);
-      expect(cfg.advancedRunCount, 50);
+      check(cfg.advancedRunCount).equals(50);
       expect(cfg.advancedWeeklyKm, 50.0);
-      expect(cfg.beginnerIntervalMin, 30);
-      expect(cfg.intermediateIntervalMin, 36);
-      expect(cfg.advancedIntervalMin, 42);
-      expect(cfg.baseBuildingRunCount, 10);
+      check(cfg.beginnerIntervalMin).equals(30);
+      check(cfg.intermediateIntervalMin).equals(36);
+      check(cfg.advancedIntervalMin).equals(42);
+      check(cfg.baseBuildingRunCount).equals(10);
       expect(cfg.aerobicFitnessScore, 30.0);
       expect(cfg.freshFormScore, 10.0);
-      expect(cfg.returnGapDays, 3);
-      expect(cfg.cycleLengthWeeks, 4);
+      check(cfg.returnGapDays).equals(3);
+      check(cfg.cycleLengthWeeks).equals(4);
       expect(cfg.deloadVolumeFraction, 0.50);
       expect(cfg.buildWeekVolumeIncrement, 0.10);
       expect(cfg.deloadLongRunFraction, 0.50);
-      expect(cfg.beginnerMaxRunsPerWeek, 3);
-      expect(cfg.beginnerMinEasyMinutes, 10);
-      expect(cfg.beginnerWeeklyMinTarget, 45);
-      expect(cfg.continuousRunThreshold, 15);
-      expect(cfg.shortGapDays, 3);
-      expect(cfg.longGapDays, 7);
-      expect(cfg.injuryGapDays, 14);
-      expect(cfg.staleActivityDays, 90);
+      check(cfg.beginnerMaxRunsPerWeek).equals(3);
+      check(cfg.beginnerMinEasyMinutes).equals(10);
+      check(cfg.beginnerWeeklyMinTarget).equals(45);
+      check(cfg.continuousRunThreshold).equals(15);
+      check(cfg.shortGapDays).equals(3);
+      check(cfg.longGapDays).equals(7);
+      check(cfg.injuryGapDays).equals(14);
+      check(cfg.staleActivityDays).equals(90);
       expect(cfg.returnStartFraction, 0.55);
       expect(cfg.returnWeeklyIncreaseCap, 0.10);
-      expect(cfg.returnEasyOnlyWeeks, 1);
-      expect(cfg.returnRampWeeks, 3);
+      check(cfg.returnEasyOnlyWeeks).equals(1);
+      check(cfg.returnRampWeeks).equals(3);
     });
 
     test('custom config changes volume fractions', () {
@@ -533,7 +536,7 @@ void main() {
         formScore: 0,
       );
       final plan = customUseCase.generate([_activity(daysAgo: 1)]);
-      expect(plan.days.length, 7);
+      check(plan.days.length).equals(7);
     });
   });
 
@@ -576,7 +579,7 @@ void main() {
         formScore: 0,
       );
       final plan = customUseCase.generate([_activity(daysAgo: 1)]);
-      expect(plan.days.length, 7);
+      check(plan.days.length).equals(7);
       for (final d in plan.days) {
         expect(d.type, WorkoutType.easy);
       }
