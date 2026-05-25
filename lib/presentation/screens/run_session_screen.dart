@@ -194,6 +194,12 @@ class _RunSessionScreenState extends ConsumerState<RunSessionScreen> {
     _stepHistory.clear();
 
     _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+
+    if (_state.isAudioCoachOn) {
+      ref.read(voiceCoachProvider).announcePhaseChange(_state.phase);
+    }
+    _lastPhase = _state.phase;
+
     setState(() {
       _state = RunSessionState(
         plan: _state.plan,
