@@ -5,7 +5,7 @@ import '../../presentation/widgets/run_session/run_session_state.dart';
 
 part 'voice_coach_service.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 VoiceCoachService voiceCoach(Ref ref) {
   final service = VoiceCoachService();
   ref.onDispose(() => service.dispose());

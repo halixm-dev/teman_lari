@@ -26,7 +26,7 @@ final class VoiceCoachProvider
         argument: null,
         retry: null,
         name: r'voiceCoachProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -54,4 +54,4 @@ final class VoiceCoachProvider
   }
 }
 
-String _$voiceCoachHash() => r'fb399e31d414d6d349389d456d30cae2587330da';
+String _$voiceCoachHash() => r'f726367a058525e5a833f5a5af35796b45c46ce4';
