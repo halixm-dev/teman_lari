@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -35,7 +36,14 @@ class LocalActivityDataSource {
         };
       }
       await box.putAll(entries);
-    } catch (_) {}
+    } catch (e, stack) {
+      log(
+        'Error saving activities',
+        name: 'LocalActivityDataSource',
+        error: e,
+        stackTrace: stack,
+      );
+    }
   }
 
   Future<List<ActivityModel>?> getCachedActivities() async {
@@ -58,7 +66,13 @@ class LocalActivityDataSource {
       return sortedList
           .map((r) => ActivityModel.fromJson(jsonDecode(r['data'] as String)))
           .toList();
-    } catch (_) {
+    } catch (e, stack) {
+      log(
+        'Error getting cached activities',
+        name: 'LocalActivityDataSource',
+        error: e,
+        stackTrace: stack,
+      );
       return null;
     }
   }
@@ -71,7 +85,14 @@ class LocalActivityDataSource {
         'data': jsonEncode(data),
         'synced_at': DateTime.now().millisecondsSinceEpoch,
       });
-    } catch (_) {}
+    } catch (e, stack) {
+      log(
+        'Error saving heart rate stream for activity $activityId',
+        name: 'LocalActivityDataSource',
+        error: e,
+        stackTrace: stack,
+      );
+    }
   }
 
   Future<Map<int, List<double>>> getCachedHeartRateStreams() async {
@@ -91,7 +112,13 @@ class LocalActivityDataSource {
         result[id] = (jsonDecode(raw) as List<dynamic>).cast<double>();
       }
       return result;
-    } catch (_) {
+    } catch (e, stack) {
+      log(
+        'Error getting cached heart rate streams',
+        name: 'LocalActivityDataSource',
+        error: e,
+        stackTrace: stack,
+      );
       return {};
     }
   }
@@ -102,6 +129,13 @@ class LocalActivityDataSource {
       final boxHr = await hrStreamsBox;
       await boxAct.clear();
       await boxHr.clear();
-    } catch (_) {}
+    } catch (e, stack) {
+      log(
+        'Error clearing cache',
+        name: 'LocalActivityDataSource',
+        error: e,
+        stackTrace: stack,
+      );
+    }
   }
 }
