@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -40,7 +42,14 @@ class VoiceCoachService {
       final source = AssetSource('sounds/$name');
       await _player.stop();
       await _player.play(source);
-    } catch (_) {}
+    } catch (e, stack) {
+      log(
+        'Failed to play voice coach audio',
+        name: 'VoiceCoachService',
+        error: e,
+        stackTrace: stack,
+      );
+    }
   }
 
   void dispose() {
