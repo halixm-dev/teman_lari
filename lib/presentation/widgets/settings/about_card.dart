@@ -18,104 +18,110 @@ class AboutCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppColors.brandOrange.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.directions_run_rounded,
-                    color: AppColors.brandOrange,
-                    size: 28,
-                  ),
-                ).animate().scale(curve: Curves.elasticOut, duration: 600.ms),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Teman Lari',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 18,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'v1.0.0 • Production Build',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: isDark
-                              ? AppColors.textSecondaryDark
-                              : AppColors.gray500,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+            _buildHeader(theme, isDark),
             const SizedBox(height: 20),
             Divider(color: isDark ? AppColors.dividerDark : AppColors.gray200),
             const SizedBox(height: 16),
-            _AboutInfoRow(
-              icon: Icons.code_rounded,
-              label: 'Built with',
-              value: 'Flutter & Riverpod',
-            ),
-            const SizedBox(height: 12),
-            _AboutInfoRow(
-              icon: Icons.api_rounded,
-              label: 'Strava API Status',
-              value: 'Active Connected',
-              valueColor: AppColors.success,
-              showIndicator: true,
-            ),
-            const SizedBox(height: 12),
-            _AboutInfoRow(
-              icon: Icons.security_rounded,
-              label: 'Data Storage',
-              value: '100% Local & Secure',
-            ),
+            ..._buildInfoRows(),
             const SizedBox(height: 20),
             Divider(color: isDark ? AppColors.dividerDark : AppColors.gray200),
             const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _TextLink(
-                  label: 'Privacy Policy',
-                  onTap: () => _showPolicySheet(
-                    context,
-                    'Privacy Policy',
-                    _privacyContent,
-                  ),
-                ),
-                Container(
-                  width: 1,
-                  height: 14,
-                  color: isDark
-                      ? AppColors.surfaceTertiaryDark
-                      : AppColors.gray300,
-                ),
-                _TextLink(
-                  label: 'Terms of Service',
-                  onTap: () => _showPolicySheet(
-                    context,
-                    'Terms of Service',
-                    _termsContent,
-                  ),
-                ),
-              ],
-            ),
+            _buildLinks(context, isDark),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildHeader(ThemeData theme, bool isDark) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: AppColors.brandOrange.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.directions_run_rounded,
+            color: AppColors.brandOrange,
+            size: 28,
+          ),
+        ).animate().scale(curve: Curves.elasticOut, duration: 600.ms),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Teman Lari',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 18,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'v1.0.0 • Production Build',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: isDark
+                      ? AppColors.textSecondaryDark
+                      : AppColors.gray500,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  List<Widget> _buildInfoRows() {
+    return [
+      const _AboutInfoRow(
+        icon: Icons.code_rounded,
+        label: 'Built with',
+        value: 'Flutter & Riverpod',
+      ),
+      const SizedBox(height: 12),
+      const _AboutInfoRow(
+        icon: Icons.api_rounded,
+        label: 'Strava API Status',
+        value: 'Active Connected',
+        valueColor: AppColors.success,
+        showIndicator: true,
+      ),
+      const SizedBox(height: 12),
+      const _AboutInfoRow(
+        icon: Icons.security_rounded,
+        label: 'Data Storage',
+        value: '100% Local & Secure',
+      ),
+    ];
+  }
+
+  Widget _buildLinks(BuildContext context, bool isDark) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _TextLink(
+          label: 'Privacy Policy',
+          onTap: () =>
+              _showPolicySheet(context, 'Privacy Policy', _privacyContent),
+        ),
+        Container(
+          width: 1,
+          height: 14,
+          color: isDark ? AppColors.surfaceTertiaryDark : AppColors.gray300,
+        ),
+        _TextLink(
+          label: 'Terms of Service',
+          onTap: () =>
+              _showPolicySheet(context, 'Terms of Service', _termsContent),
+        ),
+      ],
     );
   }
 

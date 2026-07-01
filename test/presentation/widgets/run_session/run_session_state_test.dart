@@ -34,10 +34,7 @@ void main() {
         description: 'test',
       );
       final segments = RunSessionState.computeSegments(day);
-      final state = RunSessionState(
-        plan: day,
-        segments: segments,
-      );
+      final state = RunSessionState(plan: day, segments: segments);
 
       check(state.phase).equals(WorkoutPhase.warmup);
       check(state.currentSegmentIndex).equals(0);
