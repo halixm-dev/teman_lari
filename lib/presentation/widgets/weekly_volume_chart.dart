@@ -295,12 +295,58 @@ class _VolumeLinePainter extends CustomPainter {
     final labelColor = isDark ? AppColors.textSecondaryDark : AppColors.gray500;
     final gridColor = isDark ? AppColors.dividerDark : AppColors.gray200;
 
+    _drawGridLinesAndYAxis(
+      canvas,
+      size,
+      paddingTop,
+      chartHeight,
+      paddingLeft,
+      paddingRight,
+      effectiveMax,
+      gridColor,
+      labelColor,
+    );
+
+    _drawYAxisTitle(canvas, paddingTop, chartHeight, labelColor);
+
+    _drawXAxisLabels(
+      canvas,
+      size,
+      paddingLeft,
+      paddingBottom,
+      stepX,
+      labelColor,
+    );
+
+    final points = _buildPoints(
+      paddingLeft,
+      paddingTop,
+      chartHeight,
+      stepX,
+      effectiveMax,
+    );
+
+    _drawLine(canvas, points);
+
+    _drawDotsAndSelectedMarker(canvas, size, points, paddingTop, paddingBottom);
+  }
+
+  void _drawGridLinesAndYAxis(
+    Canvas canvas,
+    Size size,
+    double paddingTop,
+    double chartHeight,
+    double paddingLeft,
+    double paddingRight,
+    double effectiveMax,
+    Color gridColor,
+    Color labelColor,
+  ) {
     final tp = TextPainter(
       textAlign: TextAlign.right,
       textDirection: TextDirection.ltr,
     );
 
-    // Grid lines and Y-axis labels
     for (int i = 0; i < 3; i++) {
       final yRatio = i / 2.0;
       final y = paddingTop + chartHeight * (1 - yRatio);
@@ -324,8 +370,14 @@ class _VolumeLinePainter extends CustomPainter {
         Offset(size.width - paddingRight + 4, y - tp.height / 2),
       );
     }
+  }
 
-    // Y-axis title
+  void _drawYAxisTitle(
+    Canvas canvas,
+    double paddingTop,
+    double chartHeight,
+    Color labelColor,
+  ) {
     final titleTp = TextPainter(
       text: TextSpan(
         text: 'Volume Trend',
@@ -339,8 +391,16 @@ class _VolumeLinePainter extends CustomPainter {
     canvas.rotate(-math.pi / 2);
     titleTp.paint(canvas, Offset(-titleTp.width / 2, 0));
     canvas.restore();
+  }
 
-    // X-axis labels
+  void _drawXAxisLabels(
+    Canvas canvas,
+    Size size,
+    double paddingLeft,
+    double paddingBottom,
+    double stepX,
+    Color labelColor,
+  ) {
     final xTp = TextPainter(
       textAlign: TextAlign.center,
       textDirection: TextDirection.ltr,
@@ -365,17 +425,29 @@ class _VolumeLinePainter extends CustomPainter {
         Offset(x - xTp.width / 2, size.height - paddingBottom + 8),
       );
     }
+  }
 
-    // Build points
+  List<Offset> _buildPoints(
+    double paddingLeft,
+    double paddingTop,
+    double chartHeight,
+    double stepX,
+    double effectiveMax,
+  ) {
     final points = <Offset>[];
+    final hasVolume = entries.any((e) => e.value > 0);
     for (int i = 0; i < entries.length; i++) {
       final x = paddingLeft + stepX * i;
-      final yRatio = maxVol > 0 ? entries[i].value / effectiveMax : 0.0;
+      final yRatio = hasVolume ? entries[i].value / effectiveMax : 0.0;
       final y = paddingTop + chartHeight * (1 - yRatio);
       points.add(Offset(x, y));
     }
+    return points;
+  }
 
-    // Draw line
+  void _drawLine(Canvas canvas, List<Offset> points) {
+    if (points.isEmpty) return;
+
     final linePaint = Paint()
       ..color = AppColors.brandOrange
       ..strokeWidth = 2.5
@@ -391,8 +463,15 @@ class _VolumeLinePainter extends CustomPainter {
       }
     }
     canvas.drawPath(path, linePaint);
+  }
 
-    // Draw dots and selected marker
+  void _drawDotsAndSelectedMarker(
+    Canvas canvas,
+    Size size,
+    List<Offset> points,
+    double paddingTop,
+    double paddingBottom,
+  ) {
     final dotPaint = Paint()
       ..color = AppColors.brandOrange
       ..style = PaintingStyle.fill;
