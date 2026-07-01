@@ -38,7 +38,12 @@ class LocalActivityDataSource {
       }
       await box.putAll(entries);
     } catch (e, stackTrace) {
-      log('Error saving activities', name: 'LocalActivityDataSource', error: e, stackTrace: stackTrace);
+      log(
+        'Error saving activities',
+        name: 'LocalActivityDataSource',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -63,7 +68,12 @@ class LocalActivityDataSource {
           .map((r) => ActivityModel.fromJson(jsonDecode(r['data'] as String)))
           .toList();
     } catch (e, stackTrace) {
-      log('Error getting cached activities', name: 'LocalActivityDataSource', error: e, stackTrace: stackTrace);
+      log(
+        'Error getting cached activities',
+        name: 'LocalActivityDataSource',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return null;
     }
   }
@@ -77,7 +87,12 @@ class LocalActivityDataSource {
         'synced_at': DateTime.now().millisecondsSinceEpoch,
       });
     } catch (e, stackTrace) {
-      log('Error saving heart rate stream', name: 'LocalActivityDataSource', error: e, stackTrace: stackTrace);
+      log(
+        'Error saving heart rate stream',
+        name: 'LocalActivityDataSource',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -99,7 +114,12 @@ class LocalActivityDataSource {
       }
       return result;
     } catch (e, stackTrace) {
-      log('Error getting cached heart rate streams', name: 'LocalActivityDataSource', error: e, stackTrace: stackTrace);
+      log(
+        'Error getting cached heart rate streams',
+        name: 'LocalActivityDataSource',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return {};
     }
   }
@@ -111,7 +131,12 @@ class LocalActivityDataSource {
       await boxAct.clear();
       await boxHr.clear();
     } catch (e, stackTrace) {
-      log('Error clearing cache', name: 'LocalActivityDataSource', error: e, stackTrace: stackTrace);
+      log(
+        'Error clearing cache',
+        name: 'LocalActivityDataSource',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 }
