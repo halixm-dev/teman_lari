@@ -106,7 +106,7 @@ void main() {
 
         final cached = await dataSource.getCachedHeartRateStreams();
         check(cached).containsKey(101);
-        check(cached[101]).deepEquals(streamData);
+        check(cached[101]!).deepEquals(streamData);
       },
     );
 
