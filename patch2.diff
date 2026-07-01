@@ -1,0 +1,5 @@
+<<<<<<< SEARCH
+        check(cached[101]).equals(streamData);
+=======
+        check(cached[101]!).deepEquals(streamData);
+>>>>>>> REPLACE
