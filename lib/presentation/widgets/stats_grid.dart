@@ -100,7 +100,6 @@ class _Vo2MaxInfoSheet extends StatelessWidget {
   final Color categoryColor;
 
   const _Vo2MaxInfoSheet({
-    super.key,
     required this.vo2maxText,
     required this.category,
     required this.categoryColor,
