@@ -34,7 +34,14 @@ class ActivityRepositoryImpl implements ActivityRepository {
         );
         return _mapModelsToEntities(cached, maxHr: maxHr);
       }
-    } catch (_) {}
+    } catch (e, stack) {
+      log(
+        'Error reading from cache',
+        name: 'ActivityRepo',
+        error: e,
+        stackTrace: stack,
+      );
+    }
 
     try {
       final remoteActivities = await remoteDataSource.getAllActivities(
@@ -93,7 +100,14 @@ class ActivityRepositoryImpl implements ActivityRepository {
             await localDataSource.saveHeartRateStream(id, data);
             return MapEntry(id, data);
           }
-        } catch (_) {}
+        } catch (e, stack) {
+          log(
+            'Error fetching heart rate streams for activity $id',
+            name: 'ActivityRepo',
+            error: e,
+            stackTrace: stack,
+          );
+        }
         return null;
       });
       final entries = await Future.wait(futures);
